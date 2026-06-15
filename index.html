@@ -333,10 +333,10 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="card">
     <div class="card-head"><div class="card-title">Formato esperado del CSV</div></div>
     <div style="padding:16px">
-      <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);white-space:pre;display:block;background:rgba(0,0,0,.3);padding:14px;border-radius:8px;overflow-x:auto">tipo,nombre,area,inicio,fin,real,esperado,semaforo
-Mejoras,Administración || AdContent,Administracion,01/04/2026,18/06/2026,99,96,A tiempo
-Proyecto,DGA || Odoo-General,DGA,07/04/2026,23/09/2026,32,41,Stand by
-Proyecto,Tesoreria || H2H,Tesoreria,07/04/2026,26/08/2026,22,49,Atrasado</code>
+      <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);white-space:pre;display:block;background:rgba(0,0,0,.3);padding:14px;border-radius:8px;overflow-x:auto">modulo,tipo,nombre,area,inicio,fin,real,esperado,semaforo,responsable,solicitante,descripcion
+IMC,Mejoras,Administración || AdContent,Administracion,01/04/2026,18/06/2026,99,96,A tiempo,Miguel E.,DGA,Integración catálogos
+Desarrollo,Proyecto,AI HUB — Módulo FLEX,Automatización,01/02/2026,30/07/2026,65,70,A tiempo,Ricardo A.,DTI,Módulo de IA
+Soporte,Proyecto,Migración oficinas,Infraestructura,01/03/2026,30/07/2026,78,80,A tiempo,Josue M.,DTI,Traslado Tlalnepantla</code>
       <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.6)">
         ℹ️ <strong style="color:#fff">semaforo</strong> acepta:
         <code style="color:var(--green)">A tiempo</code> ·
@@ -350,7 +350,7 @@ Proyecto,Tesoreria || H2H,Tesoreria,07/04/2026,26/08/2026,22,49,Atrasado</code>
   <div id="upload-preview" style="display:none">
     <div class="card">
       <div class="card-head"><div class="card-title">Datos Cargados</div><span class="badge g" id="upload-count-badge">0 filas</span></div>
-      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Real</th><th>Esp.</th><th>Semáforo</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Módulo</th><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Real</th><th>Esp.</th><th>Semáforo</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
     </div>
   </div>
 </section>
@@ -734,7 +734,7 @@ function loadCSV(e){
       headers.forEach((h,i)=>obj[h]=vals[i]||'');
       return obj;
     }).filter(r=>r[headers[1]]);
-    const mapped=rows.map(r=>({
+    const mapRow=r=>({
       tipo:r.tipo||'Proyecto',
       nombre:r.nombre||r.proyecto||'Sin nombre',
       area:r.area||'—',
@@ -746,14 +746,26 @@ function loadCSV(e){
       responsable:r.responsable||'',
       solicitante:r.solicitante||r['usuario solicitante']||'',
       descripcion:r.descripcion||r.descripción||'',
-    }));
-    state.imc.data=mapped;
-    state.imc.filter='todos'; state.imc.search='';
+      modulo:(r.modulo||'IMC').trim(),
+    });
+    const mapped=rows.map(mapRow);
+    const byMod={IMC:[],Desarrollo:[],Soporte:[]};
+    mapped.forEach(p=>{
+      const m=p.modulo.toUpperCase();
+      if(m==='IMC') byMod.IMC.push(p);
+      else if(m==='DESARROLLO') byMod.Desarrollo.push(p);
+      else if(m==='SOPORTE') byMod.Soporte.push(p);
+      else byMod.IMC.push(p);
+    });
+    if(byMod.IMC.length){state.imc.data=byMod.IMC;state.imc.filter='todos';state.imc.search='';}
+    if(byMod.Desarrollo.length){state.dev.data=byMod.Desarrollo;state.dev.filter='todos';state.dev.search='';}
+    if(byMod.Soporte.length){state.inf.data=byMod.Soporte;state.inf.filter='todos';state.inf.search='';}
     document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
     document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
       <tr>
+        <td><span style="font-size:10px;font-weight:700;color:var(--gold)">${p.modulo}</span></td>
         <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
-        <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(allProjects[tab][ri])">${p.nombre}</div></td>
+        <td><div class="p-name">${p.nombre}</div></td>
         <td><div class="p-area">${p.area}</div></td>
         <td><div class="date-cell">${p.inicio}</div></td>
         <td><div class="date-cell">${p.fin}</div></td>
@@ -762,7 +774,7 @@ function loadCSV(e){
         <td><span class="sem ${semClass(p.sem)}">${semLabel(p.sem)}</span></td>
       </tr>`).join('');
     document.getElementById('upload-preview').style.display='block';
-    renderTab('imc');
+    renderTab('imc');renderTab('dev');renderTab('inf');
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
     document.querySelectorAll('.tab')[0].classList.add('active');
