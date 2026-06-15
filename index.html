@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DTI Dashboard — Grupo INCEPADEM</title>
+<!-- PptxGenJS para exportar PowerPoint en el navegador -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PptxGenJS/3.12.0/pptxgen.bundle.js"></script>
+<!-- SheetJS para exportar Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -37,10 +41,16 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .module.active{display:block;animation:fadeUp .22s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-.mod-header{margin-bottom:22px;}
+.mod-header{margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.mod-header-left{}
 .mod-title{font-size:20px;font-weight:700;color:#fff;}
 .mod-title span{color:var(--gold);}
 .mod-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;}
+.export-btns{display:flex;gap:8px;flex-shrink:0;margin-top:4px;}
+.btn-pptx{background:#C9A84C;color:#1A2340;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-pptx:hover{background:#a8893e;}
+.btn-xlsx{background:#1d6f42;color:#fff;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-xlsx:hover{background:#155535;}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
 .kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;}
@@ -77,26 +87,18 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 
 .sem{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .sem::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.sem.tiempo{background:rgba(34,197,94,.12);color:var(--green);}
-.sem.tiempo::before{background:var(--green);}
-.sem.atrasado{background:rgba(239,68,68,.12);color:var(--red);}
-.sem.atrasado::before{background:var(--red);}
-.sem.standby{background:rgba(139,92,246,.12);color:var(--purple);}
-.sem.standby::before{background:var(--purple);}
-.sem.terminado{background:rgba(59,130,246,.12);color:var(--blue);}
-.sem.terminado::before{background:var(--blue);}
-.sem.riesgo{background:rgba(245,158,11,.12);color:var(--yellow);}
-.sem.riesgo::before{background:var(--yellow);}
+.sem.tiempo{background:rgba(34,197,94,.12);color:var(--green);}.sem.tiempo::before{background:var(--green);}
+.sem.atrasado{background:rgba(239,68,68,.12);color:var(--red);}.sem.atrasado::before{background:var(--red);}
+.sem.standby{background:rgba(139,92,246,.12);color:var(--purple);}.sem.standby::before{background:var(--purple);}
+.sem.terminado{background:rgba(59,130,246,.12);color:var(--blue);}.sem.terminado::before{background:var(--blue);}
+.sem.riesgo{background:rgba(245,158,11,.12);color:var(--yellow);}.sem.riesgo::before{background:var(--yellow);}
 
 .prog-wrap{min-width:140px;}
 .prog-labels{display:flex;justify-content:space-between;font-size:9px;color:#fff;margin-bottom:3px;font-family:'JetBrains Mono',monospace;font-weight:600;}
 .prog-track{height:6px;background:rgba(255,255,255,.1);border-radius:4px;position:relative;overflow:hidden;}
 .prog-esp{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.18);border-radius:4px;}
 .prog-real{position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .5s ease;}
-.prog-real.g{background:var(--green);}
-.prog-real.y{background:var(--yellow);}
-.prog-real.r{background:var(--red);}
-.prog-real.b{background:var(--blue);}
+.prog-real.g{background:var(--green);}.prog-real.y{background:var(--yellow);}.prog-real.r{background:var(--red);}.prog-real.b{background:var(--blue);}
 
 .date-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;}
 
@@ -158,8 +160,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 <!-- ═══ IMC ═══ -->
 <section class="module active" id="mod-imc">
   <div class="mod-header">
-    <div class="mod-title">Módulo <span>IMC</span> — Portafolio de Proyectos</div>
-    <div class="mod-sub">Dirección de Tecnología e Implementación · Actualizado: <span id="imc-updated">—</span></div>
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>IMC</span> — Portafolio de Proyectos</div>
+      <div class="mod-sub">Dirección de Tecnología e Implementación · Actualizado: <span id="imc-updated">—</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar PowerPoint</button>
+      <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
+    </div>
   </div>
   <div class="kpi-strip">
     <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="k-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
@@ -188,7 +196,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
-      <div class="leg-item" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.5)">Barra: <span style="color:#fff">█</span> Real &nbsp;|&nbsp; <span style="opacity:.35">█</span> Esperado</div>
     </div>
   </div>
   <div class="grid2">
@@ -200,8 +207,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 <!-- ═══ DESARROLLO ═══ -->
 <section class="module" id="mod-desarrollo">
   <div class="mod-header">
-    <div class="mod-title">Módulo <span>Desarrollo</span></div>
-    <div class="mod-sub">AI HUB · Automatización · Integraciones técnicas · Actualizado: <span id="dev-updated">—</span></div>
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Desarrollo</span></div>
+      <div class="mod-sub">AI HUB · Automatización · Integraciones técnicas · Actualizado: <span id="dev-updated">—</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar PowerPoint</button>
+      <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
+    </div>
   </div>
   <div class="kpi-strip">
     <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
@@ -230,7 +243,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
-      <div class="leg-item" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.5)">Barra: <span style="color:#fff">█</span> Real &nbsp;|&nbsp; <span style="opacity:.35">█</span> Esperado</div>
     </div>
   </div>
   <div class="grid2">
@@ -242,8 +254,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 <!-- ═══ SOPORTE E INFRAESTRUCTURA ═══ -->
 <section class="module" id="mod-infraestructura">
   <div class="mod-header">
-    <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
-    <div class="mod-sub">Servidores · Red · Seguridad · Migración · Soporte técnico · Actualizado: <span id="inf-updated">—</span></div>
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
+      <div class="mod-sub">Servidores · Red · Seguridad · Migración · Actualizado: <span id="inf-updated">—</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar PowerPoint</button>
+      <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
+    </div>
   </div>
   <div class="kpi-strip">
     <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
@@ -272,7 +290,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
-      <div class="leg-item" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.5)">Barra: <span style="color:#fff">█</span> Real &nbsp;|&nbsp; <span style="opacity:.35">█</span> Esperado</div>
     </div>
   </div>
   <div class="grid2">
@@ -284,8 +301,10 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 <!-- ═══ CARGA ═══ -->
 <section class="module" id="mod-carga">
   <div class="mod-header">
-    <div class="mod-title">Carga de <span>Datos</span></div>
-    <div class="mod-sub">Sube tu CSV y los datos se reflejan automáticamente en cada módulo</div>
+    <div class="mod-header-left">
+      <div class="mod-title">Carga de <span>Datos</span></div>
+      <div class="mod-sub">Sube tu CSV y los datos se reflejan automáticamente en cada módulo</div>
+    </div>
   </div>
   <div class="upload-zone" onclick="document.getElementById('file-input').click()">
     <div class="uz-icon">📄</div>
@@ -319,7 +338,8 @@ Proyecto,Tesoreria || H2H,Tesoreria,07/04/2026,26/08/2026,22,49,Atrasado</code>
 </main>
 
 <script>
-const IMC_DATA = [
+// ─── DATOS ───
+const IMC_DATA=[
   {tipo:"Mejoras",nombre:"Administración || AdContent - Catálogos",area:"Administracion",inicio:"01/04/2026",fin:"18/06/2026",real:99,esp:96,sem:"A tiempo"},
   {tipo:"Mejoras",nombre:"Capital Humano || BUK Campos Personalizados",area:"Capital Humano",inicio:"26/02/2026",fin:"25/05/2026",real:100,esp:100,sem:"Terminado"},
   {tipo:"Mejoras",nombre:"Capital Humano || BUK Soporte – Incidencia",area:"Capital Humano",inicio:"02/03/2026",fin:"29/05/2026",real:100,esp:100,sem:"Terminado"},
@@ -341,7 +361,7 @@ const IMC_DATA = [
   {tipo:"Proyecto",nombre:"Tesoreria || Adcontent H2H",area:"Tesoreria",inicio:"07/04/2026",fin:"26/08/2026",real:22,esp:49,sem:"Atrasado"},
   {tipo:"Proyecto",nombre:"TRIM || Marketplace || Caddi",area:"Marketplace",inicio:"07/08/2025",fin:"11/05/2026",real:97,esp:100,sem:"Atrasado"},
 ];
-const DEV_DATA = [
+const DEV_DATA=[
   {tipo:"Proyecto",nombre:"AI HUB — Módulo FLEX",area:"Automatización",inicio:"01/02/2026",fin:"30/07/2026",real:65,esp:70,sem:"A tiempo"},
   {tipo:"Mejoras",nombre:"Automatización CFDI — ATEB Servicios",area:"Fiscal",inicio:"15/03/2026",fin:"30/06/2026",real:80,esp:80,sem:"A tiempo"},
   {tipo:"Proyecto",nombre:"Conector sFleet ↔ LUMOSYS",area:"Integraciones",inicio:"01/03/2026",fin:"15/08/2026",real:40,esp:60,sem:"Atrasado"},
@@ -349,7 +369,7 @@ const DEV_DATA = [
   {tipo:"Mejoras",nombre:"API Mecánica MX — Fase 2",area:"Integraciones",inicio:"01/04/2026",fin:"31/07/2026",real:35,esp:50,sem:"En riesgo"},
   {tipo:"Proyecto",nombre:"Portal de Reportes LUMOSYS",area:"Plataforma",inicio:"15/11/2025",fin:"28/02/2026",real:100,esp:100,sem:"Terminado"},
 ];
-const INF_DATA = [
+const INF_DATA=[
   {tipo:"Proyecto",nombre:"Migración oficinas Tlalnepantla",area:"Infraestructura",inicio:"01/03/2026",fin:"30/07/2026",real:78,esp:80,sem:"A tiempo"},
   {tipo:"Proyecto",nombre:"Renovación Firewall / VPN Corporativa",area:"Seguridad",inicio:"15/02/2026",fin:"30/06/2026",real:50,esp:65,sem:"En riesgo"},
   {tipo:"Mejoras",nombre:"Data Center Azure — Zona 2",area:"Cloud",inicio:"01/04/2026",fin:"31/12/2026",real:35,esp:35,sem:"A tiempo"},
@@ -357,13 +377,15 @@ const INF_DATA = [
   {tipo:"Mejoras",nombre:"Red estructurada — Edificio B",area:"Redes",inicio:"15/04/2026",fin:"31/08/2026",real:20,esp:40,sem:"Atrasado"},
 ];
 
-// Estado de filtros por tab
-const state = {
-  imc:  {data:[...IMC_DATA], filter:'todos', search:''},
-  dev:  {data:[...DEV_DATA], filter:'todos', search:''},
-  inf:  {data:[...INF_DATA], filter:'todos', search:''},
+const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura'};
+
+const state={
+  imc:{data:[...IMC_DATA],filter:'todos',search:''},
+  dev:{data:[...DEV_DATA],filter:'todos',search:''},
+  inf:{data:[...INF_DATA],filter:'todos',search:''},
 };
 
+// ─── HELPERS ───
 function semClass(s){
   s=(s||'').toLowerCase().trim();
   if(s.includes('tiempo'))    return 'tiempo';
@@ -374,18 +396,36 @@ function semClass(s){
   return 'standby';
 }
 function semLabel(s){
-  const c=semClass(s);
-  return {tiempo:'A tiempo',terminado:'Terminado',atrasado:'Atrasado',standby:'Stand By',riesgo:'En riesgo'}[c]||s;
+  return {tiempo:'A tiempo',terminado:'Terminado',atrasado:'Atrasado',standby:'Stand By',riesgo:'En riesgo'}[semClass(s)]||s;
 }
 function barColor(r,e){
-  if(r>=100) return 'b';
-  if(r-e>=-5) return 'g';
-  if(r-e>=-15) return 'y';
+  if(r>=100)return 'b';
+  if(r-e>=-5)return 'g';
+  if(r-e>=-15)return 'y';
   return 'r';
 }
+function semColorHex(s){
+  const c=semClass(s);
+  return {tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'}[c]||'8b5cf6';
+}
+function calcKPIs(projects){
+  const c={total:0,term:0,ok:0,atr:0,sb:0,riesgo:0,pc:0};
+  projects.forEach(p=>{
+    c.total++;
+    const s=semClass(p.sem);
+    if(s==='terminado')c.term++;
+    else if(s==='tiempo')c.ok++;
+    else if(s==='atrasado')c.atr++;
+    else if(s==='standby')c.sb++;
+    else if(s==='riesgo')c.riesgo++;
+    if(p.real>=90&&s!=='terminado')c.pc++;
+  });
+  return c;
+}
 
+// ─── RENDER ───
 function buildRow(p){
-  const sc=semClass(p.sem), bc=barColor(p.real,p.esp);
+  const sc=semClass(p.sem),bc=barColor(p.real,p.esp);
   return `<tr>
     <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
     <td><div class="p-name">${p.nombre}</div></td>
@@ -403,38 +443,28 @@ function buildRow(p){
   </tr>`;
 }
 
-function buildKPIs(projects, prefix){
-  const c={total:0,term:0,ok:0,atr:0,sb:0,riesgo:0,pc:0};
-  projects.forEach(p=>{
-    c.total++;
-    const s=semClass(p.sem);
-    if(s==='terminado')c.term++;
-    else if(s==='tiempo')c.ok++;
-    else if(s==='atrasado')c.atr++;
-    else if(s==='standby')c.sb++;
-    else if(s==='riesgo')c.riesgo++;
-    if(p.real>=90&&s!=='terminado')c.pc++;
-  });
+function buildKPIsDom(projects,prefix){
+  const c=calcKPIs(projects);
   const $=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   $(prefix+'-total',c.total);$(prefix+'-term',c.term);$(prefix+'-ok',c.ok);
   $(prefix+'-atr',c.atr);$(prefix+'-sb',c.sb);$(prefix+'-riesgo',c.riesgo);$(prefix+'-pc',c.pc);
 }
 
-function buildAreaChart(projects, elId){
+function buildAreaChart(projects,elId){
   const areas={};
   projects.forEach(p=>{areas[p.area]=(areas[p.area]||0)+1;});
   const sorted=Object.entries(areas).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const max=Math.max(...sorted.map(x=>x[1]),1);
-  const colors=['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#C9A84C','#06b6d4','#ec4899'];
+  const colors=['3b82f6','22c55e','f59e0b','ef4444','8b5cf6','C9A84C','06b6d4','ec4899'];
   document.getElementById(elId).innerHTML=sorted.map(([area,cnt],i)=>`
     <div class="bc">
       <div class="bv">${cnt}</div>
-      <div class="bb" style="height:${Math.round((cnt/max)*72)}px;background:${colors[i%colors.length]}"></div>
+      <div class="bb" style="height:${Math.round((cnt/max)*72)}px;background:#${colors[i%colors.length]}"></div>
       <div class="bl">${area.split(' ')[0].slice(0,9)}</div>
     </div>`).join('');
 }
 
-function buildStatusSummary(projects, elId){
+function buildStatusSummary(projects,elId){
   const defs=[
     {key:'terminado',label:'Terminado',color:'var(--blue)'},
     {key:'tiempo',label:'A tiempo',color:'var(--green)'},
@@ -461,21 +491,21 @@ function buildStatusSummary(projects, elId){
 function getFiltered(tab){
   const s=state[tab];
   let p=[...s.data];
-  if(s.filter!=='todos') p=p.filter(x=>semClass(x.sem)===semClass(s.filter));
-  if(s.search) p=p.filter(x=>x.nombre.toLowerCase().includes(s.search)||x.area.toLowerCase().includes(s.search));
+  if(s.filter!=='todos')p=p.filter(x=>semClass(x.sem)===semClass(s.filter));
+  if(s.search)p=p.filter(x=>x.nombre.toLowerCase().includes(s.search)||x.area.toLowerCase().includes(s.search));
   return p;
 }
 
 function renderTab(tab){
   const cfg={
-    imc: {tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary'},
-    dev: {tbody:'dev-tbody',count:'dev-count',kpfx:'dv',area:'dev-area-chart',status:'dev-status-summary'},
-    inf: {tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary'},
+    imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary'},
+    dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',area:'dev-area-chart',status:'dev-status-summary'},
+    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary'},
   }[tab];
   const p=getFiltered(tab);
   document.getElementById(cfg.tbody).innerHTML=p.map(buildRow).join('');
   document.getElementById(cfg.count).textContent=p.length+' proyectos';
-  buildKPIs(p,cfg.kpfx);
+  buildKPIsDom(p,cfg.kpfx);
   buildAreaChart(p,cfg.area);
   buildStatusSummary(p,cfg.status);
 }
@@ -490,7 +520,6 @@ function searchTab(tab,val){
   state[tab].search=val.toLowerCase();
   renderTab(tab);
 }
-
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
@@ -498,6 +527,160 @@ function switchTab(id,el){
   document.getElementById('mod-'+id).classList.add('active');
 }
 
+// ─── EXPORT EXCEL ───
+function exportXLSX(tab){
+  const projects=state[tab].data;
+  const modName=MODNAMES[tab];
+  const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const kpis=calcKPIs(projects);
+
+  const wb=XLSX.utils.book_new();
+
+  // Hoja KPIs
+  const kpiRows=[
+    ['REPORTE DTI — '+modName.toUpperCase()],
+    ['Fecha: '+today],
+    [],
+    ['KPI','Valor'],
+    ['Total Proyectos',kpis.total],
+    ['Terminados',kpis.term],
+    ['A Tiempo',kpis.ok],
+    ['En Riesgo',kpis.riesgo],
+    ['Atrasados',kpis.atr],
+    ['Stand By',kpis.sb],
+    ['Por Cerrar',kpis.pc],
+  ];
+  const wsKPI=XLSX.utils.aoa_to_sheet(kpiRows);
+  wsKPI['!cols']=[{wch:25},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsKPI,'Resumen KPIs');
+
+  // Hoja proyectos
+  const header=['Tipo','Proyecto','Área','Inicio','Fin','% Real','% Esperado','Semáforo'];
+  const rows=projects.map(p=>[p.tipo,p.nombre,p.area,p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)]);
+  const wsP=XLSX.utils.aoa_to_sheet([header,...rows]);
+  wsP['!cols']=[{wch:10},{wch:45},{wch:20},{wch:12},{wch:12},{wch:10},{wch:12},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,wsP,'Proyectos');
+
+  XLSX.writeFile(wb,'DTI_'+tab.toUpperCase()+'_'+today.replace(/\//g,'-')+'.xlsx');
+}
+
+// ─── EXPORT PPTX ───
+async function exportPPTX(tab){
+  const projects=state[tab].data;
+  const modName=MODNAMES[tab];
+  const kpis=calcKPIs(projects);
+  const today=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+
+  const pres=new PptxGenJS();
+  pres.layout='LAYOUT_WIDE'; // 13.3 x 7.5
+
+  // ── SLIDE 1: PORTADA ──
+  const s1=pres.addSlide();
+  s1.background={color:'FFFFFF'};
+  // Franjas negras top y bottom (igual que tu template)
+  s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  s1.addShape(pres.shapes.RECTANGLE,{x:0,y:7.15,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  // Decoraciones laterales doradas
+  s1.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:-0.1,y:1.6,w:0.65,h:2.4,fill:{color:'C9A84C'},line:{color:'C9A84C'},rectRadius:0.1});
+  s1.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:12.75,y:1.6,w:0.65,h:2.4,fill:{color:'C9A84C'},line:{color:'C9A84C'},rectRadius:0.1});
+  // Texto "GRUPO INCEPADEM"
+  s1.addText('GRUPO',{x:3.5,y:1.6,w:6.3,h:0.9,fontSize:40,fontFace:'Calibri',color:'1A2340',bold:false,align:'center'});
+  s1.addText('INCEPADEM',{x:3.5,y:2.35,w:6.3,h:1.1,fontSize:56,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  // Línea dorada
+  s1.addShape(pres.shapes.LINE,{x:2.8,y:3.55,w:7.7,h:0,line:{color:'C9A84C',width:2}});
+  // Subtítulo módulo
+  s1.addText('Dirección de Tecnología e Implementación',{x:1.5,y:3.8,w:10.3,h:0.6,fontSize:16,fontFace:'Calibri',color:'1A2340',align:'center'});
+  s1.addText(modName,{x:1.5,y:4.35,w:10.3,h:0.8,fontSize:22,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s1.addText('Reporte de Avance — '+today,{x:1.5,y:5.05,w:10.3,h:0.5,fontSize:13,fontFace:'Calibri',color:'777777',align:'center'});
+
+  // ── SLIDE 2: KPIs ──
+  const s2=pres.addSlide();
+  s2.background={color:'FFFFFF'};
+  s2.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  s2.addShape(pres.shapes.RECTANGLE,{x:0,y:7.15,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  // Encabezado
+  s2.addText(modName.toUpperCase(),{x:0.4,y:0.5,w:12.5,h:0.55,fontSize:22,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s2.addText('Cierre semanal — '+today,{x:0.4,y:1.0,w:12.5,h:0.35,fontSize:12,fontFace:'Calibri',color:'777777',align:'center'});
+
+  // KPI cards
+  const kpiDefs=[
+    {label:'Total de proyectos',val:kpis.total,col:'1A2340'},
+    {label:'Terminado',val:kpis.term,col:'3b82f6'},
+    {label:'A tiempo',val:kpis.ok,col:'22c55e'},
+    {label:'En riesgo de atraso',val:kpis.riesgo,col:'f59e0b'},
+    {label:'Atrasados',val:kpis.atr,col:'ef4444'},
+    {label:'Por cerrar',val:kpis.pc,col:'C9A84C'},
+    {label:'Stand By',val:kpis.sb,col:'8b5cf6'},
+  ];
+  const cardW=1.7, cardH=1.2, cardGap=0.12, startX=0.35, cardY=1.55;
+  kpiDefs.forEach((k,i)=>{
+    const cx=startX+i*(cardW+cardGap);
+    s2.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:cx,y:cardY,w:cardW,h:cardH,fill:{color:'F8F9FA'},line:{color:'E2E8F0',width:1},rectRadius:0.08,shadow:{type:'outer',color:'000000',blur:4,offset:2,angle:45,opacity:0.08}});
+    s2.addShape(pres.shapes.RECTANGLE,{x:cx,y:cardY,w:cardW,h:0.07,fill:{color:k.col},line:{color:k.col}});
+    s2.addText(String(k.val),{x:cx,y:cardY+0.12,w:cardW,h:0.65,fontSize:36,fontFace:'Calibri',color:k.col,bold:true,align:'center'});
+    s2.addText(k.label,{x:cx+0.05,y:cardY+0.75,w:cardW-0.1,h:0.4,fontSize:9,fontFace:'Calibri',color:'555555',align:'center'});
+  });
+
+  // ── SLIDE 3: TABLA DE PROYECTOS ──
+  const s3=pres.addSlide();
+  s3.background={color:'FFFFFF'};
+  s3.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  s3.addShape(pres.shapes.RECTANGLE,{x:0,y:7.15,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  // Logo texto pequeño
+  s3.addText('GRUPO INCEPADEM',{x:0.3,y:0.45,w:3,h:0.4,fontSize:11,fontFace:'Calibri',color:'1A2340',bold:true});
+  s3.addShape(pres.shapes.LINE,{x:3.1,y:0.64,w:0,h:0.35,line:{color:'C9A84C',width:2}});
+  s3.addText('ÁREA DE '+modName.toUpperCase(),{x:2,y:0.45,w:9.3,h:0.4,fontSize:16,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+
+  // Tabla
+  const colW=[1.1,3.8,1.4,0.9,0.9,1.1,1.1,2.2];
+  const headerRow=[
+    {text:'TIPO',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'PROYECTO',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'ÁREA',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'INICIO',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'FIN',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'% REAL',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'% ESP.',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+    {text:'SEMÁFORO',options:{bold:true,color:'FFFFFF',fill:{color:'1A2340'},fontSize:8,align:'center'}},
+  ];
+  const semColorMap={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
+  const tableRows=[headerRow,...projects.map((p,idx)=>{
+    const sc=semClass(p.sem);
+    const rowFill=idx%2===0?'FFFFFF':'F8F9FA';
+    const semCol=semColorMap[sc]||'8b5cf6';
+    return [
+      {text:p.tipo,options:{fontSize:8,color:'555555',fill:{color:rowFill},align:'center'}},
+      {text:p.nombre,options:{fontSize:8,color:'1A2340',fill:{color:rowFill}}},
+      {text:p.area,options:{fontSize:8,color:'555555',fill:{color:rowFill}}},
+      {text:p.inicio,options:{fontSize:8,color:'555555',fill:{color:rowFill},align:'center'}},
+      {text:p.fin,options:{fontSize:8,color:'555555',fill:{color:rowFill},align:'center'}},
+      {text:p.real+'%',options:{fontSize:9,bold:true,color:semCol,fill:{color:rowFill},align:'center'}},
+      {text:p.esp+'%',options:{fontSize:9,color:'555555',fill:{color:rowFill},align:'center'}},
+      {text:semLabel(p.sem),options:{fontSize:8,bold:true,color:semCol,fill:{color:rowFill},align:'center'}},
+    ];
+  })];
+
+  const maxRows=Math.min(tableRows.length,22);
+  const rowH=Array(maxRows).fill(0.245);
+  rowH[0]=0.3;
+  s3.addTable(tableRows.slice(0,maxRows),{x:0.25,y:1.0,w:12.8,colW,rowH,border:{pt:0.5,color:'E2E8F0'}});
+
+  // ── SLIDE 4: CIERRE ──
+  const s4=pres.addSlide();
+  s4.background={color:'FFFFFF'};
+  s4.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  s4.addShape(pres.shapes.RECTANGLE,{x:0,y:7.15,w:13.3,h:0.35,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+  s4.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:12.75,y:1.5,w:0.7,h:2.8,fill:{color:'C9A84C'},line:{color:'C9A84C'},rectRadius:0.1});
+  // Hexágonos decorativos (líneas doradas)
+  s4.addShape(pres.shapes.OVAL,{x:5.5,y:0.8,w:3.8,h:3.8,fill:{color:'F8F8F8'},line:{color:'C9A84C',width:1.5}});
+  s4.addShape(pres.shapes.OVAL,{x:6.5,y:2.0,w:5.2,h:5.2,fill:{color:'00000000'},line:{color:'C9A84C',width:0.8}});
+  s4.addText('GRUPO',{x:0.5,y:2.5,w:5,h:0.8,fontSize:36,fontFace:'Calibri',color:'1A2340',bold:false});
+  s4.addText('INCEPADEM',{x:0.5,y:3.2,w:5.5,h:1.0,fontSize:44,fontFace:'Calibri',color:'1A2340',bold:true});
+
+  await pres.writeFile({fileName:'DTI_'+tab.toUpperCase()+'_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.pptx'});
+}
+
+// ─── CSV LOADER ───
 function loadCSV(e){
   const file=e.target.files[0]; if(!file)return;
   const reader=new FileReader();
@@ -544,6 +727,7 @@ function loadCSV(e){
   reader.readAsText(file,'UTF-8');
 }
 
+// ─── INIT ───
 function updateDate(){
   const d=new Date().toLocaleDateString('es-MX',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   document.getElementById('live-date').textContent=d;
