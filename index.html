@@ -209,17 +209,12 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('imc','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('imc','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('imc',this.value)">
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos IMC — Vista detallada</div><span class="badge b" id="imc-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="imc-tbody"></tbody></table></div>
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>A tiempo</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Terminado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
     </div>
   </div>
   <div class="grid2">
@@ -257,17 +252,12 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('dev','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('dev','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('dev',this.value)">
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Desarrollo — Vista detallada</div><span class="badge b" id="dev-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="dev-tbody"></tbody></table></div>
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>A tiempo</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Terminado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
     </div>
   </div>
   <div class="grid2">
@@ -305,17 +295,12 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('inf','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('inf','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('inf',this.value)">
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Soporte e Infraestructura — Vista detallada</div><span class="badge b" id="inf-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="inf-tbody"></tbody></table></div>
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>A tiempo</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Terminado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
     </div>
   </div>
   <div class="grid2">
@@ -592,6 +577,12 @@ function renderTab(tab){
   buildStatusSummary(p,cfg.status);
 }
 
+function filterTabPorCerrar(tab,el){
+  state[tab].filter='porcerrar';
+  el.closest('.filters').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderTab(tab);
+}
 function filterTab(tab,val,el){
   state[tab].filter=val;
   el.closest('.filters').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
