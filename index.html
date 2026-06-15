@@ -5,803 +5,622 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DTI Dashboard — Grupo INCEPADEM</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --navy:#1A2340; --navy-mid:#243058; --navy-light:#2e3d70;
+  --gold:#C9A84C; --gold-dim:#a8893e; --gold-faint:rgba(201,168,76,0.10);
+  --surface:#0f1520; --surface2:#161e2e; --surface3:#1c2640;
+  --text:#e8eaf0; --text-dim:#8b95aa; --text-muted:#4a5568;
+  --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --blue:#3b82f6; --purple:#8b5cf6;
+  --border:rgba(255,255,255,0.07); --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;}
 
-  :root {
-    --navy: #1A2340;
-    --navy-mid: #243058;
-    --navy-light: #2e3d70;
-    --gold: #C9A84C;
-    --gold-dim: #a8893e;
-    --gold-faint: rgba(201,168,76,0.12);
-    --surface: #111827;
-    --surface2: #1c2535;
-    --surface3: #232f45;
-    --text: #e8eaf0;
-    --text-dim: #8b95aa;
-    --text-muted: #525e75;
-    --green: #22c55e;
-    --yellow: #eab308;
-    --red: #ef4444;
-    --blue: #3b82f6;
-    --border: rgba(255,255,255,0.07);
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
+/* TOPBAR */
+.topbar{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.4);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-logo{width:34px;height:34px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--navy);}
+.brand-name{font-weight:700;font-size:15px;color:var(--text);line-height:1.2;}
+.brand-sub{font-size:10px;color:var(--gold);letter-spacing:.06em;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.date-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);background:rgba(255,255,255,.05);padding:5px 11px;border-radius:20px;border:1px solid var(--border);}
+.btn-upload{background:var(--gold);color:var(--navy);border:none;cursor:pointer;font-weight:700;font-size:12px;padding:8px 16px;border-radius:7px;transition:.2s;letter-spacing:.02em;}
+.btn-upload:hover{background:var(--gold-dim);}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* TABS */
+.tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px;}
+.tab{padding:13px 20px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--surface);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* MAIN */
+.main{padding:24px 28px;max-width:1440px;margin:0 auto;}
+.module{display:none;}
+.module.active{display:block;animation:fadeUp .22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* ── TOPBAR ── */
-  .topbar {
-    background: var(--navy);
-    border-bottom: 1px solid var(--gold);
-    padding: 0 32px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .topbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .topbar-brand .logo {
-    width: 32px; height: 32px;
-    background: var(--gold);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px; color: var(--navy);
-  }
-  .topbar-brand span { font-weight: 600; font-size: 15px; color: var(--text); }
-  .topbar-brand small { font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: .05em; }
-  .topbar-right { display: flex; align-items: center; gap: 16px; }
-  .date-pill {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-dim);
-    background: var(--surface2);
-    padding: 4px 10px; border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-  .upload-btn {
-    background: var(--gold);
-    color: var(--navy);
-    border: none; cursor: pointer;
-    font-weight: 600; font-size: 12px;
-    padding: 7px 16px; border-radius: 6px;
-    transition: background .2s;
-  }
-  .upload-btn:hover { background: var(--gold-dim); }
+/* MODULE HEADER */
+.mod-header{margin-bottom:22px;}
+.mod-title{font-size:20px;font-weight:700;color:var(--text);}
+.mod-title span{color:var(--gold);}
+.mod-sub{font-size:12px;color:var(--text-dim);margin-top:3px;}
 
-  /* ── TABS ── */
-  .tabs-bar {
-    background: var(--navy);
-    padding: 0 32px;
-    display: flex; gap: 4px;
-    border-bottom: 1px solid var(--border);
-  }
-  .tab {
-    padding: 14px 22px;
-    font-size: 13px; font-weight: 500;
-    color: var(--text-dim);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .2s;
-    white-space: nowrap;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.g::after{background:var(--green);}
+.kpi.y::after{background:var(--yellow);}
+.kpi.r::after{background:var(--red);}
+.kpi.b::after{background:var(--blue);}
+.kpi.p::after{background:var(--purple);}
+.kpi.gold::after{background:var(--gold);}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px;font-weight:600;}
+.kpi-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;}
+.kpi-val.g{color:var(--green)}.kpi-val.y{color:var(--yellow)}.kpi-val.r{color:var(--red)}.kpi-val.b{color:var(--blue)}.kpi-val.gold{color:var(--gold)}.kpi-val.p{color:var(--purple)}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:5px;}
 
-  /* ── MAIN ── */
-  .main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+/* CARDS */
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:600;color:var(--text);}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;}
+.badge.g{background:rgba(34,197,94,.15);color:var(--green);}
+.badge.y{background:rgba(245,158,11,.15);color:var(--yellow);}
+.badge.r{background:rgba(239,68,68,.15);color:var(--red);}
+.badge.b{background:rgba(59,130,246,.15);color:var(--blue);}
 
-  /* ── MODULE PANEL ── */
-  .module { display: none; }
-  .module.active { display: block; }
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.03);}
+.p-name{font-weight:500;color:var(--text);line-height:1.3;}
+.p-area{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.12);color:var(--blue);}
+.p-tipo.m{background:rgba(139,92,246,.12);color:var(--purple);}
 
-  .module-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 24px;
-  }
-  .module-title { font-size: 22px; font-weight: 700; color: var(--text); }
-  .module-title span { color: var(--gold); }
-  .module-sub { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+/* SEMAFORO BADGES */
+.sem{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.sem::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sem.verde{background:rgba(34,197,94,.12);color:var(--green);}
+.sem.verde::before{background:var(--green);}
+.sem.amarillo,.sem.tiempo{background:rgba(34,197,94,.12);color:var(--green);}
+.sem.amarillo::before,.sem.tiempo::before{background:var(--green);}
+.sem.atrasado{background:rgba(239,68,68,.12);color:var(--red);}
+.sem.atrasado::before{background:var(--red);}
+.sem.standby{background:rgba(139,92,246,.12);color:var(--purple);}
+.sem.standby::before{background:var(--purple);}
+.sem.terminado{background:rgba(59,130,246,.12);color:var(--blue);}
+.sem.terminado::before{background:var(--blue);}
+.sem.riesgo{background:rgba(245,158,11,.12);color:var(--yellow);}
+.sem.riesgo::before{background:var(--yellow);}
 
-  /* ── KPI ROW ── */
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px; margin-bottom: 28px; }
-  .kpi {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    position: relative; overflow: hidden;
-  }
-  .kpi::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-  }
-  .kpi.green::before { background: var(--green); }
-  .kpi.gold::before  { background: var(--gold); }
-  .kpi.yellow::before { background: var(--yellow); }
-  .kpi.red::before   { background: var(--red); }
-  .kpi.blue::before  { background: var(--blue); }
-  .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
-  .kpi-value { font-size: 32px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-  .kpi-value.green { color: var(--green); }
-  .kpi-value.gold  { color: var(--gold); }
-  .kpi-value.yellow { color: var(--yellow); }
-  .kpi-value.red   { color: var(--red); }
-  .kpi-value.blue  { color: var(--blue); }
-  .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+/* BARRA DUAL (real vs esperado) */
+.prog-wrap{min-width:140px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-bottom:3px;font-family:'JetBrains Mono',monospace;}
+.prog-track{height:6px;background:rgba(255,255,255,.08);border-radius:4px;position:relative;overflow:hidden;}
+.prog-esp{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.15);border-radius:4px;}
+.prog-real{position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .5s ease;}
+.prog-real.g{background:var(--green);}
+.prog-real.y{background:var(--yellow);}
+.prog-real.r{background:var(--red);}
+.prog-real.b{background:var(--blue);}
 
-  /* ── GRID 2-COL ── */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-  @media(max-width:900px){ .grid2 { grid-template-columns: 1fr; } }
+/* DATE */
+.date-cell{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);}
 
-  /* ── CARD ── */
-  .card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
-  .card-badge {
-    font-size: 10px; font-weight: 600;
-    padding: 3px 8px; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: .05em;
-  }
-  .card-badge.green { background: rgba(34,197,94,.15); color: var(--green); }
-  .card-badge.yellow { background: rgba(234,179,8,.15); color: var(--yellow); }
-  .card-badge.red { background: rgba(239,68,68,.15); color: var(--red); }
-  .card-body { padding: 20px; }
+/* FILTERS */
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:var(--text-dim);cursor:pointer;transition:.2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--gold-faint);border-color:var(--gold);color:var(--gold);}
+.filter-label{font-size:11px;color:var(--text-muted);font-weight:600;}
+#search-box{background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text);outline:none;margin-left:auto;width:200px;}
+#search-box:focus{border-color:var(--gold);}
 
-  /* ── PROJECT TABLE ── */
-  .project-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .project-table th {
-    text-align: left; padding: 10px 14px;
-    font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
-    color: var(--text-muted); font-weight: 600;
-    border-bottom: 1px solid var(--border);
-  }
-  .project-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .project-table tr:last-child td { border-bottom: none; }
-  .project-table tr:hover td { background: var(--surface3); }
-  .project-name { font-weight: 500; color: var(--text); }
-  .project-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:20px;}
+.upload-zone:hover{border-color:var(--gold);background:var(--gold-faint);}
+.uz-icon{font-size:32px;margin-bottom:10px;}
+.uz-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.uz-sub{font-size:12px;color:var(--text-dim);}
+#file-input{display:none;}
 
-  /* ── STATUS BADGE ── */
-  .status {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px;
-    white-space: nowrap;
-  }
-  .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
-  .status.verde    { background: rgba(34,197,94,.12);  color: var(--green);  }
-  .status.verde::before   { background: var(--green);  }
-  .status.amarillo { background: rgba(234,179,8,.12);  color: var(--yellow); }
-  .status.amarillo::before { background: var(--yellow); }
-  .status.rojo     { background: rgba(239,68,68,.12);  color: var(--red);    }
-  .status.rojo::before    { background: var(--red);    }
-  .status.gris     { background: rgba(139,149,170,.12); color: var(--text-dim); }
-  .status.gris::before    { background: var(--text-dim); }
+/* SUMMARY DONUT (css) */
+.donut-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+@media(max-width:800px){.donut-row{grid-template-columns:1fr;}}
 
-  /* ── PROGRESS BAR ── */
-  .prog-wrap { display: flex; align-items: center; gap: 10px; }
-  .prog-bar-bg {
-    flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden;
-  }
-  .prog-bar-fill { height: 100%; border-radius: 3px; }
-  .prog-bar-fill.green  { background: var(--green); }
-  .prog-bar-fill.yellow { background: var(--yellow); }
-  .prog-bar-fill.red    { background: var(--red); }
-  .prog-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); width: 34px; text-align: right; }
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:16px 18px;border-top:1px solid var(--border);}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
 
-  /* ── RESPONSIBLE AVATAR ── */
-  .avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--navy-light);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: var(--gold);
-    border: 1px solid var(--border);
-  }
+/* FOOTER */
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:10px;}
 
-  /* ── ISSUES LIST ── */
-  .issue-item {
-    display: flex; gap: 12px; align-items: flex-start;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
-  }
-  .issue-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .issue-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-  .issue-dot.red { background: var(--red); }
-  .issue-dot.yellow { background: var(--yellow); }
-  .issue-text { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-  .issue-text strong { color: var(--text); font-weight: 500; }
-  .issue-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+/* CHART BARS */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px;padding:4px 0;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bv{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);}
+.bb{width:100%;border-radius:4px 4px 0 0;}
+.bl{font-size:9px;color:var(--text-muted);text-align:center;}
 
-  /* ── UPLOAD ZONE ── */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    margin-bottom: 24px;
-  }
-  .upload-zone:hover { border-color: var(--gold); background: var(--gold-faint); }
-  .upload-zone .uz-icon { font-size: 36px; margin-bottom: 12px; }
-  .upload-zone .uz-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .upload-zone .uz-sub { font-size: 12px; color: var(--text-dim); }
-  #file-input { display: none; }
-
-  /* ── UPLOAD TABLE ── */
-  #upload-table-wrap { display: none; }
-  #upload-table-wrap .card { margin-bottom: 20px; }
-
-  /* ── CHART BARS (CSS only) ── */
-  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding: 0 4px; }
-  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s ease; }
-  .bar-lbl { font-size: 9px; color: var(--text-muted); text-align: center; }
-  .bar-val { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim); }
-
-  /* ── TIMELINE ── */
-  .timeline { display: flex; flex-direction: column; gap: 0; }
-  .tl-item { display: flex; gap: 14px; padding-bottom: 18px; position: relative; }
-  .tl-item:last-child { padding-bottom: 0; }
-  .tl-left { display: flex; flex-direction: column; align-items: center; }
-  .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
-  .tl-line { flex: 1; width: 1px; background: var(--border); margin: 4px 0; }
-  .tl-item:last-child .tl-line { display: none; }
-  .tl-content {}
-  .tl-title { font-size: 12px; font-weight: 600; color: var(--text); }
-  .tl-desc  { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .tl-date  { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
-
-  /* ── FOOTER ── */
-  .footer {
-    text-align: center; padding: 24px;
-    font-size: 11px; color: var(--text-muted);
-    border-top: 1px solid var(--border);
-    margin-top: 20px;
-  }
-
-  /* ── ANIM ── */
-  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
-  .module.active { animation: fadeIn .25s ease; }
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
-  <div class="topbar-brand">
-    <div class="logo">DTI</div>
+  <div class="brand">
+    <div class="brand-logo">DTI</div>
     <div>
-      <span>Portal DTI</span><br>
-      <small>Grupo INCEPADEM · Lumo Financiera</small>
+      <div class="brand-name">Portal DTI</div>
+      <div class="brand-sub">Grupo INCEPADEM · Lumo Financiera</div>
     </div>
   </div>
   <div class="topbar-right">
-    <span class="date-pill" id="live-date"></span>
-    <button class="upload-btn" onclick="document.getElementById('file-input').click()">⬆ Cargar CSV</button>
+    <span class="date-chip" id="live-date"></span>
+    <button class="btn-upload" onclick="document.getElementById('file-input').click()">⬆ Cargar CSV</button>
     <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)">
   </div>
 </header>
 
-<!-- TABS -->
-<nav class="tabs-bar">
-  <div class="tab active" onclick="switchTab('imc', this)">📊 IMC</div>
-  <div class="tab" onclick="switchTab('desarrollo', this)">💻 Desarrollo</div>
-  <div class="tab" onclick="switchTab('infraestructura', this)">🖥 Infraestructura</div>
-  <div class="tab" onclick="switchTab('carga', this)">📂 Carga de Datos</div>
+<nav class="tabs">
+  <div class="tab active" onclick="switchTab('imc',this)">📊 IMC — Portafolio</div>
+  <div class="tab" onclick="switchTab('desarrollo',this)">💻 Desarrollo</div>
+  <div class="tab" onclick="switchTab('infraestructura',this)">🖥 Infraestructura</div>
+  <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
 
-  <!-- ══════════ IMC ══════════ -->
-  <section class="module active" id="mod-imc">
-    <div class="module-header">
-      <div>
-        <div class="module-title">Módulo <span>IMC</span></div>
-        <div class="module-sub">Implementación · Portafolio de proyectos activos</div>
+<!-- ═══════════ IMC ═══════════ -->
+<section class="module active" id="mod-imc">
+  <div class="mod-header">
+    <div class="mod-title">Módulo <span>IMC</span> — Portafolio de Proyectos</div>
+    <div class="mod-sub">Dirección de Tecnología e Implementación · Actualizado: <span id="imc-updated">—</span></div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-strip" id="imc-kpis">
+    <div class="kpi b"><div class="kpi-lbl">Total proyectos</div><div class="kpi-val b" id="k-total">20</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="k-term">5</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g"><div class="kpi-lbl">A tiempo</div><div class="kpi-val g" id="k-ok">6</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y"><div class="kpi-lbl">En riesgo</div><div class="kpi-val y" id="k-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="k-atr">6</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi p"><div class="kpi-lbl">Stand By</div><div class="kpi-val p" id="k-sb">3</div><div class="kpi-sub">En pausa</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Por cerrar</div><div class="kpi-val gold" id="k-pc">7</div><div class="kpi-sub">Este mes</div></div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterIMC('todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterIMC('Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterIMC('A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterIMC('Atrasado',this)">🔴 Atrasado</button>
+    <button class="filter-btn" onclick="filterIMC('Stand by',this)">⚫ Stand By</button>
+    <input type="text" id="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchIMC(this.value)">
+  </div>
+
+  <!-- Tabla -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Proyectos IMC — Vista detallada</div>
+      <span class="badge b" id="imc-count-badge">20 proyectos</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>TIPO</th>
+            <th>PROYECTO</th>
+            <th>ÁREA</th>
+            <th>INICIO</th>
+            <th>FIN</th>
+            <th>AVANCE REAL vs ESPERADO</th>
+            <th>SEMÁFORO</th>
+          </tr>
+        </thead>
+        <tbody id="imc-tbody"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>A tiempo / Terminado</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Atrasado</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Stand By</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>En riesgo</div>
+      <div class="leg-item" style="margin-left:auto;font-size:10px;color:var(--text-muted)">Barra: <span style="color:var(--text-dim)">█</span> Real &nbsp;|&nbsp; <span style="opacity:.4">█</span> Esperado</div>
+    </div>
+  </div>
+
+  <!-- Distribución por área -->
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Distribución por área</div></div>
+      <div style="padding:18px"><div class="bar-chart" id="area-chart"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Resumen por estatus</div></div>
+      <div style="padding:18px" id="status-summary"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ DESARROLLO ═══════════ -->
+<section class="module" id="mod-desarrollo">
+  <div class="mod-header">
+    <div class="mod-title">Módulo <span>Desarrollo</span></div>
+    <div class="mod-sub">AI HUB · Automatización · Integraciones técnicas</div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b"><div class="kpi-lbl">Sprints activos</div><div class="kpi-val b">4</div><div class="kpi-sub">2 equipos</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Tickets cerrados</div><div class="kpi-val g">34</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi y"><div class="kpi-lbl">En revisión QA</div><div class="kpi-val y">9</div><div class="kpi-sub">Pendientes</div></div>
+    <div class="kpi r"><div class="kpi-lbl">Bugs P1</div><div class="kpi-val r">2</div><div class="kpi-sub">Críticos abiertos</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Releases YTD</div><div class="kpi-val gold">6</div><div class="kpi-sub">3 mayores</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Proyectos de Desarrollo</div><span class="badge g">Activos</span></div>
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>Proyecto</th><th>Líder</th><th>Avance</th><th>Estatus</th></tr></thead>
+          <tbody>
+            <tr><td><div class="p-name">AI HUB — Módulo FLEX</div><div class="p-area">Ricardo Angeles</div></td><td><span style="font-size:11px;color:var(--text-dim)">RA</span></td><td><div class="prog-wrap"><div class="prog-labels"><span>65%</span><span>esp 70%</span></div><div class="prog-track"><div class="prog-esp" style="width:70%"></div><div class="prog-real g" style="width:65%"></div></div></div></td><td><span class="sem tiempo">A tiempo</span></td></tr>
+            <tr><td><div class="p-name">Automatización CFDI — ATEB</div><div class="p-area">Miguel Elizondo</div></td><td><span style="font-size:11px;color:var(--text-dim)">ME</span></td><td><div class="prog-wrap"><div class="prog-labels"><span>80%</span><span>esp 80%</span></div><div class="prog-track"><div class="prog-esp" style="width:80%"></div><div class="prog-real g" style="width:80%"></div></div></div></td><td><span class="sem tiempo">A tiempo</span></td></tr>
+            <tr><td><div class="p-name">Conector sFleet ↔ LUMOSYS</div><div class="p-area">Eduardo Sánchez</div></td><td><span style="font-size:11px;color:var(--text-dim)">ES</span></td><td><div class="prog-wrap"><div class="prog-labels"><span>40%</span><span>esp 60%</span></div><div class="prog-track"><div class="prog-esp" style="width:60%"></div><div class="prog-real r" style="width:40%"></div></div></div></td><td><span class="sem atrasado">Atrasado</span></td></tr>
+            <tr><td><div class="p-name">Dashboard BI Ejecutivo</div><div class="p-area">Alejandro Betancourt</div></td><td><span style="font-size:11px;color:var(--text-dim)">AB</span></td><td><div class="prog-wrap"><div class="prog-labels"><span>90%</span><span>esp 90%</span></div><div class="prog-track"><div class="prog-esp" style="width:90%"></div><div class="prog-real g" style="width:90%"></div></div></div></td><td><span class="sem tiempo">A tiempo</span></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
-
-    <!-- KPIs -->
-    <div class="kpi-row">
-      <div class="kpi green">
-        <div class="kpi-label">Proyectos activos</div>
-        <div class="kpi-value green">12</div>
-        <div class="kpi-sub">↑ 2 vs mes anterior</div>
-      </div>
-      <div class="kpi green">
-        <div class="kpi-label">En tiempo</div>
-        <div class="kpi-value green">7</div>
-        <div class="kpi-sub">58% del portafolio</div>
-      </div>
-      <div class="kpi yellow">
-        <div class="kpi-label">En riesgo</div>
-        <div class="kpi-value yellow">3</div>
-        <div class="kpi-sub">Requieren atención</div>
-      </div>
-      <div class="kpi red">
-        <div class="kpi-label">Con retraso</div>
-        <div class="kpi-value red">2</div>
-        <div class="kpi-sub">Escalados</div>
-      </div>
-      <div class="kpi gold">
-        <div class="kpi-label">Entregados YTD</div>
-        <div class="kpi-value gold">8</div>
-        <div class="kpi-sub">De 10 comprometidos</div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Incidencias abiertas</div><span class="badge r">3 abiertas</span></div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div><div><div style="font-size:12px;font-weight:500;color:var(--text)">Bug P1 — Error 500 en /auth/token FLEX</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px">Asignado RA · Abierto 2d</div></div></div>
+        <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div><div><div style="font-size:12px;font-weight:500;color:var(--text)">Bug P1 — Campos nulos en importación masiva Odoo</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px">Asignado ME · Abierto 1d</div></div></div>
+        <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-top:4px;flex-shrink:0"></div><div><div style="font-size:12px;font-weight:500;color:var(--text)">P2 — Lentitud en reporte mensual >5k registros</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px">En revisión QA · 3d</div></div></div>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Tabla + Issues -->
-    <div class="grid2">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Proyectos IMC</div>
-          <span class="card-badge green">Activos</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <table class="project-table">
-            <thead>
-              <tr>
-                <th>Proyecto</th>
-                <th>Responsable</th>
-                <th>Avance</th>
-                <th>Estatus</th>
-              </tr>
-            </thead>
-            <tbody id="imc-tbody">
-              <tr>
-                <td><div class="project-name">LUMOSYS HUB v2</div><div class="project-id">IMC-001</div></td>
-                <td><span class="avatar">ME</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:72%"></div></div><span class="prog-pct">72%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Módulo Roles y Permisos</div><div class="project-id">IMC-002</div></td>
-                <td><span class="avatar">RA</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill yellow" style="width:45%"></div></div><span class="prog-pct">45%</span></div></td>
-                <td><span class="status amarillo">En riesgo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Integración Odoo ERP</div><div class="project-id">IMC-003</div></td>
-                <td><span class="avatar">ES</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:88%"></div></div><span class="prog-pct">88%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">API Mecánica MX Ph.2</div><div class="project-id">IMC-004</div></td>
-                <td><span class="avatar">AB</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill red" style="width:28%"></div></div><span class="prog-pct">28%</span></div></td>
-                <td><span class="status rojo">Retrasado</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Data Warehouse Azure</div><div class="project-id">IMC-005</div></td>
-                <td><span class="avatar">JM</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:60%"></div></div><span class="prog-pct">60%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Incidencias abiertas</div>
-          <span class="card-badge red">5 abiertas</span>
-        </div>
-        <div class="card-body">
-          <div class="timeline">
-            <div class="tl-item">
-              <div class="tl-left"><div class="tl-dot" style="background:var(--red)"></div><div class="tl-line"></div></div>
-              <div class="tl-content">
-                <div class="tl-title">Error validación de roles en producción</div>
-                <div class="tl-desc">Afecta flujo de aprobación en módulo Permisos</div>
-                <div class="tl-date">2025-06-10 · IMC-002</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-left"><div class="tl-dot" style="background:var(--yellow)"></div><div class="tl-line"></div></div>
-              <div class="tl-content">
-                <div class="tl-title">Timeout en sincronización Odoo ↔ HUB</div>
-                <div class="tl-desc">Lentitud en carga de registros > 10k filas</div>
-                <div class="tl-date">2025-06-11 · IMC-003</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-left"><div class="tl-dot" style="background:var(--yellow)"></div><div class="tl-line"></div></div>
-              <div class="tl-content">
-                <div class="tl-title">Token expirado API QA Mecánica</div>
-                <div class="tl-desc">Renovación pendiente con proveedor</div>
-                <div class="tl-date">2025-06-13 · IMC-004</div>
-              </div>
-            </div>
-          </div>
-        </div>
+<!-- ═══════════ INFRAESTRUCTURA ═══════════ -->
+<section class="module" id="mod-infraestructura">
+  <div class="mod-header">
+    <div class="mod-title">Módulo <span>Infraestructura</span></div>
+    <div class="mod-sub">Servidores · Red · Seguridad · Migración Tlalnepantla</div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi g"><div class="kpi-lbl">Uptime promedio</div><div class="kpi-val g">99.7%</div><div class="kpi-sub">Últimos 30 días</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Servidores activos</div><div class="kpi-val b">18</div><div class="kpi-sub">On-prem + Azure</div></div>
+    <div class="kpi y"><div class="kpi-lbl">Alertas abiertas</div><div class="kpi-val y">3</div><div class="kpi-sub">No críticas</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Backups OK</div><div class="kpi-val g">100%</div><div class="kpi-sub">Hoy 03:00 AM</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Migración oficina</div><div class="kpi-val gold">78%</div><div class="kpi-sub">Tlalnepantla</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Proyectos Infraestructura</div><span class="badge y">3 activos</span></div>
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>Proyecto</th><th>Avance</th><th>Estatus</th></tr></thead>
+          <tbody>
+            <tr><td><div class="p-name">Migración oficinas Tlalnepantla</div></td><td><div class="prog-wrap"><div class="prog-labels"><span>78%</span><span>esp 80%</span></div><div class="prog-track"><div class="prog-esp" style="width:80%"></div><div class="prog-real g" style="width:78%"></div></div></div></td><td><span class="sem tiempo">A tiempo</span></td></tr>
+            <tr><td><div class="p-name">Renovación Firewall / VPN</div></td><td><div class="prog-wrap"><div class="prog-labels"><span>50%</span><span>esp 65%</span></div><div class="prog-track"><div class="prog-esp" style="width:65%"></div><div class="prog-real y" style="width:50%"></div></div></div></td><td><span class="sem riesgo">En riesgo</span></td></tr>
+            <tr><td><div class="p-name">Data Center Azure — Zona 2</div></td><td><div class="prog-wrap"><div class="prog-labels"><span>35%</span><span>esp 35%</span></div><div class="prog-track"><div class="prog-esp" style="width:35%"></div><div class="prog-real b" style="width:35%"></div></div></div></td><td><span class="sem terminado">Planeación</span></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </section>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Estado de servicios</div><span class="badge g">Operacional</span></div>
+      <div style="padding:4px 0" id="services-list"></div>
+    </div>
+  </div>
+</section>
 
-  <!-- ══════════ DESARROLLO ══════════ -->
-  <section class="module" id="mod-desarrollo">
-    <div class="module-header">
-      <div>
-        <div class="module-title">Módulo <span>Desarrollo</span></div>
-        <div class="module-sub">AI HUB · Automatización · Integraciones</div>
+<!-- ═══════════ CARGA ═══════════ -->
+<section class="module" id="mod-carga">
+  <div class="mod-header">
+    <div class="mod-title">Carga de <span>Datos</span></div>
+    <div class="mod-sub">Sube tu CSV y los datos se reflejan automáticamente en el módulo IMC</div>
+  </div>
+  <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+    <div class="uz-icon">📄</div>
+    <div class="uz-title">Arrastra tu archivo CSV aquí o haz clic para seleccionar</div>
+    <div class="uz-sub">Columnas: tipo, nombre, area, inicio, fin, real, esperado, semaforo</div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Formato esperado</div></div>
+    <div style="padding:16px">
+      <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);white-space:pre;display:block;background:rgba(0,0,0,.3);padding:14px;border-radius:8px;overflow-x:auto">tipo,nombre,area,inicio,fin,real,esperado,semaforo
+Mejoras,Administración || AdContent,Administracion,01/04/2026,18/06/2026,99,96,A tiempo
+Proyecto,Cartera || Timbrado,Cartera,07/07/2025,25/02/2026,100,100,Terminado
+Proyecto,DGA || Odoo-General,DGA,07/04/2026,23/09/2026,32,41,Stand by
+Proyecto,Tesoreria || H2H,Tesoreria,07/04/2026,26/08/2026,22,49,Atrasado</code>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-dim)">
+        ℹ️ <strong>semaforo</strong> acepta: <code style="color:var(--green)">A tiempo</code> · <code style="color:var(--blue)">Terminado</code> · <code style="color:var(--red)">Atrasado</code> · <code style="color:var(--purple)">Stand by</code> · <code style="color:var(--yellow)">En riesgo</code>
       </div>
     </div>
-
-    <div class="kpi-row">
-      <div class="kpi blue">
-        <div class="kpi-label">Sprints activos</div>
-        <div class="kpi-value blue">4</div>
-        <div class="kpi-sub">2 equipos</div>
-      </div>
-      <div class="kpi green">
-        <div class="kpi-label">Tickets cerrados</div>
-        <div class="kpi-value green">34</div>
-        <div class="kpi-sub">Este mes</div>
-      </div>
-      <div class="kpi yellow">
-        <div class="kpi-label">En revisión</div>
-        <div class="kpi-value yellow">9</div>
-        <div class="kpi-sub">Pendientes QA</div>
-      </div>
-      <div class="kpi red">
-        <div class="kpi-label">Bugs críticos</div>
-        <div class="kpi-value red">2</div>
-        <div class="kpi-sub">P1 abiertos</div>
-      </div>
-      <div class="kpi gold">
-        <div class="kpi-label">Releases YTD</div>
-        <div class="kpi-value gold">6</div>
-        <div class="kpi-sub">3 mayores</div>
-      </div>
+  </div>
+  <div id="upload-preview" style="display:none">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Datos cargados</div><span class="badge g" id="upload-count-badge">0 filas</span></div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>TIPO</th><th>PROYECTO</th><th>ÁREA</th><th>INICIO</th><th>FIN</th><th>REAL</th><th>ESP.</th><th>SEMÁFORO</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
     </div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Proyectos de Desarrollo</div>
-          <span class="card-badge green">Sprint activo</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <table class="project-table">
-            <thead>
-              <tr><th>Proyecto</th><th>Líder</th><th>Avance</th><th>Estatus</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><div class="project-name">AI HUB — Módulo FLEX</div><div class="project-id">DEV-001</div></td>
-                <td><span class="avatar">RA</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:65%"></div></div><span class="prog-pct">65%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Automatización CFDI</div><div class="project-id">DEV-002</div></td>
-                <td><span class="avatar">ME</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:80%"></div></div><span class="prog-pct">80%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Conector sFleet ↔ LUMOSYS</div><div class="project-id">DEV-003</div></td>
-                <td><span class="avatar">ES</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill yellow" style="width:40%"></div></div><span class="prog-pct">40%</span></div></td>
-                <td><span class="status amarillo">En riesgo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Dashboard BI Ejecutivo</div><div class="project-id">DEV-004</div></td>
-                <td><span class="avatar">AB</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:90%"></div></div><span class="prog-pct">90%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Velocity semanal (tickets)</div>
-        </div>
-        <div class="card-body">
-          <div class="bar-chart" id="dev-chart">
-            <div class="bar-col"><div class="bar-val">6</div><div class="bar" style="height:40px;background:var(--navy-light)"></div><div class="bar-lbl">W1</div></div>
-            <div class="bar-col"><div class="bar-val">9</div><div class="bar" style="height:60px;background:var(--navy-light)"></div><div class="bar-lbl">W2</div></div>
-            <div class="bar-col"><div class="bar-val">7</div><div class="bar" style="height:47px;background:var(--navy-light)"></div><div class="bar-lbl">W3</div></div>
-            <div class="bar-col"><div class="bar-val">12</div><div class="bar" style="height:80px;background:var(--gold)"></div><div class="bar-lbl">W4</div></div>
-          </div>
-          <div style="margin-top:20px">
-            <div class="issue-item">
-              <div class="issue-dot red"></div>
-              <div>
-                <div class="issue-text"><strong>Bug P1:</strong> Error 500 en endpoint /auth/token FLEX</div>
-                <div class="issue-meta">Asignado RA · Abierto 2d</div>
-              </div>
-            </div>
-            <div class="issue-item">
-              <div class="issue-dot red"></div>
-              <div>
-                <div class="issue-text"><strong>Bug P1:</strong> Campos nulos en importación masiva Odoo</div>
-                <div class="issue-meta">Asignado ME · Abierto 1d</div>
-              </div>
-            </div>
-            <div class="issue-item">
-              <div class="issue-dot yellow"></div>
-              <div>
-                <div class="issue-text"><strong>P2:</strong> Lentitud en carga de reporte mensual >5k registros</div>
-                <div class="issue-meta">En revisión QA · 3d</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ INFRAESTRUCTURA ══════════ -->
-  <section class="module" id="mod-infraestructura">
-    <div class="module-header">
-      <div>
-        <div class="module-title">Módulo <span>Infraestructura</span></div>
-        <div class="module-sub">Servidores · Red · Seguridad · Migración</div>
-      </div>
-    </div>
-
-    <div class="kpi-row">
-      <div class="kpi green">
-        <div class="kpi-label">Uptime promedio</div>
-        <div class="kpi-value green">99.7%</div>
-        <div class="kpi-sub">Últimos 30 días</div>
-      </div>
-      <div class="kpi blue">
-        <div class="kpi-label">Servidores activos</div>
-        <div class="kpi-value blue">18</div>
-        <div class="kpi-sub">On-prem + Azure</div>
-      </div>
-      <div class="kpi yellow">
-        <div class="kpi-label">Alertas abiertas</div>
-        <div class="kpi-value yellow">3</div>
-        <div class="kpi-sub">No críticas</div>
-      </div>
-      <div class="kpi green">
-        <div class="kpi-label">Backups OK</div>
-        <div class="kpi-value green">100%</div>
-        <div class="kpi-sub">Hoy 03:00</div>
-      </div>
-      <div class="kpi gold">
-        <div class="kpi-label">Migración oficina</div>
-        <div class="kpi-value gold">78%</div>
-        <div class="kpi-sub">Tlalnepantla</div>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Proyectos de Infraestructura</div>
-          <span class="card-badge yellow">3 activos</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <table class="project-table">
-            <thead>
-              <tr><th>Proyecto</th><th>Responsable</th><th>Avance</th><th>Estatus</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><div class="project-name">Migración oficinas Tlalnepantla</div><div class="project-id">INF-001</div></td>
-                <td><span class="avatar">JM</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:78%"></div></div><span class="prog-pct">78%</span></div></td>
-                <td><span class="status verde">En tiempo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Renovación firewall / VPN</div><div class="project-id">INF-002</div></td>
-                <td><span class="avatar">AB</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill yellow" style="width:50%"></div></div><span class="prog-pct">50%</span></div></td>
-                <td><span class="status amarillo">En riesgo</span></td>
-              </tr>
-              <tr>
-                <td><div class="project-name">Data Center Azure — Zona 2</div><div class="project-id">INF-003</div></td>
-                <td><span class="avatar">ES</span></td>
-                <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill green" style="width:35%"></div></div><span class="prog-pct">35%</span></div></td>
-                <td><span class="status gris">Planeación</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Estado de servicios clave</div>
-          <span class="card-badge green">Operacional</span>
-        </div>
-        <div class="card-body">
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div id="services-list"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ CARGA DE DATOS ══════════ -->
-  <section class="module" id="mod-carga">
-    <div class="module-header">
-      <div>
-        <div class="module-title">Carga de <span>Datos</span></div>
-        <div class="module-sub">Sube un CSV con tus proyectos y se reflejan en el dashboard</div>
-      </div>
-    </div>
-
-    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-      <div class="uz-icon">📄</div>
-      <div class="uz-title">Arrastra tu archivo CSV aquí o haz clic</div>
-      <div class="uz-sub">Columnas esperadas: modulo, id, nombre, responsable, avance, estatus</div>
-    </div>
-
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-header"><div class="card-title">Formato esperado del CSV</div></div>
-      <div class="card-body">
-        <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);white-space:pre-line;display:block;background:var(--surface3);padding:16px;border-radius:8px">modulo,id,nombre,responsable,avance,estatus
-IMC,IMC-001,LUMOSYS HUB v2,Miguel E.,72,verde
-IMC,IMC-002,Módulo Roles,Ricardo A.,45,amarillo
-Desarrollo,DEV-001,AI HUB FLEX,Ricardo A.,65,verde
-Infraestructura,INF-001,Migración oficinas,Josue M.,78,verde</code>
-        <div style="margin-top:12px;font-size:12px;color:var(--text-dim)">
-          ℹ️ <strong>estatus</strong> acepta: <code style="color:var(--green)">verde</code> · <code style="color:var(--yellow)">amarillo</code> · <code style="color:var(--red)">rojo</code> · <code style="color:var(--text-dim)">gris</code>
-        </div>
-      </div>
-    </div>
-
-    <div id="upload-table-wrap">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Datos cargados</div>
-          <span class="card-badge green" id="upload-count">0 filas</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <table class="project-table">
-            <thead>
-              <tr><th>Módulo</th><th>ID</th><th>Proyecto</th><th>Responsable</th><th>Avance</th><th>Estatus</th></tr>
-            </thead>
-            <tbody id="upload-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
+  </div>
+</section>
 
 </main>
-
-<footer class="footer">
-  DTI Portal · Grupo INCEPADEM · Lumo Financiera &nbsp;·&nbsp; Datos de referencia — actualiza cargando tu CSV
-</footer>
+<footer class="footer">DTI Portal · Grupo INCEPADEM · Lumo Financiera &nbsp;·&nbsp; Los datos se cargan desde tu CSV — sin servidor, 100% local</footer>
 
 <script>
-// ── Fecha en vivo ──
-function updateDate() {
-  const d = new Date();
+// ── Datos reales desde Excel ──
+const PROJECTS = [
+  {tipo:"Mejoras",nombre:"Administración || AdContent - Catálogos",area:"Administracion",inicio:"01/04/2026",fin:"18/06/2026",real:99,esp:96,sem:"A tiempo"},
+  {tipo:"Mejoras",nombre:"Capital Humano || BUK Campos Personalizados",area:"Capital Humano",inicio:"26/02/2026",fin:"25/05/2026",real:100,esp:100,sem:"Terminado"},
+  {tipo:"Mejoras",nombre:"Capital Humano || BUK Soporte – Incidencia",area:"Capital Humano",inicio:"02/03/2026",fin:"29/05/2026",real:100,esp:100,sem:"Terminado"},
+  {tipo:"Proyecto",nombre:"Cartera || Cambio de Pac de Timbrado",area:"Cartera",inicio:"07/07/2025",fin:"25/02/2026",real:100,esp:100,sem:"Terminado"},
+  {tipo:"Mejoras",nombre:"Contabilidad || Lumosys-SAE",area:"Contabilidad",inicio:"20/11/2025",fin:"05/02/2026",real:76,esp:100,sem:"Stand by"},
+  {tipo:"Proyecto",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 1)",area:"Contabilidad",inicio:"14/08/2025",fin:"02/06/2026",real:95,esp:100,sem:"Atrasado"},
+  {tipo:"Mejoras",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 2)",area:"Contabilidad",inicio:"21/04/2026",fin:"12/06/2026",real:95,esp:100,sem:"Atrasado"},
+  {tipo:"Proyecto",nombre:"DGA || Odoo-General",area:"DGA",inicio:"07/04/2026",fin:"23/09/2026",real:32,esp:41,sem:"Stand by"},
+  {tipo:"Mejoras",nombre:"DGA || Odoo-Refaccionaria",area:"DGA",inicio:"07/04/2026",fin:"20/07/2026",real:22,esp:66,sem:"Stand by"},
+  {tipo:"Mejoras",nombre:"DGA || Integración de sistemas",area:"DGA",inicio:"01/06/2026",fin:"23/09/2026",real:20,esp:12,sem:"A tiempo"},
+  {tipo:"Mejoras",nombre:"Nexcar || Desarrollo Status",area:"Operaciones",inicio:"05/03/2026",fin:"10/07/2026",real:94,esp:80,sem:"A tiempo"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Data Lab",area:"Operaciones",inicio:"20/01/2026",fin:"22/06/2026",real:97,esp:95,sem:"A tiempo"},
+  {tipo:"Mejoras",nombre:"Operaciones Fleet || Desarrollos",area:"Operaciones",inicio:"08/08/2025",fin:"01/06/2026",real:99,esp:100,sem:"Atrasado"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Lobby Fix",area:"Operaciones",inicio:"11/11/2025",fin:"29/06/2026",real:100,esp:94,sem:"Terminado"},
+  {tipo:"Mejoras",nombre:"Operaciones Fleet || Nueva Instancia",area:"Operaciones",inicio:"08/08/2025",fin:"01/06/2026",real:100,esp:100,sem:"Terminado"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Viewset / Autorola",area:"Operaciones",inicio:"02/03/2026",fin:"14/09/2026",real:40,esp:54,sem:"Atrasado"},
+  {tipo:"Mejoras",nombre:"Talleres || Integración Mecanica Mx - SAE",area:"Talleres",inicio:"20/04/2026",fin:"20/07/2026",real:74,esp:62,sem:"A tiempo"},
+  {tipo:"Mejoras",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"Talleres",inicio:"28/05/2026",fin:"20/07/2026",real:50,esp:34,sem:"A tiempo"},
+  {tipo:"Proyecto",nombre:"Tesoreria || Adcontent H2H",area:"Tesoreria",inicio:"07/04/2026",fin:"26/08/2026",real:22,esp:49,sem:"Atrasado"},
+  {tipo:"Proyecto",nombre:"TRIM || Marketplace || Caddi",area:"Marketplace",inicio:"07/08/2025",fin:"11/05/2026",real:97,esp:100,sem:"Atrasado"},
+];
+
+let activeFilter = 'todos';
+let searchTerm = '';
+let currentProjects = [...PROJECTS];
+
+// Semáforo → clase CSS
+function semClass(s){
+  s = (s||'').toLowerCase().trim();
+  if(s.includes('tiempo')) return 'tiempo';
+  if(s.includes('terminado')) return 'terminado';
+  if(s.includes('atrasado')) return 'atrasado';
+  if(s.includes('stand')) return 'standby';
+  if(s.includes('riesgo')) return 'riesgo';
+  return 'standby';
+}
+function semLabel(s){
+  s=(s||'').toLowerCase().trim();
+  if(s.includes('tiempo')) return 'A tiempo';
+  if(s.includes('terminado')) return 'Terminado';
+  if(s.includes('atrasado')) return 'Atrasado';
+  if(s.includes('stand')) return 'Stand By';
+  if(s.includes('riesgo')) return 'En riesgo';
+  return s;
+}
+function barColor(real,esp){
+  const diff = real - esp;
+  if(real >= 100) return 'b';
+  if(diff >= -5) return 'g';
+  if(diff >= -15) return 'y';
+  return 'r';
+}
+
+function renderIMC(projects){
+  const tbody = document.getElementById('imc-tbody');
+  tbody.innerHTML = projects.map(p => {
+    const sc = semClass(p.sem);
+    const bc = barColor(p.real, p.esp);
+    return `<tr>
+      <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
+      <td><div class="p-name">${p.nombre}</div></td>
+      <td><div class="p-area">${p.area}</div></td>
+      <td><div class="date-cell">${p.inicio}</div></td>
+      <td><div class="date-cell">${p.fin}</div></td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-labels"><span>${p.real}%</span><span>esp ${p.esp}%</span></div>
+          <div class="prog-track">
+            <div class="prog-esp" style="width:${Math.min(p.esp,100)}%"></div>
+            <div class="prog-real ${bc}" style="width:${Math.min(p.real,100)}%"></div>
+          </div>
+        </div>
+      </td>
+      <td><span class="sem ${sc}">${semLabel(p.sem)}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('imc-count-badge').textContent = projects.length + ' proyectos';
+}
+
+function updateKPIs(projects){
+  const counts = {total:projects.length, term:0, ok:0, atr:0, sb:0, riesgo:0, pc:0};
+  projects.forEach(p=>{
+    const s = semClass(p.sem);
+    if(s==='terminado') counts.term++;
+    else if(s==='tiempo') counts.ok++;
+    else if(s==='atrasado') counts.atr++;
+    else if(s==='standby') counts.sb++;
+    else if(s==='riesgo') counts.riesgo++;
+    if(p.real >= 90 && s !== 'terminado') counts.pc++;
+  });
+  document.getElementById('k-total').textContent = counts.total;
+  document.getElementById('k-term').textContent = counts.term;
+  document.getElementById('k-ok').textContent = counts.ok;
+  document.getElementById('k-atr').textContent = counts.atr;
+  document.getElementById('k-sb').textContent = counts.sb;
+  document.getElementById('k-riesgo').textContent = counts.riesgo;
+  document.getElementById('k-pc').textContent = counts.pc;
+}
+
+function buildAreaChart(projects){
+  const areas = {};
+  projects.forEach(p=>{ areas[p.area] = (areas[p.area]||0)+1; });
+  const sorted = Object.entries(areas).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max = Math.max(...sorted.map(x=>x[1]));
+  const colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#C9A84C','#06b6d4','#ec4899'];
+  document.getElementById('area-chart').innerHTML = sorted.map(([area,cnt],i)=>`
+    <div class="bc">
+      <div class="bv">${cnt}</div>
+      <div class="bb" style="height:${Math.round((cnt/max)*72)}px;background:${colors[i%colors.length]}"></div>
+      <div class="bl">${area.split(' ')[0].slice(0,8)}</div>
+    </div>`).join('');
+}
+
+function buildStatusSummary(projects){
+  const statuses = [
+    {key:'terminado',label:'Terminado',color:'var(--blue)'},
+    {key:'tiempo',label:'A tiempo',color:'var(--green)'},
+    {key:'atrasado',label:'Atrasado',color:'var(--red)'},
+    {key:'standby',label:'Stand By',color:'var(--purple)'},
+    {key:'riesgo',label:'En riesgo',color:'var(--yellow)'},
+  ];
+  const total = projects.length;
+  document.getElementById('status-summary').innerHTML = statuses.map(s=>{
+    const cnt = projects.filter(p=>semClass(p.sem)===s.key).length;
+    const pct = total ? Math.round(cnt/total*100) : 0;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+        <span style="color:var(--text);font-weight:500">${s.label}</span>
+        <span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)">${cnt} &nbsp;(${pct}%)</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${s.color};border-radius:3px;transition:width .5s ease"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll(projects){
+  renderIMC(projects);
+  updateKPIs(projects);
+  buildAreaChart(projects);
+  buildStatusSummary(projects);
+}
+
+function getFiltered(){
+  let p = [...currentProjects];
+  if(activeFilter !== 'todos') p = p.filter(x => semClass(x.sem) === semClass(activeFilter));
+  if(searchTerm) p = p.filter(x => x.nombre.toLowerCase().includes(searchTerm) || x.area.toLowerCase().includes(searchTerm));
+  return p;
+}
+
+function filterIMC(val, el){
+  activeFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderAll(getFiltered());
+}
+function searchIMC(val){
+  searchTerm = val.toLowerCase();
+  renderAll(getFiltered());
+}
+
+// Servicios Infra
+const services = [
+  {name:'LUMOSYS HUB',s:'tiempo',up:'99.9%'},
+  {name:'Odoo ERP',s:'tiempo',up:'99.7%'},
+  {name:'Azure Data Wh.',s:'tiempo',up:'100%'},
+  {name:'VPN Corporativa',s:'riesgo',up:'98.1%'},
+  {name:'CCTV / Biométrico',s:'tiempo',up:'99.5%'},
+  {name:'API Mecánica MX',s:'atrasado',up:'95.2%'},
+];
+const svcLabels = {tiempo:'Operacional',riesgo:'Degradado',atrasado:'Fuera de línea'};
+document.getElementById('services-list').innerHTML = services.map(s=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="sem ${s.s}" style="font-size:10px">${svcLabels[s.s]}</span>
+      <span style="font-size:12px;color:var(--text)">${s.name}</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">${s.up}</span>
+  </div>`).join('');
+
+// Fecha
+function updateDate(){
   document.getElementById('live-date').textContent =
-    d.toLocaleDateString('es-MX', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+    new Date().toLocaleDateString('es-MX',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  document.getElementById('imc-updated').textContent =
+    new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
 }
 updateDate();
 
-// ── Servicios infra ──
-const services = [
-  { name:'LUMOSYS HUB',      status:'verde',    uptime:'99.9%' },
-  { name:'Odoo ERP',         status:'verde',    uptime:'99.7%' },
-  { name:'Azure Data Wh.',   status:'verde',    uptime:'100%'  },
-  { name:'VPN Corporativa',  status:'amarillo', uptime:'98.1%' },
-  { name:'CCTV / Biométrico',status:'verde',    uptime:'99.5%' },
-  { name:'API Mecánica MX',  status:'rojo',     uptime:'95.2%' },
-];
-const labels = { verde:'Operacional', amarillo:'Degradado', rojo:'Fuera de línea' };
-document.getElementById('services-list').innerHTML = services.map(s => `
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span class="status ${s.status}">${labels[s.status]}</span>
-      <span style="font-size:13px;color:var(--text)">${s.name}</span>
-    </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">${s.uptime}</span>
-  </div>`).join('');
-
-// ── Tabs ──
-function switchTab(id, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+// Tabs
+function switchTab(id, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('mod-' + id).classList.add('active');
+  document.getElementById('mod-'+id).classList.add('active');
 }
 
-// ── CSV loader ──
-function loadCSV(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// CSV loader
+function loadCSV(e){
+  const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = function(ev){
     const lines = ev.target.result.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    const rows = lines.slice(1).map(l => {
-      const vals = l.split(',').map(v => v.trim());
-      const obj = {};
-      headers.forEach((h,i) => obj[h] = vals[i] || '');
+    const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-záéíóúñ]/gi,''));
+    const rows = lines.slice(1).map(l=>{
+      const vals = l.split(',').map(v=>v.trim());
+      const obj={};
+      headers.forEach((h,i)=>obj[h]=vals[i]||'');
       return obj;
+    }).filter(r=>r[headers[0]]);
+
+    // Mapear columnas flexiblemente
+    currentProjects = rows.map(r=>{
+      const keys = Object.keys(r);
+      return {
+        tipo: r.tipo||r[keys[0]]||'Proyecto',
+        nombre: r.nombre||r.proyecto||r[keys[1]]||'Sin nombre',
+        area: r.area||r[keys[2]]||'—',
+        inicio: r.inicio||r[keys[3]]||'—',
+        fin: r.fin||r[keys[4]]||'—',
+        real: parseInt(r.real||r[keys[5]])||0,
+        esp: parseInt(r.esperado||r.esp||r[keys[6]])||0,
+        sem: r.semaforo||r.sem||r.estatus||r[keys[7]]||'Stand by',
+      };
     });
 
-    // Render tabla de carga
-    const tbody = document.getElementById('upload-tbody');
-    tbody.innerHTML = rows.map(r => `
+    // Preview en tab carga
+    document.getElementById('upload-count-badge').textContent = currentProjects.length + ' filas';
+    document.getElementById('upload-tbody').innerHTML = currentProjects.map(p=>`
       <tr>
-        <td><span style="font-size:11px;font-weight:600;color:var(--text-dim)">${r.modulo||''}</span></td>
-        <td><span class="project-id">${r.id||''}</span></td>
-        <td><div class="project-name">${r.nombre||''}</div></td>
-        <td><span class="avatar">${(r.responsable||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</span></td>
-        <td><div class="prog-wrap">
-          <div class="prog-bar-bg"><div class="prog-bar-fill ${avColor(r.estatus)}" style="width:${r.avance||0}%"></div></div>
-          <span class="prog-pct">${r.avance||0}%</span>
-        </div></td>
-        <td><span class="status ${r.estatus||'gris'}">${labelEst(r.estatus)}</span></td>
+        <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
+        <td><div class="p-name">${p.nombre}</div></td>
+        <td><div class="p-area">${p.area}</div></td>
+        <td><div class="date-cell">${p.inicio}</div></td>
+        <td><div class="date-cell">${p.fin}</div></td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green)">${p.real}%</span></td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">${p.esp}%</span></td>
+        <td><span class="sem ${semClass(p.sem)}">${semLabel(p.sem)}</span></td>
       </tr>`).join('');
+    document.getElementById('upload-preview').style.display = 'block';
 
-    document.getElementById('upload-count').textContent = rows.length + ' filas';
-    document.getElementById('upload-table-wrap').style.display = 'block';
+    // Actualizar módulo IMC
+    activeFilter = 'todos';
+    searchTerm = '';
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn')[0].classList.add('active');
+    renderAll(currentProjects);
 
-    // Inyectar IMC dinámico
-    const imcRows = rows.filter(r => r.modulo && r.modulo.toUpperCase() === 'IMC');
-    if (imcRows.length) {
-      document.getElementById('imc-tbody').innerHTML = imcRows.map(r => `
-        <tr>
-          <td><div class="project-name">${r.nombre}</div><div class="project-id">${r.id}</div></td>
-          <td><span class="avatar">${(r.responsable||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</span></td>
-          <td><div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar-fill ${avColor(r.estatus)}" style="width:${r.avance||0}%"></div></div><span class="prog-pct">${r.avance||0}%</span></div></td>
-          <td><span class="status ${r.estatus||'gris'}">${labelEst(r.estatus)}</span></td>
-        </tr>`).join('');
-    }
-
-    // Ir a pestaña Carga
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-    document.querySelectorAll('.tab')[3].classList.add('active');
-    document.getElementById('mod-carga').classList.add('active');
+    // Ir al tab IMC
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('mod-imc').classList.add('active');
   };
-  reader.readAsText(file);
+  reader.readAsText(file,'UTF-8');
 }
 
-function avColor(est) {
-  if (est === 'verde') return 'green';
-  if (est === 'amarillo') return 'yellow';
-  if (est === 'rojo') return 'red';
-  return 'green';
-}
-function labelEst(est) {
-  if (est === 'verde') return 'En tiempo';
-  if (est === 'amarillo') return 'En riesgo';
-  if (est === 'rojo') return 'Retrasado';
-  return 'Sin definir';
-}
+// Render inicial con datos reales
+renderAll(currentProjects);
 </script>
 </body>
 </html>
