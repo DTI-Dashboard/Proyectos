@@ -561,13 +561,13 @@ async function exportPPTX(tab){
   const s1=pres.addSlide();
   s1.addImage({data:BG_PORTADA, x:0, y:0, w:13.33, h:7.5});
   s1.addText(DEPT_NAMES[tab],{x:1,y:4.1,w:11.33,h:1.0,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s1.addText('Reporte de Avance — '+today,{x:1,y:5.0,w:11.33,h:0.5,fontSize:12,fontFace:'Calibri',color:'888888',align:'center'});
+  s1.addText(today,{x:1,y:5.1,w:11.33,h:0.5,fontSize:13,fontFace:'Calibri',color:'888888',align:'center'});
 
   // Slide 2 — KPIs con fondo institucional
   const s2=pres.addSlide();
   s2.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
   s2.addText(DEPT_NAMES[tab].toUpperCase(),{x:0.3,y:0.48,w:12.7,h:0.55,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s2.addText('Cierre semanal — '+today,{x:0.3,y:0.93,w:12.7,h:0.35,fontSize:11,fontFace:'Calibri',color:'555555',align:'center'});
+  s2.addText(today,{x:0.3,y:0.93,w:12.7,h:0.35,fontSize:11,fontFace:'Calibri',color:'555555',align:'center'});
   const kd=[
     {l:'Total proyectos',v:kpis.total,c:'1A2340'},{l:'Terminados',v:kpis.term,c:'3b82f6'},
     {l:'A tiempo',v:kpis.ok,c:'22c55e'},{l:'En riesgo',v:kpis.riesgo,c:'f59e0b'},
@@ -584,17 +584,16 @@ async function exportPPTX(tab){
   // Slide 3 — Tabla con fondo institucional
   const s3=pres.addSlide();
   s3.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s3.addText('GRUPO INCEPADEM',{x:0.3,y:0.43,w:4,h:0.4,fontSize:10,fontFace:'Calibri',color:'1A2340',bold:true,align:'left'});
-  s3.addText('ÁREA DE '+DEPT_NAMES[tab].toUpperCase(),{x:0.3,y:0.43,w:12.73,h:0.4,fontSize:14,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s3.addText('Cierre semanal — '+today,{x:0.3,y:0.76,w:12.73,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
-  s3.addShape(R,{x:0.3,y:1.05,w:12.73,h:0.32,fill:{color:'1A2340'},line:{color:'1A1A2E'}});
+  s3.addText('ÁREA DE '+DEPT_NAMES[tab].toUpperCase(),{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:14,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s3.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
+  s3.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
   const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
   const cW=[0.90,3.75,1.40,0.90,0.90,0.95,0.95,2.33];
   ['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
-    s3.addText(h,{x:cX[i]+0.03,y:1.07,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
+    s3.addText(h,{x:cX[i]+0.03,y:1.52,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
   const sc2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
   projects.slice(0,18).forEach((p,ri)=>{
-    const ry=1.37+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
+    const ry=1.82+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
     s3.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
     [p.tipo,p.nombre.slice(0,42),p.area.slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
       const isSem=ci===7||ci===5;
