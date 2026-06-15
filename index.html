@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DTI Dashboard — Grupo INCEPADEM</title>
+<title>Portal DTI — Grupo INCEPADEM</title>
 <!-- SheetJS para exportar Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -133,10 +133,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 
 <header class="topbar">
   <div class="brand">
-    <div class="brand-logo">DTI</div>
-    <div>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAkCAYAAADrXDbKAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAK0ElEQVR42u2ae3SU5Z3HP8/7zi0JIYGQQElAChJABeQiQqG6KjRaL7TCAsJWV0pRWW23ezm77mpX2rU99njqaa3tWpfTYquiVcC6rJdaLnIVL8ASExIwEHIhjEkmk8nc3ve57B8zGYIJSEPtOdL5nTPnzDzv+3vmme/ze76/3/f3jjDGGLL2ZzUrC0EW9CzoWcuCngU9a1nQs6Bn7ezm6b+rSb/EGS4bEOLM1y9465Y/vX+/+LOJI6Pp+UXiL3hDPP3bQYGJHoGuahBW7501IJXBHnwlVqA4dU1Yf1EQG9kJKoHwl/RiBE+/AE+2QMsGBKrPtCCVxo3HSISOMmDCXSBsoif2oqSDVhosHwVl07Fs/9kp6jOJtgZhoTtr0LHjeMsW9KDa8+H09h0IDNgDwKgeUQ5aG6TWaCufZKQZGreRP3IeTlcLrTWvoMgh3hVm4MhZXDz77zDGpKnmwjKpQLoG7/lVLzpNKx8iYnVgB8C46VkCYPkxwo80XpTjIF0HjZ9w/VbcWJBBF9+MJ380SgvsQBHBI7toPbYXISyM0ecWRMYgpUIqhZQSYwxKaaSU6Zc6dU96TOlTcyulUEr1CBCd8ZNSotP39ho3ppdv93xSqj7XqqTEddzz5XSBMQpCO0/xuHYxQ29G5I4GNMIIvIBs3oLb+BaaADIRJVi9kdJpKykqv5Hwjp+ihR+DhyNvP0th6URsT+AUdfXI690noPs0CCHweOzTVmXbolfsfPyebn/btk8rrCzLwrJO99Va9zlOxjc1lzEmM1/fka5xzg90nfphkUpEshnsPFBxTO4oxIAJGb432kVYPgKf+yu6Wg7gRkMYK0C4cR8Dhu+nYPgU8kouo7X+PbBz6Qgepe7dDZTPWorRGmGJ06imm+27xxKJBL9Ys5bde/YyYkQZ93zjTnbsfps9b7+DKxU+r5dVdy3nxQ2/o6UliMfj4bbFC5h15RUAPPrY43i9Xr51790AvPHmFv7nf1/DlZLCggJuX7aECePL2blrD8+/uBGlFR2hDu5euZzDRz4kFk9w790rMhvz0sZXOFhZxYP3/xO2bWcCRgBKqkykfzxrnSO9WBgVh449IHzpZCFg0OxT29JZhWzagAEsTw55I+bhJuNIqdEaGve/iJJJyqYsRuPBScaxPDkc3rueSHsDwrIAQ2trGx3hME3NzQigKxqlrT2ElJIb5y/iez94lGHDhrFl63a27djF87/dyMZXXmVkWRklJcVEurp46D9/SKijg85IhGvn3cTByioaGpv45397iH994LvUHvkQgDc3b+Xxn/6CwYMGUX2olukzr+L9/QeorjnM44/9mJLiYspKS/H7fDy77iXuu2cVlR9UAxD8qJWvr7yPJ/5rDa7bO6KlVLiu7Gekp7MxkUqEG0olTxXFDJyMCJSm9tFoVPtekqE6zMDL8RWMI2/YVHz1uwmfqMRYAbpaj9F2/F1KRs9m6Li5HN6zDttfQDwWYv+b/82cv34IIQTvvPc+oy4aydPPrOM7//4vtLa28VFrK+3tHWz+/RZqavZRPvbizPLWvbCBK6ZNYfnfLmPY0BJa29rxeb2sfvB+yseO4elfr6Oq+hC1R+q45cbrMcbw1Jq1/PD7q/F4PIy/ZBwPr34AgBtuXsgD//F9liz6KkNKR/C1pYsYUlTEwIH55ObmkF84hIcf+RHPPf0UP3niSVzHYezYMZlccDrfa5wzgP5HJtKetbjOvFfhg8iuRhR+osdeQ6skAEXj56OMhXRdlBF4AwVgDKOmfIUBRZ8nEYtg+/Ko/2A7zR++n4oC20YIi+nTprB123a8Xi9+n59DNYcpKSulfOzFOI6TWVUg4Gfb9l3MurqCHz/xJB6Pjd/v4657/4GZX5zHqJFlTJt6Ob9c+wy3L1vC4oVf5bkX1qc53kMykSQeT6C15gtfmEn98QZi0RidnRGuv2URy+5YiVKajo4wX//GnVQfquXZ519i06tv8PffWkU0Gs1w/emcfuZE+smgd3Ns/kSMZzBoB+wAInIQE00dUxU/iXQl2nhIhBuJNLwFCHIKRjB49DV0hZopLJ3KoOGXYQCvfwCWbwCu66CUwXUcXCee+jpLEI/HGTtmNMM/N4zNW98iNzeHqZdPIthQz7btO/H5fLS1h4jFYiQSSb5cMZf62gN8+757iMcT2LaHSyaMY8WdX2PPzj/Q0NjE0frjPPb4z/nZk2tobmqm8oNqCgrysW2bnJxAiqPXv8zUKZPIz8+nsGAgtQf38sqG57Bti3giweSJl3LfqhUsW7KQ6665ihsq5hLpipKTEziVi9LgK6lxHHm6bjz3SBepysTOhcFzwDjpMRsZ3ApGYRdOQmob6SbRwk+o7g840SAYw7AJX8ZfeBEjJt2cqUgaq7dyou49LDuXWKSDorJLKCufAYDrSgyG1rY2Jk+aSPOJFg7VHOaLc2ayaOltVNy0kC/deCvjJ85g06tvkJMTYMPvNnHLgqXcuvh2jh2rJ9TaxoKv3MSK5bdTUjyE+x/4LvOuvZrn1j7Fut+s4coZ01n98CNIV3Kkqor5C5Zx2dTZdEUi/OB73yEaixFsPMb8hcu4eu5NvP77zQigqamZO/7mNubfuoRvf/MeOjsjRKMxqmtqORkMZqqaVKQrnAzXm/72XkzKtfkFROI4yvhJRkPYQ6/DP3QOkWObiNRvQYkc4l3t5BRPZsQVK1NVR1cr/rwihBAo6bB57TcJBesBL5FwOxXLf5QC3RiONzaRkxMgmUxSVlrKyZNBwuFOystTPL7p1TeorKxi0qRLmXfdNezYuYcjdUeRrsT22NxQMZftO3Yxa+YMykpL0Vrx2/UvM3PGdMaM/jwA1YdqqaquYczoi9h/4CCJpEPR4MHccP1cBuTlcaimlt173kEqRbQrSsWXrqWp6QTFxUOYPOmyDCL1xxt4f98BZlwxjby8XAoLCtBaYVk2te+8TLD+/5iz8EGMVgjL7h/o3S0A0/AMrjQ4SQdXQcGlqxC2nxN7HyUZ7UBKQTwaZsTMuxhUOhUhLLSWCGFz+N0N7Hv9CWzfQDpDH1E6fjYVdzyCMRohPt1Oc6akO4sCPheFrLXO6IbedUcK4Krd62k5eoBrl67uBfofJY4wGuEfhsyfiGzZhSYPmQgRPvY6g8ctJn9UBZH3fpUWPzZ1u3+J8L6E67pIVyKlJtzejOXJwUkmwfIybd6KPoHpBqcnUMYYtNaniR2ldFrRiozgUUpj21YGFKUUQoiM4Ok5R6ryOOWbGjNorVL5LC2CuoHuKZy619P9WQiRqcmV0udRMvZKqga7aA4qWInT2YJU0HV0C77C8QwcPoO2uh2ET1SjhR/pJEh2NuA4Lq4rcVyJ0gLwEI2cZNyVtzJk+Ni0MLL6jMKen3uqylNC0fpERfpxn55qs5fyBCxLYFmes85xpvV0m+s4xGOxPsVRP/rpqSlkPEg8uA+tNK6TwM4tZtDIOcRC9VS9tpqkk0S6Bsd1cR0XJw2660gSsSi2L5+F//gb8gqKP/HIf6aajOkTFAmdJB4NU1JW3ouy/rQPMdJNjY+O7uJEzRaUMkg31TRypUpJY5mimYlX3caI8hkXbJfxrITRf9BNpiZNxb7I0M8598c/1me+oB5imNTjzL6Kg0/lcZ0xOrUJfRJTpvj81KuVCzDSs9Zfy/4FIwt6FvSsZUHPgp61LOifLft/2Z+QEP3etLEAAAAASUVORK5CYII=" alt="INCEPADEM" style="height:34px;width:auto;object-fit:contain;">
+    <div style="border-left:1px solid var(--gold);padding-left:12px;margin-left:4px;">
       <div class="brand-name">Portal DTI</div>
-      <div class="brand-sub">Grupo INCEPADEM</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -147,9 +146,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 </header>
 
 <nav class="tabs">
-  <div class="tab active" onclick="switchTab('imc',this)">📊 IMC</div>
-  <div class="tab" onclick="switchTab('desarrollo',this)">💻 Desarrollo</div>
-  <div class="tab" onclick="switchTab('infraestructura',this)">🖥 Soporte e Infraestructura</div>
+  <div class="tab active" onclick="switchTab('imc',this)">🗂️ IMC</div>
+  <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
+  <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
   <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
 </nav>
 
@@ -159,8 +158,8 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 <section class="module active" id="mod-imc">
   <div class="mod-header">
     <div class="mod-header-left">
-      <div class="mod-title">Módulo <span>IMC</span> — Portafolio de Proyectos</div>
-      <div class="mod-sub">Dirección de Tecnología e Implementación · Actualizado: <span id="imc-updated">—</span></div>
+      <div class="mod-title">Módulo <span>IMC</span></div>
+      
     </div>
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar PowerPoint</button>
@@ -207,7 +206,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="mod-header">
     <div class="mod-header-left">
       <div class="mod-title">Módulo <span>Desarrollo</span></div>
-      <div class="mod-sub">AI HUB · Automatización · Integraciones técnicas · Actualizado: <span id="dev-updated">—</span></div>
+      
     </div>
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar PowerPoint</button>
@@ -254,7 +253,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="mod-header">
     <div class="mod-header-left">
       <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
-      <div class="mod-sub">Servidores · Red · Seguridad · Migración · Actualizado: <span id="inf-updated">—</span></div>
+      
     </div>
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar PowerPoint</button>
@@ -697,7 +696,7 @@ function updateDate(){
   const d=new Date().toLocaleDateString('es-MX',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   document.getElementById('live-date').textContent=d;
   const d2=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
-  ['imc-updated','dev-updated','inf-updated'].forEach(id=>document.getElementById(id).textContent=d2);
+
 }
 updateDate();
 renderTab('imc');
