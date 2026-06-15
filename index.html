@@ -505,9 +505,10 @@ function calcKPIs(projects){
 // ─── RENDER ───
 function buildRow(p,tab,ri){
   const sc=semClass(p.sem),bc=barColor(p.real,p.esp);
+  const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(allProjects[tab][ri])">${p.nombre}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
