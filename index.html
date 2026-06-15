@@ -127,6 +127,25 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#1c2535;border:1px solid rgba(255,255,255,0.12);border-radius:12px;width:90%;max-width:540px;overflow:hidden;font-family:'Inter',sans-serif;animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.modal-header{background:#1A2340;border-bottom:2px solid #C9A84C;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-tipo{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.modal-nombre{font-size:15px;font-weight:600;color:#fff;line-height:1.3;}
+.modal-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:12px;transition:.2s;}
+.modal-close:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.modal-section-label{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.modal-desc{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6;background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-field{background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;}
+.modal-field-label{font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.modal-field-value{font-size:13px;color:#fff;font-weight:500;}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+.modal-hint{font-size:11px;color:rgba(255,255,255,0.25);}
 </style>
 </head>
 <body>
@@ -182,6 +201,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('imc','A tiempo',this)">🟢 A tiempo</button>
     <button class="filter-btn" onclick="filterTab('imc','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('imc','Stand by',this)">⚫ Stand By</button>
+    <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('imc',this.value)">
   </div>
   <div class="card">
@@ -229,6 +249,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('dev','A tiempo',this)">🟢 A tiempo</button>
     <button class="filter-btn" onclick="filterTab('dev','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('dev','Stand by',this)">⚫ Stand By</button>
+    <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('dev',this.value)">
   </div>
   <div class="card">
@@ -276,6 +297,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('inf','A tiempo',this)">🟢 A tiempo</button>
     <button class="filter-btn" onclick="filterTab('inf','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('inf','Stand by',this)">⚫ Stand By</button>
+    <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('inf',this.value)">
   </div>
   <div class="card">
@@ -332,12 +354,65 @@ Proyecto,Tesoreria || H2H,Tesoreria,07/04/2026,26/08/2026,22,49,Atrasado</code>
     </div>
   </div>
 </section>
+
+<div class="modal-overlay" id="proj-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-tipo" id="m-tipo"></div>
+        <div class="modal-nombre" id="m-nombre"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="m-desc-wrap">
+        <div class="modal-section-label">Descripción</div>
+        <div class="modal-desc" id="m-desc">—</div>
+      </div>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Responsable</div>
+          <div class="modal-field-value" id="m-resp">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Usuario solicitante</div>
+          <div class="modal-field-value" id="m-user">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Área</div>
+          <div class="modal-field-value" id="m-area">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Inicio — Fin</div>
+          <div class="modal-field-value" id="m-fechas" style="font-family:'JetBrains Mono',monospace;font-size:12px;">—</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="modal-section-label" style="margin:0">Avance</div>
+          <div style="display:flex;gap:14px;font-size:11px;font-family:'JetBrains Mono',monospace;">
+            <span id="m-real-lbl" style="font-weight:700;"></span>
+            <span id="m-esp-lbl" style="color:rgba(255,255,255,0.4);"></span>
+          </div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:4px;position:relative;overflow:hidden;">
+          <div id="m-bar-esp" style="position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,0.18);border-radius:4px;transition:width .4s;"></div>
+          <div id="m-bar-real" style="position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .4s;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="m-sem"></span>
+        <span class="modal-hint">Clic fuera para cerrar</span>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
 
 <script>
 // ─── DATOS ───
 const IMC_DATA=[
-  {tipo:"Mejoras",nombre:"Administración || AdContent - Catálogos",area:"Administracion",inicio:"01/04/2026",fin:"18/06/2026",real:99,esp:96,sem:"A tiempo"},
+  {tipo:"Mejoras",nombre:"Administración || AdContent - Catálogos",area:"Administracion",inicio:"01/04/2026",fin:"18/06/2026",real:99,esp:96,sem:"A tiempo",responsable:"",solicitante:"",descripcion:""},
   {tipo:"Mejoras",nombre:"Capital Humano || BUK Campos Personalizados",area:"Capital Humano",inicio:"26/02/2026",fin:"25/05/2026",real:100,esp:100,sem:"Terminado"},
   {tipo:"Mejoras",nombre:"Capital Humano || BUK Soporte – Incidencia",area:"Capital Humano",inicio:"02/03/2026",fin:"29/05/2026",real:100,esp:100,sem:"Terminado"},
   {tipo:"Proyecto",nombre:"Cartera || Cambio de Pac de Timbrado",area:"Cartera",inicio:"07/07/2025",fin:"25/02/2026",real:100,esp:100,sem:"Terminado"},
@@ -421,11 +496,11 @@ function calcKPIs(projects){
 }
 
 // ─── RENDER ───
-function buildRow(p){
+function buildRow(p,tab,ri){
   const sc=semClass(p.sem),bc=barColor(p.real,p.esp);
   return `<tr>
     <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
-    <td><div class="p-name">${p.nombre}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(allProjects[tab][ri])">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -493,6 +568,7 @@ function getFiltered(tab){
   return p;
 }
 
+const allProjects={};
 function renderTab(tab){
   const cfg={
     imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary'},
@@ -500,7 +576,8 @@ function renderTab(tab){
     inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary'},
   }[tab];
   const p=getFiltered(tab);
-  document.getElementById(cfg.tbody).innerHTML=p.map(buildRow).join('');
+  allProjects[tab]=p;
+  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');
   document.getElementById(cfg.count).textContent=p.length+' proyectos';
   buildKPIsDom(p,cfg.kpfx);
   buildAreaChart(p,cfg.area);
@@ -666,6 +743,9 @@ function loadCSV(e){
       real:parseInt(r.real)||0,
       esp:parseInt(r.esperado||r.esp)||0,
       sem:r.semaforo||r.sem||r.estatus||'Stand by',
+      responsable:r.responsable||'',
+      solicitante:r.solicitante||r['usuario solicitante']||'',
+      descripcion:r.descripcion||r.descripción||'',
     }));
     state.imc.data=mapped;
     state.imc.filter='todos'; state.imc.search='';
@@ -673,7 +753,7 @@ function loadCSV(e){
     document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
       <tr>
         <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
-        <td><div class="p-name">${p.nombre}</div></td>
+        <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(allProjects[tab][ri])">${p.nombre}</div></td>
         <td><div class="p-area">${p.area}</div></td>
         <td><div class="date-cell">${p.inicio}</div></td>
         <td><div class="date-cell">${p.fin}</div></td>
@@ -813,6 +893,33 @@ var PptxGenJS=(S=>{function p(e,l,s,n){return new(s=s||Promise)(function(a,A){fu
 		<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/>
 		</Relationships>`),this.slideLayouts.forEach(e=>{this.createChartMediaRels(e,l,o)}),this.slides.forEach(e=>{this.createChartMediaRels(e,l,o)}),this.createChartMediaRels(this.masterSlide,l,o),yield Promise.all(o).then(()=>p(this,void 0,void 0,function*(){return"STREAM"===s.outputType?yield l.generateAsync({type:"nodebuffer",compression:s.compression?"DEFLATE":"STORE"}):s.outputType?yield l.generateAsync({type:s.outputType}):yield l.generateAsync({type:"blob",compression:s.compression?"DEFLATE":"STORE"})}))}))});this.LAYOUTS={LAYOUT_4x3:{name:"screen4x3",width:9144e3,height:6858e3},LAYOUT_16x9:{name:"screen16x9",width:9144e3,height:5143500},LAYOUT_16x10:{name:"screen16x10",width:9144e3,height:5715e3},LAYOUT_WIDE:{name:"custom",width:12192e3,height:6858e3}},this._author="PptxGenJS",this._company="PptxGenJS",this._revision="1",this._subject="PptxGenJS Presentation",this._title="PptxGenJS Presentation",this._presLayout={name:this.LAYOUTS[o].name,_sizeW:this.LAYOUTS[o].width,_sizeH:this.LAYOUTS[o].height,width:this.LAYOUTS[o].width,height:this.LAYOUTS[o].height},this._rtlMode=!1,this._slideLayouts=[{_margin:y,_name:A,_presLayout:this._presLayout,_rels:[],_relsChart:[],_relsMedia:[],_slide:null,_slideNum:1e3,_slideNumberProps:null,_slideObjects:[]}],this._slides=[],this._sections=[],this._masterSlide={addChart:null,addImage:null,addMedia:null,addNotes:null,addShape:null,addTable:null,addText:null,_name:null,_presLayout:this._presLayout,_rId:null,_rels:[],_relsChart:[],_relsMedia:[],_slideId:null,_slideLayout:null,_slideNum:null,_slideNumberProps:null,_slideObjects:[]}}stream(e){return p(this,void 0,void 0,function*(){return yield this.exportPresentation({compression:null==e?void 0:e.compression,outputType:"STREAM"})})}write(a){return p(this,void 0,void 0,function*(){var e="object"==typeof a&&null!=a&&a.outputType?a.outputType:a||null,A=!("object"!=typeof a||null==a||!a.compression)&&a.compression;return yield this.exportPresentation({compression:A,outputType:e})})}writeFile(t){return p(this,void 0,void 0,function*(){var e="undefined"!=typeof process&&!(null==(e=process.versions)||!e.node)&&"node"===(null==(e=process.release)?void 0:e.name),{fileName:A="Presentation.pptx",compression:a=!1}=("string"==typeof t&&(console.warn("[WARNING] writeFile(string) is deprecated - pass { fileName } instead."),t={fileName:t}),t),A=A.toLowerCase().endsWith(".pptx")?A:A+".pptx",a=yield this.exportPresentation({compression:a,outputType:e?"nodebuffer":null});return e?(e=(yield import("node:fs")).promises,e=e.writeFile,yield e(A,a)):yield this.writeFileToBrowser(A,a),A})}addSection(e){e?e.title||console.warn("addSection requires a title"):console.warn("addSection requires an argument");var A={_type:"user",_slides:[],title:e.title};e.order?this.sections.splice(e.order,0,A):this._sections.push(A)}addSlide(A){let a="string"==typeof A?A:null!=A&&A.masterName?A.masterName:"",e={_name:this.LAYOUTS[o].name,_presLayout:this.presLayout,_rels:[],_relsChart:[],_relsMedia:[],_slideNum:this.slides.length+1};a&&(r=this.slideLayouts.filter(e=>e._name===a)[0])&&(e=r);var t,r=new me({addSlide:this.addNewSlide,getSlide:this.getSlide,presLayout:this.presLayout,setSlideNum:this.setSlideNumber,slideId:this.slides.length+256,slideRId:this.slides.length+2,slideNumber:this.slides.length+1,slideLayout:e});return this._slides.push(r),null!=A&&A.sectionTitle?(t=this.sections.filter(e=>e.title===A.sectionTitle)[0])?t._slides.push(r):console.warn(`addSlide: unable to find section with title: "${A.sectionTitle}"`):this.sections&&0<this.sections.length&&(null==A||!A.sectionTitle)&&("default"===(t=this._sections[this.sections.length-1])._type?t._slides.push(r):this._sections.push({title:"Default-"+(this.sections.filter(e=>"default"===e._type).length+1),_type:"default",_slides:[r]})),r}defineLayout(e){e?e.name?e.width?e.height?"number"!=typeof e.height?console.warn("defineLayout `height` should be a number (inches)"):"number"!=typeof e.width&&console.warn("defineLayout `width` should be a number (inches)"):console.warn("defineLayout requires `height`"):console.warn("defineLayout requires `width`"):console.warn("defineLayout requires `name`"):console.warn("defineLayout requires `{name, width, height}`"),this.LAYOUTS[e.name]={name:e.name,_sizeW:Math.round(Number(e.width)*I),_sizeH:Math.round(Number(e.height)*I),width:Math.round(Number(e.width)*I),height:Math.round(Number(e.height)*I)}}defineSlideMaster(e){e=JSON.parse(JSON.stringify(e));if(!e.title)throw new Error("defineSlideMaster() object argument requires a `title` value. (https://gitbrent.github.io/PptxGenJS/docs/masters.html)");var A,r,a={_margin:e.margin||y,_name:e.title,_presLayout:this.presLayout,_rels:[],_relsChart:[],_relsMedia:[],_slide:null,_slideNum:1e3+this.slideLayouts.length+1,_slideNumberProps:e.slideNumber||null,_slideObjects:[],background:e.background||null,bkgd:e.bkgd||null};r=a,(A=e).bkgd&&(r.bkgd=A.bkgd),A.objects&&Array.isArray(A.objects)&&0<A.objects.length&&A.objects.forEach((e,A)=>{var a=Object.keys(e)[0],t=r;C[a]&&"chart"===a?ce(t,e[a].type,e[a].data,e[a].opts):C[a]&&"image"===a?de(t,e[a]):C[a]&&"line"===a?he(t,v.LINE,e[a]):C[a]&&"rect"===a?he(t,v.RECTANGLE,e[a]):C[a]&&"text"===a?fe(t,[{text:e[a].text}],e[a].options,!1):C[a]&&"placeholder"===a&&(e[a].options.placeholder=e[a].options.name,delete e[a].options.name,e[a].options._placeholderType=e[a].options.type,delete e[a].options.type,e[a].options._placeholderIdx=100+A,fe(t,[{text:e[a].text}],e[a].options,!0))}),A.slideNumber&&"object"==typeof A.slideNumber&&(r._slideNumberProps=A.slideNumber),this.slideLayouts.push(a),(e.background||e.bkgd)&&ge(e.background,a),a._slideNumberProps&&!this.masterSlide._slideNumberProps&&(this.masterSlide._slideNumberProps=a._slideNumberProps)}tableToSlides(A,c={}){{var[d,h,A={},f]=[this,A,c,null!=c&&c.masterSlideName?this.slideLayouts.filter(e=>e._name===c.masterSlideName)[0]:null];let t=A||{},r=void(t.slideMargin=t.slideMargin||0===t.slideMargin?t.slideMargin:.5,t.w||d.presLayout.width),o=[],l=[],s=[],n=[],a=[],i=[.5,.5,.5,.5],p=0;if(!document.getElementById(h))throw new Error('tableToSlides: Table ID "'+h+'" does not exist!');null!=f&&f._margin?(Array.isArray(f._margin)?i=f._margin:isNaN(f._margin)||(i=[f._margin,f._margin,f._margin,f._margin]),t.slideMargin=i):null!=t&&t.slideMargin&&(Array.isArray(t.slideMargin)?i=t.slideMargin:isNaN(t.slideMargin)||(i=[t.slideMargin,t.slideMargin,t.slideMargin,t.slideMargin])),r=(t.w?z(t.w):d.presLayout.width)-z(i[1]+i[3]),t.verbose&&(console.log("[[VERBOSE MODE]]"),console.log("|-- `tableToSlides` ----------------------------------------------------|"),console.log("| tableProps.h .................................... = "+t.h),console.log("| tableProps.w .................................... = "+t.w),console.log("| pptx.presLayout.width ........................... = "+(d.presLayout.width/I).toFixed(1)),console.log("| pptx.presLayout.height .......................... = "+(d.presLayout.height/I).toFixed(1)),console.log("| emuSlideTabW .................................... = "+(r/I).toFixed(1)));let e=document.querySelectorAll(`#${h} tr:first-child th`);(e=0===e.length?document.querySelectorAll(`#${h} tr:first-child td`):e).forEach(e=>{var A=e;if(A.getAttribute("colspan"))for(let e=0;e<Number(A.getAttribute("colspan"));e++)a.push(Math.round(A.offsetWidth/Number(A.getAttribute("colspan"))));else a.push(A.offsetWidth)}),a.forEach(e=>{p+=e}),a.forEach((e,A)=>{e=Number((Number(r)*(e/p*100)/100/I).toFixed(2));let a=0;var t=document.querySelector(`#${h} thead tr:first-child th:nth-child(${A+1})`),t=(t&&(a=Number(t.getAttribute("data-pptx-min-width"))),document.querySelector(`#${h} thead tr:first-child th:nth-child(${A+1})`));t&&(a=Number(t.getAttribute("data-pptx-width"))),n.push(a>e?a:e)}),t.verbose&&console.log(`| arrColW ......................................... = [${n.join(", ")}]`),["thead","tbody","tfoot"].forEach(A=>{document.querySelectorAll(`#${h} ${A} tr`).forEach(e=>{let a=[];switch(Array.from(e.cells).forEach(t=>{var e=window.getComputedStyle(t).getPropertyValue("color").replace(/\s+/gi,"").replace("rgba(","").replace("rgb(","").replace(")","").split(",");let A=window.getComputedStyle(t).getPropertyValue("background-color").replace(/\s+/gi,"").replace("rgba(","").replace("rgb(","").replace(")","").split(","),r=("rgba(0, 0, 0, 0)"!==window.getComputedStyle(t).getPropertyValue("background-color")&&!window.getComputedStyle(t).getPropertyValue("transparent")||(A=["255","255","255"]),{align:null,bold:!!("bold"===window.getComputedStyle(t).getPropertyValue("font-weight")||500<=Number(window.getComputedStyle(t).getPropertyValue("font-weight"))),border:null,color:se(Number(e[0]),Number(e[1]),Number(e[2])),fill:{color:se(Number(A[0]),Number(A[1]),Number(A[2]))},fontFace:(window.getComputedStyle(t).getPropertyValue("font-family")||"").split(",")[0].replace(/"/g,"").replace("inherit","").replace("initial","")||null,fontSize:Number(window.getComputedStyle(t).getPropertyValue("font-size").replace(/[a-z]/gi,"")),margin:null,colspan:Number(t.getAttribute("colspan"))||null,rowspan:Number(t.getAttribute("rowspan"))||null,valign:null});["left","center","right","start","end"].includes(window.getComputedStyle(t).getPropertyValue("text-align"))&&(e=window.getComputedStyle(t).getPropertyValue("text-align").replace("start","left").replace("end","right"),r.align="center"===e?"center":"left"===e?"left":"right"===e?"right":null),["top","middle","bottom"].includes(window.getComputedStyle(t).getPropertyValue("vertical-align"))&&(e=window.getComputedStyle(t).getPropertyValue("vertical-align"),r.valign="top"===e?"top":"middle"===e?"middle":"bottom"===e?"bottom":null),window.getComputedStyle(t).getPropertyValue("padding-left")&&(r.margin=[0,0,0,0],["padding-top","padding-right","padding-bottom","padding-left"].forEach((e,A)=>{r.margin[A]=Math.round(Number(window.getComputedStyle(t).getPropertyValue(e).replace(/\D/gi,"")))})),(window.getComputedStyle(t).getPropertyValue("border-top-width")||window.getComputedStyle(t).getPropertyValue("border-right-width")||window.getComputedStyle(t).getPropertyValue("border-bottom-width")||window.getComputedStyle(t).getPropertyValue("border-left-width"))&&(r.border=[null,null,null,null],["top","right","bottom","left"].forEach((e,A)=>{var a=Math.round(Number(window.getComputedStyle(t).getPropertyValue("border-"+e+"-width").replace("px",""))),e=window.getComputedStyle(t).getPropertyValue("border-"+e+"-color").replace(/\s+/gi,"").replace("rgba(","").replace("rgb(","").replace(")","").split(","),e=se(Number(e[0]),Number(e[1]),Number(e[2]));r.border[A]={pt:a,color:e}})),a.push({_type:M.tablecell,text:t.innerText,options:r})}),A){case"thead":o.push(a);break;case"tbody":l.push(a);break;case"tfoot":s.push(a);break;default:console.log("table parsing: unexpected table part: "+A)}})}),t._arrObjTabHeadRows=o||null,t.colW=n,ie([...o,...l,...s],t,d.presLayout,f).forEach((e,A)=>{var a=d.addSlide({masterName:t.masterSlideName||null});0===A&&(t.y=t.y||i[0]),0<A&&(t.y=t.autoPageSlideStartY||t.newSlideStartY||i[0]),t.verbose&&console.log(`| opts.autoPageSlideStartY: ${t.autoPageSlideStartY} / arrInchMargins[0]: ${i[0]} => opts.y = `+t.y),a.addTable(e.rows,{x:t.x||i[3],y:t.y,w:Number(r)/I,colW:n,autoPage:!1}),t.addImage&&(t.addImage.options=t.addImage.options||{},t.addImage.image&&(t.addImage.image.path||t.addImage.image.data)?a.addImage({path:t.addImage.image.path,data:t.addImage.image.data,x:t.addImage.options.x,y:t.addImage.options.y,w:t.addImage.options.w,h:t.addImage.options.h}):console.warn("Warning: tableToSlides.addImage requires either `path` or `data`")),t.addShape&&a.addShape(t.addShape.shapeName,t.addShape.options||{}),t.addTable&&a.addTable(t.addTable.rows,t.addTable.options||{}),t.addText&&a.addText(t.addText.text,t.addText.options||{})})}}}return Me})(JSZip);
 //# sourceMappingURL=pptxgen.min.js.map
+
+function openModal(p){
+  const semColors={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
+  const sc=semClass(p.sem), col=semColors[sc]||'8b5cf6';
+  document.getElementById('m-tipo').textContent=p.tipo+' · '+(p.area||'');
+  document.getElementById('m-nombre').textContent=p.nombre;
+  document.getElementById('m-desc').textContent=p.descripcion||'Sin descripción registrada.';
+  document.getElementById('m-resp').textContent=p.responsable||'—';
+  document.getElementById('m-user').textContent=p.solicitante||'—';
+  document.getElementById('m-area').textContent=p.area||'—';
+  document.getElementById('m-fechas').textContent=(p.inicio||'—')+' → '+(p.fin||'—');
+  document.getElementById('m-real-lbl').style.color='#'+col;
+  document.getElementById('m-real-lbl').textContent=p.real+'% real';
+  document.getElementById('m-esp-lbl').textContent='esp '+p.esp+'%';
+  document.getElementById('m-bar-real').style.width=Math.min(p.real,100)+'%';
+  document.getElementById('m-bar-real').style.background='#'+col;
+  document.getElementById('m-bar-esp').style.width=Math.min(p.esp,100)+'%';
+  document.getElementById('m-sem').innerHTML='<span class="sem '+sc+'">'+semLabel(p.sem)+'</span>';
+  document.getElementById('proj-modal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('proj-modal').classList.remove('active');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
 </script>
 </body>
 </html>
