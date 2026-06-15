@@ -525,353 +525,83 @@ function switchTab(id,el){
   document.getElementById('mod-'+id).classList.add('active');
 }
 
-// ─── EXPORT PPTX (PptxGenJS v4 — pptxgen.min.js local) ───
+// ─── EXPORT PPTX (PptxGenJS v4) ───
 async function exportPPTX(tab){
-  if(typeof PptxGenJS === 'undefined'){
-    alert('La librería de PowerPoint aún está cargando. Espera unos segundos e intenta de nuevo.');
+  if(typeof PptxGenJS==='undefined'){
+    alert('La librería PowerPoint aún carga. Espera unos segundos e intenta de nuevo.');
     return;
   }
-  const projects = state[tab].data;
-  const modName  = MODNAMES[tab];
-  const kpis     = calcKPIs(projects);
-  const today    = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
-  const fileDate = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
+  const projects=state[tab].data;
+  const modName=MODNAMES[tab];
+  const kpis=calcKPIs(projects);
+  const today=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+  const fileDate=new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
 
-  // PptxGenJS v4: PptxGenJS es la clase directamente (var PptxGenJS = ...)
-  const pres = new PptxGenJS();
-  pres.layout = 'LAYOUT_WIDE'; // 13.33 x 7.5 in
+  const pres=new PptxGenJS();
+  pres.layout='LAYOUT_WIDE';
+  const R=pres.ShapeType.rect;
 
-  const R = pres.ShapeType.rect;
-
-  function slide_base(s){
-    s.background = {color:'FFFFFF'};
-    s.addShape(R,{x:0,    y:0,    w:13.33, h:0.38, fill:{color:'1A1A2E'}, line:{color:'1A1A2E'}});
-    s.addShape(R,{x:0,    y:7.12, w:13.33, h:0.38, fill:{color:'1A1A2E'}, line:{color:'1A1A2E'}});
+  function base(s){
+    s.background={color:'FFFFFF'};
+    s.addShape(R,{x:0,y:0,w:13.33,h:0.38,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
+    s.addShape(R,{x:0,y:7.12,w:13.33,h:0.38,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
   }
 
-  // ── SLIDE 1: PORTADA ──
-  const s1 = pres.addSlide();
-  slide_base(s1);
-  s1.addShape(R,{x:0,     y:0.38, w:0.5,  h:2.5, fill:{color:'C9A84C'}, line:{color:'C9A84C'}});
-  s1.addShape(R,{x:12.83, y:0.38, w:0.5,  h:2.5, fill:{color:'C9A84C'}, line:{color:'C9A84C'}});
-  s1.addText('GRUPO',     {x:1, y:1.6,  w:11.33, h:0.85, fontSize:30, fontFace:'Calibri', color:'1A2340', align:'center'});
-  s1.addText('INCEPADEM', {x:1, y:2.3,  w:11.33, h:1.1,  fontSize:54, fontFace:'Calibri', color:'1A2340', bold:true, align:'center'});
-  s1.addShape(R,{x:2.5, y:3.55, w:8.33, h:0.04, fill:{color:'C9A84C'}, line:{color:'C9A84C'}});
+  // Slide 1 — Portada
+  const s1=pres.addSlide(); base(s1);
+  s1.addShape(R,{x:0,y:0.38,w:0.5,h:2.5,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
+  s1.addShape(R,{x:12.83,y:0.38,w:0.5,h:2.5,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
+  s1.addText('GRUPO',{x:1,y:1.6,w:11.33,h:0.85,fontSize:30,fontFace:'Calibri',color:'1A2340',align:'center'});
+  s1.addText('INCEPADEM',{x:1,y:2.3,w:11.33,h:1.1,fontSize:54,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s1.addShape(R,{x:2.5,y:3.55,w:8.33,h:0.04,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
   s1.addText('Dirección de Tecnología e Implementación',{x:1,y:3.7,w:11.33,h:0.55,fontSize:13,fontFace:'Calibri',color:'555555',align:'center'});
-  s1.addText(modName, {x:1,y:4.2,w:11.33,h:0.7, fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s1.addText(modName,{x:1,y:4.2,w:11.33,h:0.7,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s1.addText('Reporte de Avance — '+today,{x:1,y:4.9,w:11.33,h:0.5,fontSize:12,fontFace:'Calibri',color:'888888',align:'center'});
 
-  // ── SLIDE 2: KPIs ──
-  const s2 = pres.addSlide();
-  slide_base(s2);
+  // Slide 2 — KPIs
+  const s2=pres.addSlide(); base(s2);
   s2.addText(modName.toUpperCase(),{x:0.3,y:0.48,w:12.7,h:0.55,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s2.addText('Cierre semanal — '+today,{x:0.3,y:0.93,w:12.7,h:0.35,fontSize:11,fontFace:'Calibri',color:'777777',align:'center'});
-  const kpiDefs=[
-    {label:'Total proyectos',val:kpis.total,col:'1A2340'},
-    {label:'Terminados',     val:kpis.term, col:'3b82f6'},
-    {label:'A tiempo',       val:kpis.ok,   col:'22c55e'},
-    {label:'En riesgo',      val:kpis.riesgo,col:'f59e0b'},
-    {label:'Atrasados',      val:kpis.atr,  col:'ef4444'},
-    {label:'Por cerrar',     val:kpis.pc,   col:'C9A84C'},
-    {label:'Stand By',       val:kpis.sb,   col:'8b5cf6'},
+  const kd=[
+    {l:'Total proyectos',v:kpis.total,c:'1A2340'},{l:'Terminados',v:kpis.term,c:'3b82f6'},
+    {l:'A tiempo',v:kpis.ok,c:'22c55e'},{l:'En riesgo',v:kpis.riesgo,c:'f59e0b'},
+    {l:'Atrasados',v:kpis.atr,c:'ef4444'},{l:'Por cerrar',v:kpis.pc,c:'C9A84C'},{l:'Stand By',v:kpis.sb,c:'8b5cf6'},
   ];
-  const cw=1.72, ch=1.3, gap=0.09, sx=0.35, sy=1.65;
-  kpiDefs.forEach((k,i)=>{
-    const cx=sx+i*(cw+gap);
-    s2.addShape(R,{x:cx,   y:sy,      w:cw,  h:ch,   fill:{color:'F8F9FA'}, line:{color:'E2E8F0',width:0.5}});
-    s2.addShape(R,{x:cx,   y:sy,      w:cw,  h:0.07, fill:{color:k.col},    line:{color:k.col}});
-    s2.addText(String(k.val),{x:cx,y:sy+0.1,w:cw,h:0.65,fontSize:36,fontFace:'Calibri',color:k.col,bold:true,align:'center'});
-    s2.addText(k.label,{x:cx+0.05,y:sy+0.82,w:cw-0.1,h:0.38,fontSize:8,fontFace:'Calibri',color:'555555',align:'center'});
+  kd.forEach((k,i)=>{
+    const cx=0.35+i*1.81;
+    s2.addShape(R,{x:cx,y:1.65,w:1.72,h:1.3,fill:{color:'F8F9FA'},line:{color:'E2E8F0',width:0.5}});
+    s2.addShape(R,{x:cx,y:1.65,w:1.72,h:0.07,fill:{color:k.c},line:{color:k.c}});
+    s2.addText(String(k.v),{x:cx,y:1.73,w:1.72,h:0.65,fontSize:36,fontFace:'Calibri',color:k.c,bold:true,align:'center'});
+    s2.addText(k.l,{x:cx+0.05,y:2.42,w:1.62,h:0.38,fontSize:8,fontFace:'Calibri',color:'555555',align:'center'});
   });
 
-  // ── SLIDE 3: TABLA ──
-  const s3 = pres.addSlide();
-  slide_base(s3);
+  // Slide 3 — Tabla
+  const s3=pres.addSlide(); base(s3);
   s3.addText('GRUPO INCEPADEM',{x:0.3,y:0.43,w:4,h:0.4,fontSize:10,fontFace:'Calibri',color:'1A2340',bold:true,align:'left'});
   s3.addText('ÁREA DE '+modName.toUpperCase(),{x:0.3,y:0.43,w:12.73,h:0.4,fontSize:14,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s3.addText('Cierre semanal — '+today,{x:0.3,y:0.76,w:12.73,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
-
-  // Header row bg
-  s3.addShape(R,{x:0.3,y:1.05,w:12.73,h:0.32,fill:{color:'1A2340'},line:{color:'1A2340'}});
-  const colX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
-  const colW=[0.90,3.75,1.40,0.90,0.90,0.95,0.95,2.33];
-  const hdrs=['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'];
-  hdrs.forEach((h,i)=> s3.addText(h,{x:colX[i]+0.03,y:1.07,w:colW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
-
-  const semColMap={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
-  const rh=0.285, ry0=1.37;
+  s3.addShape(R,{x:0.3,y:1.05,w:12.73,h:0.32,fill:{color:'1A2340'},line:{color:'1A1A2E'}});
+  const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
+  const cW=[0.90,3.75,1.40,0.90,0.90,0.95,0.95,2.33];
+  ['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
+    s3.addText(h,{x:cX[i]+0.03,y:1.07,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
+  const sc2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
   projects.slice(0,18).forEach((p,ri)=>{
-    const ry=ry0+ri*rh;
-    const bg=ri%2===0?'FFFFFF':'F5F5F8';
-    s3.addShape(R,{x:0.3,y:ry,w:12.73,h:rh,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
-    const sc=semClass(p.sem);
-    const sCol=semColMap[sc]||'8b5cf6';
-    const cells=[p.tipo,p.nombre.slice(0,42),p.area.slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)];
-    cells.forEach((cell,ci)=>{
+    const ry=1.37+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
+    s3.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
+    [p.tipo,p.nombre.slice(0,42),p.area.slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
       const isSem=ci===7||ci===5;
-      s3.addText(cell,{x:colX[ci]+0.03,y:ry+0.05,w:colW[ci]-0.06,h:rh-0.07,fontSize:7,fontFace:'Calibri',color:isSem?sCol:'333333',bold:isSem,align:ci===1?'left':'center'});
+      s3.addText(cell,{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
     });
   });
 
-  // ── SLIDE 4: CIERRE ──
-  const s4 = pres.addSlide();
-  slide_base(s4);
+  // Slide 4 — Cierre
+  const s4=pres.addSlide(); base(s4);
   s4.addShape(R,{x:12.83,y:0.5,w:0.5,h:2.8,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
-  s4.addText('GRUPO',    {x:0.5,y:2.3,w:6,  h:1.0,fontSize:38,fontFace:'Calibri',color:'1A2340',bold:false,align:'left'});
-  s4.addText('INCEPADEM',{x:0.5,y:3.1,w:6.5,h:1.1,fontSize:48,fontFace:'Calibri',color:'1A2340',bold:true, align:'left'});
+  s4.addText('GRUPO',{x:0.5,y:2.3,w:6,h:1.0,fontSize:38,fontFace:'Calibri',color:'1A2340',bold:false,align:'left'});
+  s4.addText('INCEPADEM',{x:0.5,y:3.1,w:6.5,h:1.1,fontSize:48,fontFace:'Calibri',color:'1A2340',bold:true,align:'left'});
 
   await pres.writeFile({fileName:'DTI_'+tab.toUpperCase()+'_'+fileDate+'.pptx'});
-}
-
-
-  const projects = state[tab].data;
-  const modName  = MODNAMES[tab];
-  const kpis     = calcKPIs(projects);
-  const today    = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
-  const fileDate = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
-
-  // EMU helpers  (1 inch = 914400 EMU)
-  const W=12192000, H=6858000; // 13.33" x 7.5"  WIDE
-  const emu=v=>Math.round(v*914400);
-  const pt=v=>Math.round(v*12700);  // 1pt = 12700 EMU
-
-  /* ---- helpers XML ---- */
-  const rect=(x,y,w,h,fill,lnClr=null)=>{
-    const ln=lnClr?`<a:ln><a:solidFill><a:srgbClr val="${lnClr}"/></a:solidFill></a:ln>`:'<a:ln><a:noFill/></a:ln>';
-    return `<p:sp><p:nvSpPr><p:cNvPr id="1" name="r"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${emu(x)}" y="${emu(y)}"/><a:ext cx="${emu(w)}" cy="${emu(h)}"/></a:xfrm>
-<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-<a:solidFill><a:srgbClr val="${fill}"/></a:solidFill>${ln}</p:spPr>
-<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`;
-  };
-
-  const txt=(x,y,w,h,text,sz,bold,color,align='l',wrap=true)=>{
-    const algn=align==='c'?'ctr':align==='r'?'r':'l';
-    return `<p:sp><p:nvSpPr><p:cNvPr id="2" name="t"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${emu(x)}" y="${emu(y)}"/><a:ext cx="${emu(w)}" cy="${emu(h)}"/></a:xfrm>
-<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr wrap="${wrap?'square':'none'}" lIns="0" rIns="0" tIns="0" bIns="0"/>
-<a:lstStyle/><a:p><a:pPr algn="${algn}"/><a:r>
-<a:rPr lang="es-MX" sz="${sz*100}" b="${bold?1:0}" dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill></a:rPr>
-<a:t>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</a:t>
-</a:r></a:p></p:txBody></p:sp>`;
-  };
-
-  const semColorMap={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
-
-  /* =========================================================
-     SLIDE 1 — PORTADA
-  ========================================================= */
-  const slide1=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-       xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-       xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></p:bgPr></p:cSld>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></p:grpSpPr>
-${rect(0,0,13.33,.4,'1A1A2E')}
-${rect(0,7.1,13.33,.4,'1A1A2E')}
-${rect(0,.38,.55,2.5,'C9A84C')}
-${rect(12.78,.38,.55,2.5,'C9A84C')}
-${txt(1,1.5,11.33,.9,'GRUPO',28,false,'1A2340','c')}
-${txt(1,2.3,11.33,1.2,'INCEPADEM',52,true,'1A2340','c')}
-${rect(2.5,3.6,8.33,.03,'C9A84C')}
-${txt(1,3.75,11.33,.6,'Dirección de Tecnología e Implementación',13,false,'555555','c')}
-${txt(1,4.25,11.33,.8,modName,20,true,'1A2340','c')}
-${txt(1,5.0,11.33,.5,'Reporte de Avance — '+today,12,false,'888888','c')}
-</p:spTree></p:cSld></p:sld>`;
-
-  /* =========================================================
-     SLIDE 2 — KPIs
-  ========================================================= */
-  const kpiDefs=[
-    {label:'Total proyectos',val:kpis.total,col:'1A2340'},
-    {label:'Terminados',val:kpis.term,col:'3b82f6'},
-    {label:'A tiempo',val:kpis.ok,col:'22c55e'},
-    {label:'En riesgo',val:kpis.riesgo,col:'f59e0b'},
-    {label:'Atrasados',val:kpis.atr,col:'ef4444'},
-    {label:'Por cerrar',val:kpis.pc,col:'C9A84C'},
-    {label:'Stand By',val:kpis.sb,col:'8b5cf6'},
-  ];
-  const cw=1.72, ch=1.3, gap=0.09, sx=0.35, sy=1.7;
-  let kpiShapes='';
-  kpiDefs.forEach((k,i)=>{
-    const cx=sx+i*(cw+gap);
-    kpiShapes+=rect(cx,sy,cw,ch,'F8F9FA','E2E8F0');
-    kpiShapes+=rect(cx,sy,cw,.07,k.col);
-    kpiShapes+=txt(cx,sy+.08,cw,.65,String(k.val),34,true,k.col,'c');
-    kpiShapes+=txt(cx,sy+.78,cw,.38,k.label,8,false,'555555','c');
-  });
-
-  const slide2=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-       xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-       xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></p:bgPr></p:cSld>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></p:grpSpPr>
-${rect(0,0,13.33,.38,'1A1A2E')}
-${rect(0,7.12,13.33,.38,'1A1A2E')}
-${txt(.3,.5,12.7,.55,modName.toUpperCase(),20,true,'1A2340','c')}
-${txt(.3,.95,12.7,.35,'Cierre semanal — '+today,11,false,'777777','c')}
-${kpiShapes}
-</p:spTree></p:cSld></p:sld>`;
-
-  /* =========================================================
-     SLIDE 3 — TABLA
-  ========================================================= */
-  const cols=[.95,3.7,1.4,.9,.9,1.0,1.0,1.55];  // sum ~11.4
-  const colX=[.3];
-  cols.forEach((c,i)=>{ if(i<cols.length-1) colX.push(colX[i]+cols[i]); });
-  const headers=['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'];
-  const rowH=.3, hdrH=.32, startY=1.05, hdrY=startY;
-
-  let tableShapes='';
-  // header bg
-  tableShapes+=rect(.3,hdrY,12.73,hdrH,'1A2340');
-  headers.forEach((h,i)=>{ tableShapes+=txt(colX[i]+.03,hdrY+.04,cols[i]-.06,hdrH-.08,h,7,true,'FFFFFF','c'); });
-
-  projects.slice(0,18).forEach((p,ri)=>{
-    const ry=hdrY+hdrH+ri*rowH;
-    const bg=ri%2===0?'FFFFFF':'F5F5F8';
-    tableShapes+=rect(.3,ry,12.73,rowH,bg,'E8E8EC');
-    const sc=semClass(p.sem);
-    const semCol=semColorMap[sc]||'8b5cf6';
-    const cells=[p.tipo,p.nombre.slice(0,40),p.area.slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)];
-    cells.forEach((cell,ci)=>{
-      const isSem=ci===7, isPct=ci===5;
-      tableShapes+=txt(colX[ci]+.03,ry+.05,cols[ci]-.06,rowH-.08,cell,7,isSem||isPct,isSem||isPct?semCol:'333333',ci===1?'l':'c');
-    });
-  });
-
-  const slide3=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-       xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-       xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></p:bgPr></p:cSld>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></p:grpSpPr>
-${rect(0,0,13.33,.38,'1A1A2E')}
-${rect(0,7.12,13.33,.38,'1A1A2E')}
-${txt(.3,.45,5,.4,'GRUPO INCEPADEM',10,true,'1A2340','l')}
-${txt(.3,.45,12.73,.4,'ÁREA DE '+modName.toUpperCase(),14,true,'1A2340','c')}
-${txt(.3,.78,12.73,.28,'Cierre semanal — '+today,9,false,'777777','c')}
-${tableShapes}
-</p:spTree></p:cSld></p:sld>`;
-
-  /* =========================================================
-     SLIDE 4 — CIERRE
-  ========================================================= */
-  const slide4=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-       xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-       xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></p:bgPr></p:cSld>
-<p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></p:grpSpPr>
-${rect(0,0,13.33,.38,'1A1A2E')}
-${rect(0,7.12,13.33,.38,'1A1A2E')}
-${rect(12.78,.5,.55,2.8,'C9A84C')}
-${txt(.5,2.2,6,1,'GRUPO',38,false,'1A2340','l')}
-${txt(.5,3.1,6.5,1.1,'INCEPADEM',48,true,'1A2340','l')}
-</p:spTree></p:cSld></p:sld>`;
-
-  /* =========================================================
-     ARMADO DEL ZIP (estructura OOXML)
-  ========================================================= */
-  const slides=[slide1,slide2,slide3,slide4];
-  const slideRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
-</Relationships>`;
-
-  const presXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-  xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>
-<p:sldSz cx="${W}" cy="${H}" type="custom"/>
-<p:notesSz cx="6858000" cy="9144000"/>
-<p:sldIdLst>
-${slides.map((_,i)=>`<p:sldId id="${256+i}" r:id="rId${i+2}"/>`).join('\n')}
-</p:sldIdLst>
-</p:presentation>`;
-
-  const presRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>
-${slides.map((_,i)=>`<Relationship Id="rId${i+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${i+1}.xml"/>`).join('\n')}
-</Relationships>`;
-
-  const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-<Default Extension="xml" ContentType="application/xml"/>
-${slides.map((_,i)=>`<Override PartName="/ppt/slides/slide${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>`).join('\n')}
-<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
-<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>
-<Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>
-</Types>`;
-
-  const rootRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
-</Relationships>`;
-
-  const slideMaster=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldMaster xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-  xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></p:bgPr></p:cSld>
-<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-</p:spTree></p:cSld>
-<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst>
-<p:txStyles><p:titleStyle/><p:bodyStyle/><p:otherStyle/></p:txStyles>
-</p:sldMaster>`;
-
-  const slideMasterRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
-</Relationships>`;
-
-  const slideLayout=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldLayout xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-  xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" type="blank">
-<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-</p:spTree></p:cSld></p:sldLayout>`;
-
-  const slideLayoutRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/>
-</Relationships>`;
-
-  // Construir ZIP
-  const zip=new JSZip();
-  zip.file('[Content_Types].xml',contentTypes);
-  zip.file('_rels/.rels',rootRels);
-  zip.file('ppt/presentation.xml',presXml);
-  zip.file('ppt/_rels/presentation.xml.rels',presRels);
-  zip.file('ppt/slideMasters/slideMaster1.xml',slideMaster);
-  zip.file('ppt/slideMasters/_rels/slideMaster1.xml.rels',slideMasterRels);
-  zip.file('ppt/slideLayouts/slideLayout1.xml',slideLayout);
-  zip.file('ppt/slideLayouts/_rels/slideLayout1.xml.rels',slideLayoutRels);
-  slides.forEach((s,i)=>{
-    zip.file(`ppt/slides/slide${i+1}.xml`,s);
-    zip.file(`ppt/slides/_rels/slide${i+1}.xml.rels`,slideRels);
-  });
-
-  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`DTI_${tab.toUpperCase()}_${fileDate}.pptx`; a.click();
-  URL.revokeObjectURL(url);
 }
 
 // ─── EXPORT EXCEL ───
@@ -911,7 +641,6 @@ function exportXLSX(tab){
   XLSX.writeFile(wb,'DTI_'+tab.toUpperCase()+'_'+today.replace(/\//g,'-')+'.xlsx');
 }
 
-// ─── EXPORT PPTX ───
 // ─── CSV LOADER ───
 function loadCSV(e){
   const file=e.target.files[0]; if(!file)return;
