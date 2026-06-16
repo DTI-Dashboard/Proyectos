@@ -884,24 +884,27 @@ function updateDate(){
   document.getElementById('live-date').textContent=d;
 
   // ── Indicador de última sync con Smartsheet ──
-  (function(){
+  try{(function(){
     const el = document.getElementById('sync-chip');
+    if(!el) return;
     const raw = document.querySelector('meta[name="last-sync"]');
-    if(!el || !raw) return;
+    if(!raw){ el.style.display='none'; return; }
     const ts = raw.getAttribute('content');
     if(!ts){ el.style.display='none'; return; }
     function fmt(){
-      const diff = Math.floor((Date.now() - new Date(ts)) / 60000);
-      if(diff < 1)   return '🔄 Sync: justo ahora';
-      if(diff < 60)  return `🔄 Sync: hace ${diff} min`;
-      const h = Math.floor(diff/60);
-      if(h < 24)     return `🔄 Sync: hace ${h}h`;
-      return `🔄 Sync: hace ${Math.floor(h/24)}d`;
+      try{
+        const diff = Math.floor((Date.now() - new Date(ts)) / 60000);
+        if(diff < 1)   return '\uD83D\uDD04 Sync: ahora';
+        if(diff < 60)  return '\uD83D\uDD04 Sync: hace '+diff+' min';
+        const h = Math.floor(diff/60);
+        if(h < 24)     return '\uD83D\uDD04 Sync: hace '+h+'h';
+        return '\uD83D\uDD04 Sync: hace '+Math.floor(h/24)+'d';
+      }catch(e){ return '\uD83D\uDD04 Sync: --'; }
     }
     el.textContent = fmt();
     el.style.display = 'inline-block';
-    setInterval(()=>{ el.textContent=fmt(); }, 60000);
-  })();
+    setInterval(function(){ el.textContent=fmt(); }, 60000);
+  })();}catch(e){ console.warn('sync-chip error:',e); }
   const d2=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
 
 }
@@ -911,44 +914,47 @@ renderTab('dev');
 renderTab('inf');
 
 // ── Auto-restore info extra desde localStorage al cargar la página ──
-(function(){
-  const saved = localStorage.getItem('dti_info_extra');
+try{(function(){
+  var saved = localStorage.getItem('dti_info_extra');
   if(!saved) return;
-  try{
-    const lines = saved.replace(/^﻿/,'').trim().split(/
-?
-/);
-    if(lines.length < 2) return;
-    function parseCSV(line){
-      const res=[]; let cur='', inQ=false;
-      for(let i=0;i<line.length;i++){
-        const ch=line[i];
-        if(ch==='"'){ inQ=!inQ; }
-        else if(ch===','&&!inQ){ res.push(cur); cur=''; }
-        else { cur+=ch; }
-      }
-      res.push(cur); return res;
+  var lines = saved.replace(/^[\uFEFF]/,'').trim().split(/\r?\n/);
+  if(lines.length < 2) return;
+  function parseCSV2(line){
+    var res=[]; var cur=''; var inQ=false;
+    for(var i=0;i<line.length;i++){
+      var ch=line[i];
+      if(ch==='"'){ inQ=!inQ; }
+      else if(ch===','&&!inQ){ res.push(cur); cur=''; }
+      else { cur+=ch; }
     }
-    const hdrs = parseCSV(lines[0]).map(h=>h.toLowerCase().trim());
-    const rows = lines.slice(1).map(l=>{ const v=parseCSV(l); const o={}; hdrs.forEach((h,i)=>o[h]=(v[i]||'').trim()); return o; });
-    function mergeLocal(stateData, mod){
-      rows.filter(r=>(r.modulo||'').toUpperCase()===mod.toUpperCase()).forEach(csvP=>{
-        const found=stateData.find(p=>(p.nombre||'').trim().toLowerCase()===(csvP.nombre||'').trim().toLowerCase());
-        if(found){
-          if(csvP.area)        found.area=csvP.area;
-          if(csvP.responsable) found.responsable=csvP.responsable;
-          if(csvP.solicitante) found.solicitante=csvP.solicitante;
-          if(csvP.descripcion) found.descripcion=csvP.descripcion;
-        }
+    res.push(cur); return res;
+  }
+  var hdrs = parseCSV2(lines[0]).map(function(h){ return h.toLowerCase().trim(); });
+  var rows = lines.slice(1).map(function(l){
+    var v=parseCSV2(l); var o={};
+    hdrs.forEach(function(h,i){ o[h]=(v[i]||'').trim(); });
+    return o;
+  });
+  function mergeLocal(stateData, mod){
+    rows.filter(function(r){ return (r.modulo||'').toUpperCase()===mod.toUpperCase(); })
+    .forEach(function(csvP){
+      var found=stateData.find(function(p){
+        return (p.nombre||'').trim().toLowerCase()===(csvP.nombre||'').trim().toLowerCase();
       });
-    }
-    mergeLocal(state.imc.data,'IMC');
-    mergeLocal(state.dev.data,'Desarrollo');
-    mergeLocal(state.inf.data,'Soporte');
-    renderTab('imc');renderTab('dev');renderTab('inf');
-    console.log('✅ Info extra restaurada desde localStorage');
-  } catch(e){ console.warn('No se pudo restaurar info extra:', e); }
-})();
+      if(found){
+        if(csvP.area)        found.area=csvP.area;
+        if(csvP.responsable) found.responsable=csvP.responsable;
+        if(csvP.solicitante) found.solicitante=csvP.solicitante;
+        if(csvP.descripcion) found.descripcion=csvP.descripcion;
+      }
+    });
+  }
+  mergeLocal(state.imc.data,'IMC');
+  mergeLocal(state.dev.data,'Desarrollo');
+  mergeLocal(state.inf.data,'Soporte');
+  renderTab('imc');renderTab('dev');renderTab('inf');
+  console.log('Info extra restaurada desde localStorage');
+})();}catch(e){ console.warn('restore error:',e); }
 </script>
 <!-- PptxGenJS cargado al final para no bloquear el dashboard -->
 <script>/*!
