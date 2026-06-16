@@ -18,24 +18,16 @@ req = urllib.request.Request(URL, headers={
 with urllib.request.urlopen(req) as resp:
     data = json.loads(resp.read())
 
-# ── Debug: imprimir estructura de columnas ─────────────────────
-print("=== COLUMNAS DISPONIBLES ===")
-for c in data.get("columns", []):
-    print(f"  keys: {list(c.keys())} → {c}")
-
-# ── Mapear columnas: soporta tanto 'id' como 'virtualColumnId' ──
+# ── Mapear columnas: en reportes las columnas usan 'virtualId'
+#    pero las celdas usan 'virtualColumnId' — son el mismo número
 col_map = {}
 for c in data.get("columns", []):
-    col_id = str(c.get("virtualColumnId") or c.get("id") or "")
-    col_map[col_id] = c.get("title", "")
+    # Intentar todas las variantes posibles del ID
+    col_id = c.get("virtualId") or c.get("virtualColumnId") or c.get("id")
+    if col_id:
+        col_map[str(col_id)] = c.get("title", "")
 
-print(f"\n=== COL_MAP ===\n{col_map}\n")
-
-# ── Imprimir primera fila para ver estructura ──────────────────
-if data.get("rows"):
-    print("=== PRIMERA FILA (cells) ===")
-    for cell in data["rows"][0].get("cells", []):
-        print(f"  {cell}")
+print(f"COL_MAP: {col_map}\n")
 
 # ── Extraer filas padre ────────────────────────────────────────
 proyectos = []
@@ -43,10 +35,12 @@ proyectos = []
 for row in data.get("rows", []):
     cells = {}
     for cell in row.get("cells", []):
+        # Las celdas usan virtualColumnId
         col_id = str(cell.get("virtualColumnId") or cell.get("columnId") or "")
         col_title = col_map.get(col_id, "")
+        val = cell.get("displayValue") or cell.get("value") or ""
         if col_title:
-            cells[col_title] = cell.get("displayValue") or cell.get("value") or ""
+            cells[col_title] = val
 
     sheet_name = str(cells.get("Sheet Name", "")).strip()
     primary    = str(cells.get("Primary", "")).strip()
@@ -60,7 +54,7 @@ for row in data.get("rows", []):
     if sheet_name.lower() not in primary.lower():
         continue
 
-    # Convertir avance: "50%" → 50
+    # Convertir avance: "52%" → 52
     try:
         real = int(float(str(avance_raw).replace("%", "").strip()))
     except (ValueError, TypeError):
@@ -70,9 +64,11 @@ for row in data.get("rows", []):
     def fmt_fecha(f):
         if not f:
             return ""
+        # Smartsheet devuelve ISO: "2026-04-07T08:00:00"
+        f = str(f).split("T")[0]
         for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y"):
             try:
-                return datetime.strptime(str(f), fmt).strftime("%d/%m/%Y")
+                return datetime.strptime(f, fmt).strftime("%d/%m/%Y")
             except ValueError:
                 continue
         return str(f)
@@ -83,7 +79,7 @@ for row in data.get("rows", []):
         d_ini = datetime.strptime(fmt_fecha(inicio), "%d/%m/%Y")
         d_fin = datetime.strptime(fmt_fecha(fin),    "%d/%m/%Y")
         total = (d_fin - d_ini).days
-        trans = (hoy  - d_ini).days
+        trans = (hoy - d_ini).days
         esp   = max(0, min(100, int((trans / total) * 100))) if total > 0 else 0
     except Exception:
         esp = real
@@ -99,19 +95,19 @@ for row in data.get("rows", []):
         sem = "Atrasado"
 
     proyectos.append({
-        "tipo":        "Proyecto",
-        "nombre":      primary,
-        "area":        "",
-        "inicio":      fmt_fecha(inicio),
-        "fin":         fmt_fecha(fin),
-        "real":        real,
-        "esp":         esp,
-        "sem":         sem,
+        "tipo":   "Proyecto",
+        "nombre": primary,
+        "area":   "",
+        "inicio": fmt_fecha(inicio),
+        "fin":    fmt_fecha(fin),
+        "real":   real,
+        "esp":    esp,
+        "sem":    sem,
     })
 
-print(f"\n✅ {len(proyectos)} proyectos IMC extraídos")
+print(f"✅ {len(proyectos)} proyectos IMC extraídos")
 for p in proyectos:
-    print(f"  - {p['nombre']} | {p['real']}% | {p['sem']}")
+    print(f"  - {p['nombre']} | {p['real']}% real | {p['esp']}% esp | {p['sem']}")
 
 # ── Inyectar en index.html ─────────────────────────────────────
 with open("index.html", "r", encoding="utf-8") as f:
@@ -119,7 +115,7 @@ with open("index.html", "r", encoding="utf-8") as f:
 
 js_rows = []
 for p in proyectos:
-    nombre_js = p["nombre"].replace("'", "\\'").replace('"', '\\"')
+    nombre_js = p["nombre"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
     js_rows.append(
         f'  {{tipo:"{p["tipo"]}",nombre:"{nombre_js}",area:"",'
         f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
@@ -128,7 +124,6 @@ for p in proyectos:
     )
 
 new_imc_data = "const IMC_DATA = [\n" + ",\n".join(js_rows) + "\n];"
-
 pattern = r"const IMC_DATA\s*=\s*\[.*?\];"
 new_html = re.sub(pattern, new_imc_data, html, flags=re.DOTALL)
 
