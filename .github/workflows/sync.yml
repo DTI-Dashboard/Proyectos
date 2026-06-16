@@ -28,5 +28,5 @@ jobs:
           git config user.name  "DTI-Dashboard Bot"
           git config user.email "bot@dti-dashboard.github.io"
           git add index.html
-          git diff --staged --quiet || git commit -m "sync: actualización automática desde Smartsheet $(date +'%d/%m/%Y %H:%M')"
-          git push
+          git commit -m "sync: $(date +'%d/%m/%Y %H:%M')" || true
+          git push || true
