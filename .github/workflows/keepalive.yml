@@ -1,0 +1,19 @@
+name: Keep Alive + Trigger Sync
+
+on:
+  schedule:
+    - cron: '30 * * * *'  # cada hora a los :30 minutos
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar Sync Smartsheet
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/DTI-Dashboard/Proyectos/actions/workflows/sync.yml/dispatches \
+            -d '{"ref":"main"}'
+          echo "✅ Sync disparado a las $(date +'%d/%m/%Y %H:%M')"
