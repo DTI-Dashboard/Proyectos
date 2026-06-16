@@ -314,13 +314,22 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="mod-header">
     <div class="mod-header-left">
       <div class="mod-title">Carga de <span>Datos</span></div>
-      <div class="mod-sub">Sube tu CSV y los datos se reflejan automáticamente en cada módulo</div>
+      <div class="mod-sub">Descarga la plantilla, llena los datos extra y vuelve a subir</div>
     </div>
+    <div class="mod-header-right">
+      <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">⬇️ Descargar Plantilla CSV</button>
+    </div>
+  </div>
+  <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
+    <strong style="color:var(--gold)">¿Cómo funciona?</strong><br>
+    1️⃣ Descarga la plantilla — ya tiene todos tus proyectos de Smartsheet<br>
+    2️⃣ Abre el CSV en Excel y llena: <strong>Área, Responsable, Solicitante, Descripción</strong><br>
+    3️⃣ Guarda como <strong>CSV UTF-8</strong> y súbelo aquí — el dashboard combina ambos datos
   </div>
   <div class="upload-zone" onclick="document.getElementById('file-input').click()">
     <div class="uz-icon">📄</div>
     <div class="uz-title">Arrastra tu archivo CSV aquí o haz clic para seleccionar</div>
-    <div class="uz-sub">Columnas: tipo, nombre, area, inicio, fin, real, esperado, semaforo</div>
+    <div class="uz-sub">Columnas: modulo, tipo, nombre, area, inicio, fin, real, esperado, semaforo, responsable, solicitante, descripcion</div>
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Formato esperado del CSV</div></div>
@@ -717,6 +726,40 @@ function exportXLSX(tab){
   XLSX.utils.book_append_sheet(wb,wsP,'Proyectos');
 
   XLSX.writeFile(wb,'DTI_'+tab.toUpperCase()+'_'+today.replace(/\//g,'-')+'.xlsx');
+}
+
+// ─── DESCARGA DE PLANTILLA CSV ───
+function descargarPlantilla(){
+  const header = 'modulo,tipo,nombre,area,inicio,fin,real,esperado,semaforo,responsable,solicitante,descripcion';
+  const rows = [];
+
+  // IMC
+  state.imc.data.forEach(p=>{
+    const nom = (p.nombre||'').replace(/"/g,'""');
+    const desc = (p.descripcion||'').replace(/"/g,'""');
+    rows.push(`IMC,${p.tipo||'Proyecto'},"${nom}","${p.area||''}",${p.inicio||''},${p.fin||''},${p.real||0},${p.esp||0},${p.sem||'A tiempo'},"${p.responsable||''}","${p.solicitante||''}","${desc}"`);
+  });
+  // Desarrollo
+  state.dev.data.forEach(p=>{
+    const nom = (p.nombre||'').replace(/"/g,'""');
+    const desc = (p.descripcion||'').replace(/"/g,'""');
+    rows.push(`Desarrollo,${p.tipo||'Proyecto'},"${nom}","${p.area||''}",${p.inicio||''},${p.fin||''},${p.real||0},${p.esp||0},${p.sem||'A tiempo'},"${p.responsable||''}","${p.solicitante||''}","${desc}"`);
+  });
+  // Soporte
+  state.inf.data.forEach(p=>{
+    const nom = (p.nombre||'').replace(/"/g,'""');
+    const desc = (p.descripcion||'').replace(/"/g,'""');
+    rows.push(`Soporte,${p.tipo||'Proyecto'},"${nom}","${p.area||''}",${p.inicio||''},${p.fin||''},${p.real||0},${p.esp||0},${p.sem||'A tiempo'},"${p.responsable||''}","${p.solicitante||''}","${desc}"`);
+  });
+
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
+  a.href = url; a.download = `Plantilla_DTI_${today}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('✅ Plantilla descargada — llena Área, Responsable, Solicitante y Descripción', 'success');
 }
 
 // ─── CSV LOADER ───
