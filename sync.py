@@ -146,7 +146,7 @@ meta_tag = f'<meta name="last-sync" content="{ts_iso}">'
 if 'name="last-sync"' in html:
     html = re.sub(r'<meta name="last-sync"[^>]*>', meta_tag, html)
 else:
-    html = html.replace('<!-- LAST_SYNC -->', f'<!-- LAST_SYNC -->\n{meta_tag}')
+    html = html.replace('<!-- LAST_SYNC -->\n</head>', f'<!-- LAST_SYNC -->\n{meta_tag}\n</head>')
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(html)
