@@ -3,7 +3,7 @@ name: Sync Smartsheet → Dashboard
 on:
   schedule:
     - cron: '0 * * * *'   # cada hora en punto
-  workflow_dispatch:        # también se puede correr manualmente con un clic
+  workflow_dispatch:        # también se puede correr manualmente
 
 jobs:
   sync:
@@ -28,5 +28,7 @@ jobs:
           git config user.name  "DTI-Dashboard Bot"
           git config user.email "bot@dti-dashboard.github.io"
           git add index.html
-          git commit -m "sync: $(date +'%d/%m/%Y %H:%M')" || true
-          git push || true
+          git diff --staged --quiet \
+            && git commit --allow-empty -m "sync: timestamp $(date +'%d/%m/%Y %H:%M')" \
+            || git commit -m "sync: datos actualizados $(date +'%d/%m/%Y %H:%M')"
+          git push
