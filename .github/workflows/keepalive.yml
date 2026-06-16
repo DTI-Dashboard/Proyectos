@@ -5,6 +5,10 @@ on:
     - cron: '30 * * * *'  # cada hora a los :30 minutos
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: write
+
 jobs:
   trigger:
     runs-on: ubuntu-latest
@@ -12,7 +16,7 @@ jobs:
       - name: Disparar Sync Smartsheet
         run: |
           curl -X POST \
-            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/DTI-Dashboard/Proyectos/actions/workflows/sync.yml/dispatches \
             -d '{"ref":"main"}'
