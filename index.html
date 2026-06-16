@@ -104,6 +104,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .filter-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:rgba(255,255,255,.6);cursor:pointer;transition:.2s;}
 .filter-btn:hover,.filter-btn.active{background:var(--gold-faint);border-color:var(--gold);color:var(--gold);}
 .filter-label{font-size:11px;color:#fff;font-weight:600;}
+.filter-resp{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:rgba(255,255,255,.7);cursor:pointer;outline:none;transition:.2s;}
+.filter-resp:hover,.filter-resp:focus{border-color:var(--gold);color:var(--gold);}
+.filter-resp option{background:var(--surface2);color:#fff;}
 .search-box{background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:#fff;outline:none;margin-left:auto;width:200px;}
 .search-box:focus{border-color:var(--gold);}
 .search-box::placeholder{color:rgba(255,255,255,.4);}
@@ -169,8 +172,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="topbar-right">
     <span class="date-chip" id="live-date"></span>
     <span class="date-chip" id="sync-chip" style="display:none;border-color:rgba(34,197,94,.4);color:rgba(34,197,94,.9);cursor:default;" title="Última sincronización con Smartsheet"></span>
-    <button class="btn-upload" onclick="document.getElementById('file-input').click()">⬆ Cargar CSV</button>
-    <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)">
+    <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)" style="display:none">
   </div>
 </header>
 
@@ -213,6 +215,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('imc','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="imc-resp-select" onchange="filterResp('imc',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('imc',this.value)">
   </div>
   <div class="card">
@@ -256,6 +261,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('dev','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="dev-resp-select" onchange="filterResp('dev',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('dev',this.value)">
   </div>
   <div class="card">
@@ -299,6 +307,9 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <button class="filter-btn" onclick="filterTab('inf','Stand by',this)">⚫ Stand By</button>
     <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="inf-resp-select" onchange="filterResp('inf',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
     <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('inf',this.value)">
   </div>
   <div class="card">
@@ -450,9 +461,9 @@ const INF_DATA=[
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura'};
 
 const state={
-  imc:{data:[...IMC_DATA],filter:'todos',search:''},
-  dev:{data:[...DEV_DATA],filter:'todos',search:''},
-  inf:{data:[...INF_DATA],filter:'todos',search:''},
+  imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:''},
+  dev:{data:[...DEV_DATA],filter:'todos',search:'',resp:''},
+  inf:{data:[...INF_DATA],filter:'todos',search:'',resp:''},
 };
 
 // ─── HELPERS ───
@@ -562,9 +573,30 @@ function buildStatusSummary(projects,elId){
 function getFiltered(tab){
   const s=state[tab];
   let p=[...s.data];
-  if(s.filter!=='todos')p=p.filter(x=>semClass(x.sem)===semClass(s.filter));
-  if(s.search)p=p.filter(x=>x.nombre.toLowerCase().includes(s.search)||x.area.toLowerCase().includes(s.search));
+  if(s.filter==='porcerrar') p=p.filter(x=>x.real>=90&&x.sem!=='Terminado');
+  else if(s.filter!=='todos') p=p.filter(x=>semClass(x.sem)===semClass(s.filter));
+  if(s.search) p=p.filter(x=>x.nombre.toLowerCase().includes(s.search)||x.area.toLowerCase().includes(s.search));
+  if(s.resp) p=p.filter(x=>(x.responsable||'').toLowerCase().includes(s.resp.toLowerCase()));
   return p;
+}
+
+function filterResp(tab,val){
+  state[tab].resp=val;
+  renderTab(tab);
+}
+
+function populateRespSelect(tab){
+  const sel=document.getElementById(tab+'-resp-select');
+  if(!sel) return;
+  const resps=[...new Set(state[tab].data.map(p=>p.responsable||'').filter(r=>r.trim()!==''))].sort();
+  const cur=sel.value;
+  sel.innerHTML='<option value="">👤 Todos los responsables</option>';
+  resps.forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r; o.textContent=r;
+    if(r===cur) o.selected=true;
+    sel.appendChild(o);
+  });
 }
 
 const allProjects={};
@@ -581,6 +613,7 @@ function renderTab(tab){
   buildKPIsDom(p,cfg.kpfx);
   buildAreaChart(p,cfg.area);
   buildStatusSummary(p,cfg.status);
+  populateRespSelect(tab);
 }
 
 function filterTabPorCerrar(tab,el){
