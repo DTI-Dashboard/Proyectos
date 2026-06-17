@@ -1121,12 +1121,12 @@ function showToast(msg, type='info'){
   setTimeout(()=>{ t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(), 300); }, type==='error'?5000:3500);
 }
 
-// ─── Botón "Actualizar Datos" — dispara sync.yml en GitHub Actions ───
-// Nota: este token tiene permisos limitados (solo puede disparar workflows de este repo).
+// ─── Botón "Actualizar Datos" — dispara sync.yml vía Cloudflare Worker ───
+// El token de GitHub vive solo dentro del Worker (Cloudflare), nunca en este archivo.
 const GH_OWNER = 'DTI-Dashboard';
 const GH_REPO = 'Proyectos';
 const GH_WORKFLOW = 'sync.yml';
-const GH_TOKEN = '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';
+const SYNC_PROXY_URL = 'https://dti-dashboard-trigger.josuemontoya.workers.dev/';
 
 async function triggerSync(){
   const btn = document.getElementById('btn-sync');
@@ -1138,17 +1138,11 @@ async function triggerSync(){
   const startedAt = new Date();
 
   try{
-    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'token ' + GH_TOKEN,
-        'Accept': 'application/vnd.github.v3+json'
-      },
-      body: JSON.stringify({ ref: 'main' })
-    });
+    const res = await fetch(SYNC_PROXY_URL, { method: 'POST' });
+    const data = await res.json().catch(()=>({}));
 
-    if(res.status !== 204){
-      throw new Error('HTTP ' + res.status);
+    if(!res.ok || data.ok === false){
+      throw new Error(data.message || ('HTTP ' + res.status));
     }
 
     showToast('⏳ Actualización iniciada — esperando datos de Smartsheet...', 'info');
@@ -1170,8 +1164,9 @@ async function pollSyncStatus(startedAt, btn, label, attempt=0){
     return;
   }
   try{
+    // Lectura pública del repo — no requiere token
     const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/runs?per_page=5`, {
-      headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
     });
     const data = await res.json();
     const run = (data.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt - 5000);
