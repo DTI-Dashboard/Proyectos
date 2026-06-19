@@ -72,10 +72,26 @@ for row in data.get("rows", []):
     except Exception:
         esp = real
 
-    if real >= 100:       sem = "Terminado"
-    elif real >= esp:     sem = "A tiempo"
-    elif real >= esp - 10: sem = "En riesgo"
-    else:                 sem = "Atrasado"
+    # Lógica igual a fórmula Excel:
+    # 1) Si ya venció la fecha fin → Atrasado
+    # 2) Si % real >= % esperado → A tiempo
+    # 3) Si % real <= % esperado - 11 → Atrasado
+    # 4) Sino (diferencia <= 11%) → En riesgo
+    try:
+        fin_vencido = datetime.strptime(fmt_fecha(fin), "%d/%m/%Y") < hoy
+    except Exception:
+        fin_vencido = False
+
+    if real >= 100:
+        sem = "Terminado"
+    elif fin_vencido:
+        sem = "Atrasado"
+    elif real >= esp:
+        sem = "A tiempo"
+    elif real <= esp - 11:
+        sem = "Atrasado"
+    else:
+        sem = "En riesgo"
 
     proyectos.append({
         "nombre": primary,
