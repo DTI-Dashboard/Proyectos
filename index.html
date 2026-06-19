@@ -686,10 +686,9 @@ function buildGantt(projects, canvasId){
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
-  // tomar hasta 12 proyectos con fechas válidas
+  // tomar todos los proyectos con fechas válidas
   const rows = projects
-    .filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—')
-    .slice(0,12);
+    .filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—');
   if(!rows.length){canvas.parentElement.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:30px">Sin datos de fechas disponibles</div>';return;}
 
   const parseDate=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
@@ -703,7 +702,7 @@ function buildGantt(projects, canvasId){
   const barColors=rows.map(p=>semColors[semClass(p.sem)]||'#8b5cf6');
   const DAY=86400000;
 
-  canvas.height = Math.max(180, rows.length * 28 + 40);
+  canvas.height = Math.max(200, rows.length * 32 + 50);
   _chartInst[canvasId]=new Chart(canvas,{
     type:'bar',
     data:{
