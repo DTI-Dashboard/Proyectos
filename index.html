@@ -488,11 +488,14 @@ function semClass(s){
 function semLabel(s){
   return {tiempo:'A tiempo',terminado:'Terminado',atrasado:'Atrasado',standby:'Stand By',riesgo:'En riesgo'}[semClass(s)]||s;
 }
-function barColor(r,e){
-  if(r>=100)return 'b';
-  if(r-e>=-5)return 'g';
-  if(r-e>=-15)return 'y';
-  return 'r';
+function barColor(r,e,sem){
+  // El color de la barra sigue el semáforo del proyecto
+  const s=semClass(sem);
+  if(s==='terminado')return 'b';
+  if(s==='tiempo')return 'g';
+  if(s==='riesgo')return 'y';
+  if(s==='atrasado')return 'r';
+  return 'b';
 }
 function semColorHex(s){
   const c=semClass(s);
@@ -515,7 +518,7 @@ function calcKPIs(projects){
 
 // ─── RENDER ───
 function buildRow(p,tab,ri){
-  const sc=semClass(p.sem),bc=barColor(p.real,p.esp);
+  const sc=semClass(p.sem),bc=barColor(p.real,p.esp,p.sem);
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
