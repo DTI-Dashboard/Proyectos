@@ -241,24 +241,27 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="imc-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid3c" style="grid-template-columns:1fr 2fr">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="imc-donut"></canvas></div></div>
-    <div class="card" style="grid-column:span 1">
-      <div class="card-head">
-        <div class="card-title">Línea de Tiempo (Gantt)</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
-          <select id="imc-gantt-limit" onchange="renderTab('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
-            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
-          </select>
-        </div>
-      </div>
-      <div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt"></canvas></div>
-    </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="imc-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="imc-treemap"></div></div>
   </div>
   <div class="card" style="margin-bottom:0">
-    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
-    <div style="padding:16px" id="imc-treemap"></div>
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button id="imc-gantt-btn" onclick="toggleGanttFilter('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="imc-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="imc-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:6px">
+            <button onclick="ganttSelectAll('imc',true)" style="flex:1;background:var(--gold);color:var(--navy);border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✓ Todos</button>
+            <button onclick="ganttSelectAll('imc',false)" style="flex:1;background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✗ Ninguno</button>
+          </div>
+          <div id="imc-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt"></canvas></div>
   </div>
 </section>
 
@@ -302,24 +305,27 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="dev-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid3c" style="grid-template-columns:1fr 2fr">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="dev-donut"></canvas></div></div>
-    <div class="card" style="grid-column:span 1">
-      <div class="card-head">
-        <div class="card-title">Línea de Tiempo (Gantt)</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
-          <select id="dev-gantt-limit" onchange="renderTab('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
-            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
-          </select>
-        </div>
-      </div>
-      <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
-    </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="dev-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="dev-treemap"></div></div>
   </div>
   <div class="card" style="margin-bottom:0">
-    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
-    <div style="padding:16px" id="dev-treemap"></div>
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button id="dev-gantt-btn" onclick="toggleGanttFilter('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="dev-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="dev-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:6px">
+            <button onclick="ganttSelectAll('dev',true)" style="flex:1;background:var(--gold);color:var(--navy);border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✓ Todos</button>
+            <button onclick="ganttSelectAll('dev',false)" style="flex:1;background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✗ Ninguno</button>
+          </div>
+          <div id="dev-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
   </div>
 </section>
 
@@ -363,24 +369,27 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="inf-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid3c" style="grid-template-columns:1fr 2fr">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="inf-donut"></canvas></div></div>
-    <div class="card" style="grid-column:span 1">
-      <div class="card-head">
-        <div class="card-title">Línea de Tiempo (Gantt)</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
-          <select id="inf-gantt-limit" onchange="renderTab('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
-            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
-          </select>
-        </div>
-      </div>
-      <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
-    </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="inf-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="inf-treemap"></div></div>
   </div>
   <div class="card" style="margin-bottom:0">
-    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
-    <div style="padding:16px" id="inf-treemap"></div>
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button id="inf-gantt-btn" onclick="toggleGanttFilter('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="inf-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="inf-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:6px">
+            <button onclick="ganttSelectAll('inf',true)" style="flex:1;background:var(--gold);color:var(--navy);border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✓ Todos</button>
+            <button onclick="ganttSelectAll('inf',false)" style="flex:1;background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✗ Ninguno</button>
+          </div>
+          <div id="inf-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
   </div>
 </section>
 
@@ -703,18 +712,91 @@ function buildDonut(projects, canvasId){
 }
 
 // ── GANTT (horizontal bar) ──
+// ── Estado de selección del Gantt por tab ──
+const _ganttSel={};
+
+function toggleGanttFilter(tab){
+  const panel=document.getElementById(tab+'-gantt-panel');
+  panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
+function ganttSelectAll(tab, val){
+  const checks=document.querySelectorAll('#'+tab+'-gantt-checks input[type=checkbox]');
+  checks.forEach(c=>c.checked=val);
+  _ganttSel[tab]=val ? null : [];
+  updateGanttLabel(tab);
+  buildGantt(state[tab].data, tab+'-gantt');
+}
+
+function updateGanttLabel(tab){
+  const checks=[...document.querySelectorAll('#'+tab+'-gantt-checks input[type=checkbox]')];
+  const total=checks.length, selected=checks.filter(c=>c.checked).length;
+  const lbl=document.getElementById(tab+'-gantt-lbl');
+  if(!lbl) return;
+  lbl.textContent=selected===total?'Todos los proyectos':`${selected} de ${total} proyectos`;
+}
+
+function buildGanttChecks(tab, projects){
+  const container=document.getElementById(tab+'-gantt-checks');
+  if(!container) return;
+  const rows=projects.filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—');
+  const sel=_ganttSel[tab]; // null = todos, array = seleccionados
+  container.innerHTML=rows.map(p=>{
+    const checked=sel===null||sel.includes(p.nombre);
+    const short=p.nombre.length>34?p.nombre.slice(0,32)+'…':p.nombre;
+    const sc=semClass(p.sem);
+    const dot={terminado:'#3b82f6',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444'}[sc]||'#8b5cf6';
+    return `<label style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:5px;cursor:pointer;font-size:11px;color:#fff" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${p.nombre.replace(/"/g,'&quot;')}" ${checked?'checked':''} onchange="onGanttCheck('${tab}',this)" style="accent-color:var(--gold);cursor:pointer;width:14px;height:14px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0"></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${short}</span>
+    </label>`;
+  }).join('');
+}
+
+function onGanttCheck(tab, checkbox){
+  const checks=[...document.querySelectorAll('#'+tab+'-gantt-checks input[type=checkbox]')];
+  const allChecked=checks.every(c=>c.checked);
+  _ganttSel[tab]=allChecked?null:checks.filter(c=>c.checked).map(c=>c.value);
+  updateGanttLabel(tab);
+  buildGantt(state[tab].data, tab+'-gantt');
+}
+
+// Cerrar panel al hacer clic fuera
+document.addEventListener('click',e=>{
+  ['imc','dev','inf'].forEach(tab=>{
+    const btn=document.getElementById(tab+'-gantt-btn');
+    const panel=document.getElementById(tab+'-gantt-panel');
+    if(panel && btn && !btn.contains(e.target) && !panel.contains(e.target)){
+      panel.style.display='none';
+    }
+  });
+});
+
 function buildGantt(projects, canvasId){
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
   const tab = canvasId.split('-')[0];
-  const limitEl = document.getElementById(tab+'-gantt-limit');
-  const limit = limitEl ? parseInt(limitEl.value) : 0;
 
+  // Construir/actualizar checkboxes
+  buildGanttChecks(tab, projects);
+
+  // Aplicar selección
+  const sel = _ganttSel[tab]; // null = todos
   let rows = projects.filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—');
-  if(limit > 0) rows = rows.slice(0, limit);
+  if(sel !== null) rows = rows.filter(p=>sel.includes(p.nombre));
 
-  if(!rows.length){canvas.parentElement.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:30px">Sin datos de fechas disponibles</div>';return;}
+  if(!rows.length){
+    canvas.style.display='none';
+    let msg=canvas.parentElement.querySelector('.gantt-empty');
+    if(!msg){msg=document.createElement('div');msg.className='gantt-empty';msg.style.cssText='color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:30px';canvas.parentElement.appendChild(msg);}
+    msg.textContent='Sin proyectos seleccionados o sin fechas disponibles';
+    return;
+  }
+  canvas.style.display='';
+  const empty=canvas.parentElement.querySelector('.gantt-empty');
+  if(empty) empty.remove();
 
   const parseDate=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
   const allDates=rows.flatMap(p=>[parseDate(p.inicio),parseDate(p.fin)]);
