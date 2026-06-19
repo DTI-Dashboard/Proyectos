@@ -241,13 +241,20 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="imc-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="imc-area-chart"></div></div></div>
-    <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="imc-status-summary"></div></div>
-  </div>
-  <div class="grid3c">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="imc-donut" style="max-height:200px"></canvas></div></div>
-    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt" style="min-height:180px"></canvas></div></div>
+  <div class="grid3c" style="grid-template-columns:1fr 2fr">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="imc-donut"></canvas></div></div>
+    <div class="card" style="grid-column:span 1">
+      <div class="card-head">
+        <div class="card-title">Línea de Tiempo (Gantt)</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
+          <select id="imc-gantt-limit" onchange="renderTab('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
+            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt"></canvas></div>
+    </div>
   </div>
   <div class="card" style="margin-bottom:0">
     <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
@@ -295,13 +302,20 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="dev-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="dev-area-chart"></div></div></div>
-    <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="dev-status-summary"></div></div>
-  </div>
-  <div class="grid3c">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="dev-donut" style="max-height:200px"></canvas></div></div>
-    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt" style="min-height:180px"></canvas></div></div>
+  <div class="grid3c" style="grid-template-columns:1fr 2fr">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="dev-donut"></canvas></div></div>
+    <div class="card" style="grid-column:span 1">
+      <div class="card-head">
+        <div class="card-title">Línea de Tiempo (Gantt)</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
+          <select id="dev-gantt-limit" onchange="renderTab('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
+            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
+    </div>
   </div>
   <div class="card" style="margin-bottom:0">
     <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
@@ -349,13 +363,20 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="inf-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="inf-area-chart"></div></div></div>
-    <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="inf-status-summary"></div></div>
-  </div>
-  <div class="grid3c">
-    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="inf-donut" style="max-height:200px"></canvas></div></div>
-    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt" style="min-height:180px"></canvas></div></div>
+  <div class="grid3c" style="grid-template-columns:1fr 2fr">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="inf-donut"></canvas></div></div>
+    <div class="card" style="grid-column:span 1">
+      <div class="card-head">
+        <div class="card-title">Línea de Tiempo (Gantt)</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:11px;color:rgba(255,255,255,.5)">Mostrar:</label>
+          <select id="inf-gantt-limit" onchange="renderTab('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">
+            <option value="0">Todos</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
+    </div>
   </div>
   <div class="card" style="margin-bottom:0">
     <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
@@ -686,9 +707,13 @@ function buildGantt(projects, canvasId){
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
-  // tomar todos los proyectos con fechas válidas
-  const rows = projects
-    .filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—');
+  const tab = canvasId.split('-')[0];
+  const limitEl = document.getElementById(tab+'-gantt-limit');
+  const limit = limitEl ? parseInt(limitEl.value) : 0;
+
+  let rows = projects.filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—');
+  if(limit > 0) rows = rows.slice(0, limit);
+
   if(!rows.length){canvas.parentElement.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:30px">Sin datos de fechas disponibles</div>';return;}
 
   const parseDate=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
@@ -700,7 +725,6 @@ function buildGantt(projects, canvasId){
   const starts=rows.map(p=>parseDate(p.inicio)-minT);
   const durations=rows.map(p=>parseDate(p.fin)-parseDate(p.inicio));
   const barColors=rows.map(p=>semColors[semClass(p.sem)]||'#8b5cf6');
-  const DAY=86400000;
 
   canvas.height = Math.max(200, rows.length * 32 + 50);
   _chartInst[canvasId]=new Chart(canvas,{
@@ -709,8 +733,7 @@ function buildGantt(projects, canvasId){
       labels,
       datasets:[
         {data:starts,backgroundColor:'transparent',borderColor:'transparent',borderWidth:0,barPercentage:.6,categoryPercentage:.8},
-        {data:durations,backgroundColor:barColors,borderRadius:4,barPercentage:.6,categoryPercentage:.8,
-          label:'Duración'}
+        {data:durations,backgroundColor:barColors,borderRadius:4,barPercentage:.6,categoryPercentage:.8,label:'Duración'}
       ]
     },
     options:{
@@ -736,6 +759,23 @@ function buildGantt(projects, canvasId){
   });
 }
 
+function renderTab(tab){
+  const cfg={
+    imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',donut:'imc-donut',gantt:'imc-gantt',treemap:'imc-treemap'},
+    dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',donut:'dev-donut',gantt:'dev-gantt',treemap:'dev-treemap'},
+    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',donut:'inf-donut',gantt:'inf-gantt',treemap:'inf-treemap'},
+  }[tab];
+  const p=getFiltered(tab);
+  allProjects[tab]=p;
+  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');
+  document.getElementById(cfg.count).textContent=p.length+' proyectos';
+  buildKPIsDom(p,cfg.kpfx);
+  buildDonut(p,cfg.donut);
+  buildGantt(p,cfg.gantt);
+  buildTreemap(p,cfg.treemap);
+  populateRespSelect(tab);
+}
+
 // ── TREEMAP por área ──
 function buildTreemap(projects, elId){
   const el=document.getElementById(elId);
@@ -754,25 +794,6 @@ function buildTreemap(projects, elId){
       <span>${cnt}</span><span class="treemap-area">${area}</span>
     </div>`;
   }).join('')}</div>`;
-}
-
-function renderTab(tab){
-  const cfg={
-    imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary',donut:'imc-donut',gantt:'imc-gantt',treemap:'imc-treemap'},
-    dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',area:'dev-area-chart',status:'dev-status-summary',donut:'dev-donut',gantt:'dev-gantt',treemap:'dev-treemap'},
-    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary',donut:'inf-donut',gantt:'inf-gantt',treemap:'inf-treemap'},
-  }[tab];
-  const p=getFiltered(tab);
-  allProjects[tab]=p;
-  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');
-  document.getElementById(cfg.count).textContent=p.length+' proyectos';
-  buildKPIsDom(p,cfg.kpfx);
-  buildAreaChart(p,cfg.area);
-  buildStatusSummary(p,cfg.status);
-  buildDonut(p,cfg.donut);
-  buildGantt(p,cfg.gantt);
-  buildTreemap(p,cfg.treemap);
-  populateRespSelect(tab);
 }
 
 function filterTabPorCerrar(tab,el){
