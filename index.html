@@ -6,6 +6,8 @@
 <title>Dashboard DTI — Grupo INCEPADEM</title>
 <!-- SheetJS para exportar Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Chart.js para gráficas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -135,7 +137,12 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .bl{font-size:9px;color:#fff;text-align:center;}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+.grid3c{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:18px;}
+.treemap-wrap{display:flex;flex-wrap:wrap;gap:8px;min-height:120px;}
+.treemap-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;color:#fff;font-weight:700;cursor:default;transition:.2s;padding:8px;}
+.treemap-cell:hover{filter:brightness(1.15);}
+.treemap-area{font-size:11px;opacity:.85;margin-top:2px;text-align:center;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}.grid3c{grid-template-columns:1fr;}}
 
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;}
 .modal-overlay.active{display:flex;}
@@ -238,6 +245,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="imc-area-chart"></div></div></div>
     <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="imc-status-summary"></div></div>
   </div>
+  <div class="grid3c">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="imc-donut" style="max-height:200px"></canvas></div></div>
+    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt" style="min-height:180px"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
+    <div style="padding:16px" id="imc-treemap"></div>
+  </div>
 </section>
 
 <!-- ═══ DESARROLLO ═══ -->
@@ -284,6 +299,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="dev-area-chart"></div></div></div>
     <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="dev-status-summary"></div></div>
   </div>
+  <div class="grid3c">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="dev-donut" style="max-height:200px"></canvas></div></div>
+    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt" style="min-height:180px"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
+    <div style="padding:16px" id="dev-treemap"></div>
+  </div>
 </section>
 
 <!-- ═══ SOPORTE E INFRAESTRUCTURA ═══ -->
@@ -329,6 +352,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="grid2">
     <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:18px"><div class="bar-chart" id="inf-area-chart"></div></div></div>
     <div class="card"><div class="card-head"><div class="card-title">Resumen por Estatus</div></div><div style="padding:18px" id="inf-status-summary"></div></div>
+  </div>
+  <div class="grid3c">
+    <div class="card"><div class="card-head"><div class="card-title">Estado de Proyectos (Semáforo)</div></div><div style="padding:16px;display:flex;align-items:center;justify-content:center;height:220px"><canvas id="inf-donut" style="max-height:200px"></canvas></div></div>
+    <div class="card" style="grid-column:span 2"><div class="card-head"><div class="card-title">Línea de Tiempo (Gantt)</div></div><div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt" style="min-height:180px"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head"><div class="card-title">Treemap por Área (Número de Proyectos)</div></div>
+    <div style="padding:16px" id="inf-treemap"></div>
   </div>
 </section>
 
@@ -612,11 +643,125 @@ function populateRespSelect(tab){
 }
 
 const allProjects={};
+// ── Instancias de Chart.js (para destruir antes de redibujar) ──
+const _chartInst={};
+function destroyChart(id){if(_chartInst[id]){_chartInst[id].destroy();delete _chartInst[id];}}
+
+// ── DONUT de semáforo ──
+function buildDonut(projects, canvasId){
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const counts={terminado:0,tiempo:0,riesgo:0,atrasado:0};
+  projects.forEach(p=>{const k=semClass(p.sem);if(counts[k]!==undefined)counts[k]++;});
+  const labels=['Terminados','A tiempo','En riesgo','Atrasados'];
+  const data=[counts.terminado,counts.tiempo,counts.riesgo,counts.atrasado];
+  const colors=['#3b82f6','#22c55e','#f59e0b','#ef4444'];
+  const total=data.reduce((a,b)=>a+b,0);
+  _chartInst[canvasId]=new Chart(canvas,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#1A2340',hoverOffset:6}]},
+    options:{
+      responsive:true,maintainAspectRatio:true,cutout:'62%',
+      plugins:{
+        legend:{position:'right',labels:{color:'#fff',font:{size:11},padding:10,boxWidth:12}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed} (${total?Math.round(ctx.parsed/total*100):0}%)`}},
+      }
+    },
+    plugins:[{id:'centerText',beforeDraw(chart){
+      const{ctx,chartArea:{left,top,right,bottom}}=chart;
+      const cx=(left+right)/2, cy=(top+bottom)/2;
+      ctx.save();
+      ctx.font='bold 22px Inter';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(total,cx,cy-8);
+      ctx.font='11px Inter';ctx.fillStyle='rgba(255,255,255,.6)';
+      ctx.fillText('Proyectos',cx,cy+12);
+      ctx.restore();
+    }}]
+  });
+}
+
+// ── GANTT (horizontal bar) ──
+function buildGantt(projects, canvasId){
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  // tomar hasta 12 proyectos con fechas válidas
+  const rows = projects
+    .filter(p=>p.inicio && p.fin && p.inicio!=='—' && p.fin!=='—')
+    .slice(0,12);
+  if(!rows.length){canvas.parentElement.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:30px">Sin datos de fechas disponibles</div>';return;}
+
+  const parseDate=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
+  const allDates=rows.flatMap(p=>[parseDate(p.inicio),parseDate(p.fin)]);
+  const minT=Math.min(...allDates), maxT=Math.max(...allDates);
+  const semColors={terminado:'#3b82f6',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444'};
+
+  const labels=rows.map(p=>p.nombre.length>22?p.nombre.slice(0,20)+'…':p.nombre);
+  const starts=rows.map(p=>parseDate(p.inicio)-minT);
+  const durations=rows.map(p=>parseDate(p.fin)-parseDate(p.inicio));
+  const barColors=rows.map(p=>semColors[semClass(p.sem)]||'#8b5cf6');
+  const DAY=86400000;
+
+  canvas.height = Math.max(180, rows.length * 28 + 40);
+  _chartInst[canvasId]=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {data:starts,backgroundColor:'transparent',borderColor:'transparent',borderWidth:0,barPercentage:.6,categoryPercentage:.8},
+        {data:durations,backgroundColor:barColors,borderRadius:4,barPercentage:.6,categoryPercentage:.8,
+          label:'Duración'}
+      ]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{stacked:true,ticks:{color:'rgba(255,255,255,.5)',font:{size:9},
+            callback:v=>{const d=new Date(minT+v);return d.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});}},
+          grid:{color:'rgba(255,255,255,.06)'},min:0,max:maxT-minT},
+        y:{stacked:true,ticks:{color:'#fff',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:ctx=>rows[ctx[0].dataIndex].nombre,
+          label:ctx=>{
+            if(ctx.datasetIndex===0) return null;
+            const p=rows[ctx.dataIndex];
+            return [`Inicio: ${p.inicio}`,`Fin: ${p.fin}`,`Avance: ${p.real}%`];
+          }
+        }}
+      }
+    }
+  });
+}
+
+// ── TREEMAP por área ──
+function buildTreemap(projects, elId){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const areas={};
+  projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
+  const entries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const colors=['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#C9A84C','#06b6d4','#ec4899','#84cc16','#f97316'];
+  if(!entries.length){el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:20px">Sin datos</div>';return;}
+  el.innerHTML=`<div class="treemap-wrap">${entries.map(([area,cnt],i)=>{
+    const pct=total?cnt/total:0;
+    const size=Math.max(80, Math.round(pct*700));
+    const fs=Math.max(12,Math.min(20,10+pct*60));
+    return `<div class="treemap-cell" style="background:${colors[i%colors.length]};min-width:${size}px;min-height:${Math.max(60,Math.round(size*0.55))}px;font-size:${fs}px" title="${area}: ${cnt} proyecto${cnt!==1?'s':''}">
+      <span>${cnt}</span><span class="treemap-area">${area}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function renderTab(tab){
   const cfg={
-    imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary'},
-    dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',area:'dev-area-chart',status:'dev-status-summary'},
-    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary'},
+    imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',area:'imc-area-chart',status:'imc-status-summary',donut:'imc-donut',gantt:'imc-gantt',treemap:'imc-treemap'},
+    dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',area:'dev-area-chart',status:'dev-status-summary',donut:'dev-donut',gantt:'dev-gantt',treemap:'dev-treemap'},
+    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',area:'inf-area-chart',status:'inf-status-summary',donut:'inf-donut',gantt:'inf-gantt',treemap:'inf-treemap'},
   }[tab];
   const p=getFiltered(tab);
   allProjects[tab]=p;
@@ -625,6 +770,9 @@ function renderTab(tab){
   buildKPIsDom(p,cfg.kpfx);
   buildAreaChart(p,cfg.area);
   buildStatusSummary(p,cfg.status);
+  buildDonut(p,cfg.donut);
+  buildGantt(p,cfg.gantt);
+  buildTreemap(p,cfg.treemap);
   populateRespSelect(tab);
 }
 
