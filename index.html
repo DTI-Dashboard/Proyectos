@@ -806,7 +806,7 @@ function buildGantt(projects, canvasId){
   const minT=Math.min(...allDates), maxT=Math.max(...allDates);
   const semColors={terminado:'#3b82f6',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444'};
 
-  const labels=rows.map(p=>p.nombre.length>22?p.nombre.slice(0,20)+'…':p.nombre);
+  const labels=rows.map(p=>p.nombre.length>26?p.nombre.slice(0,24)+'…':p.nombre);
   const starts=rows.map(p=>parseDate(p.inicio)-minT);
   const durations=rows.map(p=>parseDate(p.fin)-parseDate(p.inicio));
   const barColors=rows.map(p=>semColors[semClass(p.sem)]||'#8b5cf6');
@@ -827,7 +827,7 @@ function buildGantt(projects, canvasId){
         x:{stacked:true,ticks:{color:'rgba(255,255,255,.5)',font:{size:9},
             callback:v=>{const d=new Date(minT+v);return d.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});}},
           grid:{color:'rgba(255,255,255,.06)'},min:0,max:maxT-minT},
-        y:{stacked:true,ticks:{color:'#fff',font:{size:11},maxTicksLimit:100},grid:{color:'rgba(255,255,255,.04)'},afterFit(scale){scale.width=180;}}
+        y:{stacked:true,ticks:{color:'#fff',font:{size:11},maxTicksLimit:100,crossAlign:'far'},grid:{color:'rgba(255,255,255,.04)'},afterFit(scale){scale.width=155;}}
       },
       plugins:{
         legend:{display:false},
