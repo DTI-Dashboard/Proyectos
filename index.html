@@ -171,6 +171,16 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .toast.info{background:#1e3a5f;}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(8px)}}
+.lock-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,14,26,.97);z-index:2000;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:16px;padding:36px 40px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.lock-icon{font-size:40px;margin-bottom:12px;}
+.lock-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;}
+.lock-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:24px;}
+.lock-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:12px 14px;color:#fff;font-size:16px;letter-spacing:4px;text-align:center;outline:none;box-sizing:border-box;transition:.2s;}
+.lock-input:focus{border-color:var(--gold);}
+.lock-btn{width:100%;margin-top:14px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;}
+.lock-btn:hover{background:var(--gold-dim);}
+.lock-error{font-size:12px;color:#ef4444;margin-top:10px;min-height:18px;}
 </style>
 <!-- LAST_SYNC -->
 <meta name="last-sync" content="2026-06-22T17:17:43Z">
@@ -387,7 +397,20 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 </section>
 
 <!-- ═══ CARGA ═══ -->
-<section class="module" id="mod-carga">
+<section class="module" id="mod-carga" style="position:relative">
+  <!-- Overlay de contraseña -->
+  <div id="carga-lock" style="position:absolute;top:0;left:0;width:100%;height:100%;background:var(--navy);z-index:100;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:12px">
+    <div class="lock-box">
+      <div class="lock-icon">🔐</div>
+      <div class="lock-title">Carga de Datos</div>
+      <div class="lock-sub">Esta sección requiere contraseña</div>
+      <input class="lock-input" id="carga-pwd" type="password" placeholder="••••••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')verificarClave()"
+        oninput="document.getElementById('carga-err').textContent=''">
+      <button class="lock-btn" onclick="verificarClave()">Acceder</button>
+      <div class="lock-error" id="carga-err"></div>
+    </div>
+  </div>
   <div class="mod-header">
     <div class="mod-header-left">
       <div class="mod-title">Carga de <span>Datos</span></div>
@@ -1145,11 +1168,11 @@ function loadCSV(e){
       mapped.forEach(p=>{
         const key=(p.nombre||'').toLowerCase().trim();
         if(!baseInfo[key]) baseInfo[key]={modulo:p.modulo,nombre:p.nombre};
-        if(colsPresentes.has('area')        && p.area)        baseInfo[key].area=p.area;
-        if(colsPresentes.has('responsable') && p.responsable) baseInfo[key].responsable=p.responsable;
-        if(colsPresentes.has('solicitante') && p.solicitante) baseInfo[key].solicitante=p.solicitante;
-        if(colsPresentes.has('descripcion') && p.descripcion) baseInfo[key].descripcion=p.descripcion;
-        if(colsPresentes.has('url_plan'))                     baseInfo[key].url_plan=p.url_plan;
+        if(colsPresentes.has('area'))        baseInfo[key].area=p.area;
+        if(colsPresentes.has('responsable')) baseInfo[key].responsable=p.responsable;
+        if(colsPresentes.has('solicitante')) baseInfo[key].solicitante=p.solicitante;
+        if(colsPresentes.has('descripcion')) baseInfo[key].descripcion=p.descripcion;
+        if(colsPresentes.has('url_plan'))    baseInfo[key].url_plan=p.url_plan;
         if(!baseInfo[key].modulo) baseInfo[key].modulo=p.modulo;
         if(!baseInfo[key].nombre) baseInfo[key].nombre=p.nombre;
       });
@@ -1168,11 +1191,11 @@ function loadCSV(e){
           const nombreCSV=(csvP.nombre||'').trim().toLowerCase();
           const found=stateData.find(p=>(p.nombre||'').trim().toLowerCase()===nombreCSV);
           if(found){
-            if(colsPresentes.has('area')        && csvP.area)        found.area=csvP.area;
-            if(colsPresentes.has('responsable') && csvP.responsable) found.responsable=csvP.responsable;
-            if(colsPresentes.has('solicitante') && csvP.solicitante) found.solicitante=csvP.solicitante;
-            if(colsPresentes.has('descripcion') && csvP.descripcion) found.descripcion=csvP.descripcion;
-            if(colsPresentes.has('url_plan'))                        found.url_plan=csvP.url_plan;
+            if(colsPresentes.has('area'))        found.area=csvP.area;
+            if(colsPresentes.has('responsable')) found.responsable=csvP.responsable;
+            if(colsPresentes.has('solicitante')) found.solicitante=csvP.solicitante;
+            if(colsPresentes.has('descripcion')) found.descripcion=csvP.descripcion;
+            if(colsPresentes.has('url_plan'))    found.url_plan=csvP.url_plan;
             matched++;
           } else { noMatch.push(csvP.nombre); }
         });
@@ -1525,6 +1548,32 @@ function closeModal(){
   document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── Control de acceso Carga de Datos ─────────────────────────
+const _CLAVE_HASH = '00000000632c56df'; // hash de IMC2026
+function _hashSimple(s){
+  let h=0;
+  for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0;
+  return Math.abs(h).toString(16).padStart(16,'0').slice(0,16);
+}
+function verificarClave(){
+  const pwd=document.getElementById('carga-pwd').value;
+  if(_hashSimple(pwd)===_CLAVE_HASH){
+    document.getElementById('carga-lock').style.display='none';
+    sessionStorage.setItem('carga_ok','1');
+  } else {
+    document.getElementById('carga-err').textContent='Contraseña incorrecta';
+    document.getElementById('carga-pwd').value='';
+    document.getElementById('carga-pwd').focus();
+  }
+}
+// Restaurar acceso si ya autenticó en esta sesión
+document.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('carga_ok')==='1'){
+    const lock=document.getElementById('carga-lock');
+    if(lock) lock.style.display='none';
+  }
+});
 
 // ── Plantilla de Links ────────────────────────────────────────
 function descargarPlantillaLinks(){
