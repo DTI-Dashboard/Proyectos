@@ -1037,7 +1037,7 @@ async function exportPPTX(tab){
   // ── Slide 2 — RESUMEN DE PROYECTOS (KPIs + Treemap) ──────
   const s2 = pres.addSlide();
   s2.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s2.addText('RESUMEN DE PROYECTOS', {x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s2.addText('KPI DE PROYECTOS', {x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s2.addText(today, {x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
 
   // KPIs — borde dorado, número grande en dorado
@@ -1049,7 +1049,7 @@ async function exportPPTX(tab){
   const cardW=1.95, cardH=1.6, cardGap=0.15;
   const totalCardsW = kd.length*cardW + (kd.length-1)*cardGap;
   const cardStartX = (13.33 - totalCardsW) / 2;
-  const cardY = 1.25;
+  const cardY = 1.45;
   kd.forEach((k,i)=>{
     const cx = cardStartX + i*(cardW+cardGap);
     s2.addShape(R,{x:cx,y:cardY,w:cardW,h:cardH,fill:{color:'FFFFFF'},line:{color:'C9A84C',width:1.5}});
@@ -1062,8 +1062,8 @@ async function exportPPTX(tab){
   const areas={};
   projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
   const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
-  const tmY=3.55, tmH=1.95, tmX=0.4, tmW=12.53;
-  s2.addText('KPI de Proyectos',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
+  const tmY=3.85, tmH=2.35, tmX=0.4, tmW=12.53;
+  s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
   const numA=areaEntries.length||1;
   const cellW=(tmW-(numA-1)*0.07)/numA;
   const goldShades=['C9A84C','B8943A','D4B460','A07830','E0C070','C09040','D8BC58','B09038'];
@@ -1097,31 +1097,54 @@ async function exportPPTX(tab){
     });
   });
 
-  // ── Slide 4 — Diagrama de Gantt ──────────────────────────
+  // ── Slide 4 — Diagrama de Gantt (programático, fondo blanco) ──
   const s4 = pres.addSlide();
   s4.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
   s4.addText('DIAGRAMA DE GANTT',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s4.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
-  const ganttCanvas=document.getElementById(tab+'-gantt');
-  if(ganttCanvas && ganttCanvas.width>0 && ganttCanvas.height>0){
-    try{
-      // Pintar fondo oscuro antes de capturar (Chart.js usa fondo transparente)
-      const gCtx=ganttCanvas.getContext('2d');
-      const gData=gCtx.getImageData(0,0,ganttCanvas.width,ganttCanvas.height);
-      gCtx.save();
-      gCtx.globalCompositeOperation='destination-over';
-      gCtx.fillStyle='#1A2340';
-      gCtx.fillRect(0,0,ganttCanvas.width,ganttCanvas.height);
-      gCtx.restore();
-      const ganttImg=ganttCanvas.toDataURL('image/png',1.0);
-      // Restaurar estado original
-      gCtx.putImageData(gData,0,0);
-      const maxW=12.5, maxH=5.7;
-      const ratio=ganttCanvas.height/ganttCanvas.width;
-      const imgW=maxW, imgH=Math.min(maxH, imgW*ratio);
-      const imgY=1.3+(maxH-imgH)/2;
-      s4.addImage({data:ganttImg, x:0.4, y:imgY, w:imgW, h:imgH});
-    }catch(e){ s4.addText('Gantt no disponible',{x:1,y:3,w:11,h:1,fontSize:14,color:'999999',align:'center'}); }
+
+  const ganttProjs=projects.filter(p=>p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—');
+  if(ganttProjs.length>0){
+    const parseD=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
+    const allT=ganttProjs.flatMap(p=>[parseD(p.inicio),parseD(p.fin)]);
+    const minT2=Math.min(...allT), maxT2=Math.max(...allT), timeR=maxT2-minT2;
+    const semCols2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',riesgo:'f59e0b'};
+    const labelW=3.1, barAreaX=0.5+labelW, barAreaW=12.33-labelW;
+    const startY=1.35, rowH=Math.min(0.30, 5.5/ganttProjs.length);
+    const totalH=ganttProjs.length*rowH;
+
+    // Fondo blanco del área
+    s4.addShape(R,{x:0.4,y:startY,w:12.53,h:totalH+0.4,fill:{color:'FFFFFF'},line:{color:'E0E0E0',width:0.5}});
+
+    // Líneas de meses + etiquetas
+    const d0=new Date(minT2); d0.setDate(1);
+    while(d0.getTime()<=maxT2){
+      const xPos=barAreaX+((d0.getTime()-minT2)/timeR)*barAreaW;
+      if(xPos>=barAreaX&&xPos<=barAreaX+barAreaW){
+        s4.addShape('line',{x:xPos,y:startY,w:0,h:totalH,line:{color:'DDDDDD',width:0.3}});
+        const lbl=d0.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});
+        s4.addText(lbl,{x:xPos-0.35,y:startY+totalH+0.05,w:0.75,h:0.25,fontSize:6.5,fontFace:'Calibri',color:'555555',align:'center'});
+      }
+      d0.setMonth(d0.getMonth()+1);
+    }
+
+    // Filas de proyectos
+    ganttProjs.forEach((p,ri)=>{
+      const ry=startY+ri*rowH;
+      const bg=ri%2===0?'FFFFFF':'F5F6FA';
+      s4.addShape(R,{x:0.4,y:ry,w:12.53,h:rowH,fill:{color:bg},line:{color:'EEEEEE',width:0.3}});
+      // Nombre del proyecto
+      const nm=p.nombre.length>42?p.nombre.slice(0,40)+'…':p.nombre;
+      s4.addText(nm,{x:0.45,y:ry+0.02,w:labelW-0.1,h:rowH-0.04,fontSize:6.5,fontFace:'Calibri',color:'222222',align:'left',valign:'middle'});
+      // Barra
+      const sc3=semClass(p.sem), col3=semCols2[sc3]||'8b5cf6';
+      const bx=barAreaX+((parseD(p.inicio)-minT2)/timeR)*barAreaW;
+      const bw=Math.max(0.08,((parseD(p.fin)-parseD(p.inicio))/timeR)*barAreaW);
+      s4.addShape(R,{x:bx,y:ry+rowH*0.18,w:bw,h:rowH*0.64,fill:{color:col3},line:{color:col3}});
+    });
+
+    // Línea separadora vertical entre nombres y barras
+    s4.addShape('line',{x:barAreaX,y:startY,w:0,h:totalH,line:{color:'CCCCCC',width:0.5}});
   } else {
     s4.addText('Sin datos en el Gantt',{x:1,y:3,w:11,h:1,fontSize:14,fontFace:'Calibri',color:'999999',align:'center'});
   }
