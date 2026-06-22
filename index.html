@@ -1018,7 +1018,8 @@ async function exportPPTX(tab){
     alert('La librería PowerPoint aún carga. Espera unos segundos e intenta de nuevo.');
     return;
   }
-  const projects = state[tab].data;
+  // Usar allProjects para respetar el orden actual de la tabla
+  const projects = (allProjects[tab] && allProjects[tab].length) ? allProjects[tab] : state[tab].data;
   const kpis = calcKPIs(projects);
   const today = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
   const fileDate = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
@@ -1073,7 +1074,7 @@ async function exportPPTX(tab){
     s2.addShape(R,{x:cx,y:tmY,w:cellW,h:tmH,fill:{color:col},line:{color:col}});
     const numFs=Math.min(32,Math.max(14,Math.round(cellW*16)));
     s2.addText(String(cnt),{x:cx,y:tmY+0.15,w:cellW,h:0.85,fontSize:numFs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'});
-    s2.addText(area,{x:cx+0.02,y:tmY+1.1,w:cellW-0.04,h:1.1,fontSize:Math.min(8.5,Math.max(6.5,Math.round(cellW*5))),fontFace:'Calibri',color:'FFFFFF',align:'center',wrap:true,valign:'top'});
+    s2.addText(area,{x:cx+0.02,y:tmY+1.1,w:cellW-0.04,h:1.1,fontSize:Math.min(10,Math.max(8,Math.round(cellW*6))),fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center',wrap:true,valign:'top'});
   });
 
   // ── Slide 3 — Tabla de proyectos ─────────────────────────
@@ -1102,7 +1103,12 @@ async function exportPPTX(tab){
   s4.addText('DIAGRAMA DE GANTT',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s4.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
 
-  const ganttProjs=projects.filter(p=>p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—');
+  // Respetar el filtro actual del Gantt (_ganttSel)
+  const ganttSel2=_ganttSel[tab]; // null = todos, array = seleccionados
+  const ganttProjs=projects.filter(p=>
+    p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—'&&
+    (ganttSel2===null||ganttSel2.includes(p.nombre))
+  );
   if(ganttProjs.length>0){
     const parseD=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
     const allT=ganttProjs.flatMap(p=>[parseD(p.inicio),parseD(p.fin)]);
