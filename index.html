@@ -8,6 +8,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- Chart.js para gráficas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -249,6 +251,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="card-head">
       <div class="card-title">Línea de Tiempo (Gantt)</div>
       <div style="position:relative">
+        <button onclick="exportGanttPDF('imc')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
         <button id="imc-gantt-btn" onclick="toggleGanttFilter('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <span id="imc-gantt-lbl">Todos los proyectos</span> ▾
         </button>
@@ -309,6 +312,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="card-head">
       <div class="card-title">Línea de Tiempo (Gantt)</div>
       <div style="position:relative">
+        <button onclick="exportGanttPDF('dev')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
         <button id="dev-gantt-btn" onclick="toggleGanttFilter('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <span id="dev-gantt-lbl">Todos los proyectos</span> ▾
         </button>
@@ -369,6 +373,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="card-head">
       <div class="card-title">Línea de Tiempo (Gantt)</div>
       <div style="position:relative">
+        <button onclick="exportGanttPDF('inf')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
         <button id="inf-gantt-btn" onclick="toggleGanttFilter('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <span id="inf-gantt-lbl">Todos los proyectos</span> ▾
         </button>
@@ -401,7 +406,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="upload-zone" onclick="document.getElementById('file-input').click()">
     <div class="uz-icon">📄</div>
     <div class="uz-title">Arrastra tu archivo CSV aquí o haz clic para seleccionar</div>
-    <div class="uz-sub">Columnas: modulo, nombre, area, responsable, solicitante, descripcion</div>
+    <div class="uz-sub">Columnas: modulo, nombre, area, responsable, solicitante, descripcion, url_plan</div>
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Formato esperado del CSV</div></div>
@@ -470,7 +475,10 @@ Soporte,Migración oficinas Tlalnepantla,Infraestructura,Josue M.,DTI,Traslado o
       </div>
       <div class="modal-footer">
         <span id="m-sem"></span>
-        <span class="modal-hint">Clic fuera para cerrar</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:11px;color:var(--gold);font-weight:600;text-decoration:none;border:1px solid rgba(201,168,76,0.3);border-radius:5px;padding:3px 10px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.1)'" onmouseout="this.style.background=''">📋 Consultar plan de trabajo →</a>
+          <span class="modal-hint">Clic fuera para cerrar</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1024,7 +1032,7 @@ function exportXLSX(tab){
 
 // ─── DESCARGA DE PLANTILLA CSV (solo columnas editables) ───
 function descargarPlantilla(){
-  const header = 'modulo,nombre,area,responsable,solicitante,descripcion';
+  const header = 'modulo,nombre,area,responsable,solicitante,descripcion,url_plan';
   const rows = [];
 
   const addRows = (data, mod) => {
@@ -1109,10 +1117,10 @@ function loadCSV(e){
       });
       // ── Guardar CSV como info_proyectos.csv en el repo para persistencia ──
       // (el sync.py lo leerá en cada ejecución)
-      const csvGuardar = '\uFEFF' + 'modulo,nombre,area,responsable,solicitante,descripcion\n' +
+      const csvGuardar = '\uFEFF' + 'modulo,nombre,area,responsable,solicitante,descripcion,url_plan\n' +
         mapped.map(p=>{
           const esc = s => (s||'').replace(/"/g,'""');
-          return `${p.modulo},"${esc(p.nombre)}","${esc(p.area)}","${esc(p.responsable)}","${esc(p.solicitante)}","${esc(p.descripcion)}"`;
+          return `${p.modulo},"${esc(p.nombre)}","${esc(p.area)}","${esc(p.responsable)}","${esc(p.solicitante)}","${esc(p.descripcion)}","${esc(p.url_plan||'')}"`;
         }).join('\n');
       // Guardar como descarga automática también (para que el usuario tenga copia)
       localStorage.setItem('dti_info_extra', csvGuardar);
@@ -1464,6 +1472,14 @@ function openModal(p){
   document.getElementById('m-bar-real').style.background='#'+col;
   document.getElementById('m-bar-esp').style.width=Math.min(p.esp,100)+'%';
   document.getElementById('m-sem').innerHTML='<span class="sem '+sc+'">'+semLabel(p.sem)+'</span>';
+  // Enlace plan de trabajo
+  const planLink=document.getElementById('m-plan-link');
+  if(p.url_plan && p.url_plan.trim()){
+    planLink.href=p.url_plan.trim();
+    planLink.style.display='inline-flex';
+  } else {
+    planLink.style.display='none';
+  }
   document.getElementById('proj-modal').classList.add('active');
   document.body.style.overflow='hidden';
 }
@@ -1472,6 +1488,38 @@ function closeModal(){
   document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── Exportar Gantt a PDF ──────────────────────────────────────
+function exportGanttPDF(tab){
+  const canvas=document.getElementById(tab+'-gantt');
+  if(!canvas){alert('No hay datos en el Gantt para exportar.');return;}
+  const {jsPDF}=window.jspdf;
+  const imgData=canvas.toDataURL('image/png',1.0);
+  const cw=canvas.width, ch=canvas.height;
+  // Landscape A4: 297×210mm usable ~277×190mm
+  const pageW=297, pageH=210, margin=10;
+  const maxW=pageW-margin*2, maxH=pageH-margin*2-16;
+  const ratio=Math.min(maxW/cw, maxH/ch);
+  const imgW=cw*ratio, imgH=ch*ratio;
+  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  // Fondo oscuro
+  pdf.setFillColor(26,35,64);
+  pdf.rect(0,0,pageW,pageH,'F');
+  // Título
+  const tabLabel={imc:'IMC',dev:'Desarrollo',inf:'Soporte e Infraestructura'}[tab]||tab;
+  pdf.setTextColor(201,168,76);
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(12);
+  pdf.text(`Dashboard DTI — Línea de Tiempo (Gantt) — Módulo ${tabLabel}`, margin, margin+5);
+  // Fecha
+  pdf.setTextColor(180,180,180);
+  pdf.setFont('helvetica','normal');
+  pdf.setFontSize(8);
+  pdf.text(new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'}), pageW-margin, margin+5, {align:'right'});
+  // Imagen del canvas
+  pdf.addImage(imgData,'PNG', margin, margin+12, imgW, imgH);
+  pdf.save(`Gantt_${tabLabel}_${new Date().toISOString().slice(0,10)}.pdf`);
+}
 
 </script>
 </body>
