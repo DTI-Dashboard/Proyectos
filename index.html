@@ -1100,23 +1100,27 @@ function loadCSV(e){
         return result;
       }
 
-      const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim().replace(/[^a-záéíóúñü]/gi,''));
+      const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim().replace(/[^a-záéíóúñü_]/gi,''));
       const rows=lines.slice(1).map(l=>{ 
         const vals=parseCSVLine(l);
         const obj={};
         headers.forEach((h,i)=>obj[h]=vals[i]||'');
         return obj;
-      }).filter(r=>r[headers[1]]||r[headers[2]]);
+      }).filter(r=>r.nombre||r.proyecto);
 
       if(rows.length===0){ showToast('❌ No se encontraron filas válidas','error'); return; }
 
+      // Detectar qué columnas trae este CSV (para merge parcial)
+      const colsPresentes=new Set(headers.filter(h=>!['modulo','nombre','proyecto'].includes(h)));
+
       const mapRow=r=>({
-        nombre:r.nombre||r.proyecto||'',
-        area:r.area||'',
-        responsable:r.responsable||'',
-        solicitante:r.solicitante||r['usuario solicitante']||'',
-        descripcion:r.descripcion||r.descripcin||'',
-        modulo:(r.modulo||'IMC').trim(),
+        nombre:      r.nombre||r.proyecto||'',
+        area:        r.area||'',
+        responsable: r.responsable||'',
+        solicitante: r.solicitante||r['usuario solicitante']||'',
+        descripcion: r.descripcion||r.descripcin||'',
+        url_plan:    r.url_plan||r.urlplan||r['url plan']||'',
+        modulo:      (r.modulo||'IMC').trim(),
       });
       const mapped=rows.map(mapRow);
       const byMod={IMC:[],Desarrollo:[],Soporte:[]};
@@ -1127,27 +1131,55 @@ function loadCSV(e){
         else if(m==='SOPORTE') byMod.Soporte.push(p);
         else byMod.IMC.push(p);
       });
-      // ── Guardar CSV como info_proyectos.csv en el repo para persistencia ──
-      // (el sync.py lo leerá en cada ejecución)
-      const csvGuardar = '\uFEFF' + 'modulo,nombre,area,responsable,solicitante,descripcion,url_plan\n' +
-        mapped.map(p=>{
-          const esc = s => (s||'').replace(/"/g,'""');
-          return `${p.modulo},"${esc(p.nombre)}","${esc(p.area)}","${esc(p.responsable)}","${esc(p.solicitante)}","${esc(p.descripcion)}","${esc(p.url_plan||'')}"`;
-        }).join('\n');
-      // Guardar como descarga automática también (para que el usuario tenga copia)
+
+      // ── MERGE: solo actualiza columnas presentes en este CSV ──────
+      // Lee el localStorage existente para no perder datos previos
+      let baseInfo={};
+      try {
+        const saved=localStorage.getItem('dti_info_extra');
+        if(saved){
+          const bLines=saved.split('\n').filter(Boolean);
+          const bHdrs=parseCSVLine(bLines[0]).map(h=>h.toLowerCase().trim());
+          bLines.slice(1).forEach(l=>{
+            const v=parseCSVLine(l); const o={};
+            bHdrs.forEach((h,i)=>o[h]=v[i]||'');
+            if(o.nombre) baseInfo[o.nombre.toLowerCase().trim()]=o;
+          });
+        }
+      } catch(e){}
+
+      // Aplicar el CSV nuevo encima del base (solo columnas presentes)
+      mapped.forEach(p=>{
+        const key=(p.nombre||'').toLowerCase().trim();
+        if(!baseInfo[key]) baseInfo[key]={modulo:p.modulo,nombre:p.nombre};
+        if(colsPresentes.has('area')        && p.area)        baseInfo[key].area=p.area;
+        if(colsPresentes.has('responsable') && p.responsable) baseInfo[key].responsable=p.responsable;
+        if(colsPresentes.has('solicitante') && p.solicitante) baseInfo[key].solicitante=p.solicitante;
+        if(colsPresentes.has('descripcion') && p.descripcion) baseInfo[key].descripcion=p.descripcion;
+        if(colsPresentes.has('url_plan'))                     baseInfo[key].url_plan=p.url_plan;
+        if(!baseInfo[key].modulo) baseInfo[key].modulo=p.modulo;
+        if(!baseInfo[key].nombre) baseInfo[key].nombre=p.nombre;
+      });
+
+      // Guardar el CSV combinado en localStorage
+      const allRows=Object.values(baseInfo);
+      const esc=s=>(s||'').replace(/"/g,'""');
+      const csvGuardar='\uFEFF'+'modulo,nombre,area,responsable,solicitante,descripcion,url_plan\n'+
+        allRows.map(p=>`${p.modulo||'IMC'},"${esc(p.nombre)}","${esc(p.area||'')}","${esc(p.responsable||'')}","${esc(p.solicitante||'')}","${esc(p.descripcion||'')}","${esc(p.url_plan||'')}"`).join('\n');
       localStorage.setItem('dti_info_extra', csvGuardar);
 
-      // ── MERGE por nombre: CSV solo aporta área/responsable/solicitante/descripción
+      // ── Merge en memoria: solo campos presentes en este CSV ────────
       let matched=0, noMatch=[];
       function mergeData(stateData, csvRows){
         csvRows.forEach(csvP=>{
           const nombreCSV=(csvP.nombre||'').trim().toLowerCase();
           const found=stateData.find(p=>(p.nombre||'').trim().toLowerCase()===nombreCSV);
           if(found){
-            if(csvP.area)        found.area=csvP.area;
-            if(csvP.responsable) found.responsable=csvP.responsable;
-            if(csvP.solicitante) found.solicitante=csvP.solicitante;
-            if(csvP.descripcion) found.descripcion=csvP.descripcion;
+            if(colsPresentes.has('area')        && csvP.area)        found.area=csvP.area;
+            if(colsPresentes.has('responsable') && csvP.responsable) found.responsable=csvP.responsable;
+            if(colsPresentes.has('solicitante') && csvP.solicitante) found.solicitante=csvP.solicitante;
+            if(colsPresentes.has('descripcion') && csvP.descripcion) found.descripcion=csvP.descripcion;
+            if(colsPresentes.has('url_plan'))                        found.url_plan=csvP.url_plan;
             matched++;
           } else { noMatch.push(csvP.nombre); }
         });
