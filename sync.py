@@ -6,30 +6,7 @@ import csv
 import io
 from datetime import datetime, timezone
 
-# ── Configuración ──────────────────────────────────────────────
-TOKEN     = os.environ["SMARTSHEET_TOKEN"]
-REPORT_ID = "1111996261945220"
-URL       = f"https://api.smartsheet.com/2.0/reports/{REPORT_ID}?pageSize=1000"
-MODULO    = "IMC"
-INFO_FILE = "info_proyectos.csv"   # archivo de persistencia
-
-# ── Llamada a la API ───────────────────────────────────────────
-req = urllib.request.Request(URL, headers={
-    "Authorization": f"Bearer {TOKEN}",
-    "Accept": "application/json"
-})
-with urllib.request.urlopen(req) as resp:
-    data = json.loads(resp.read())
-
-# ── Mapear columnas ────────────────────────────────────────────
-col_map = {}
-for c in data.get("columns", []):
-    col_id = c.get("virtualId") or c.get("virtualColumnId") or c.get("id")
-    if col_id:
-        col_map[str(col_id)] = c.get("title", "")
-
-# ── Extraer filas padre ────────────────────────────────────────
-proyectos = []
+TOKEN = os.environ["SMARTSHEET_TOKEN"]
 
 def fmt_fecha(f):
     if not f: return ""
@@ -39,125 +16,147 @@ def fmt_fecha(f):
         except ValueError: continue
     return str(f)
 
-for row in data.get("rows", []):
-    cells = {}
-    for cell in row.get("cells", []):
-        col_id = str(cell.get("virtualColumnId") or cell.get("columnId") or "")
-        col_title = col_map.get(col_id, "")
-        val = cell.get("displayValue") or cell.get("value") or ""
-        if col_title:
-            cells[col_title] = val
-
-    sheet_name = str(cells.get("Sheet Name", "")).strip()
-    primary    = str(cells.get("Primary", "")).strip()
-    avance_raw = cells.get("Avance", "")
-    inicio     = cells.get("Fecha de inicio", "")
-    fin        = cells.get("Fecha de finalización", "")
-
-    if not sheet_name or not primary: continue
-    if sheet_name.lower() not in primary.lower(): continue
-
-    try:
-        real = int(float(str(avance_raw).replace("%", "").strip()))
-    except (ValueError, TypeError):
-        real = 0
-
+def calcular_semaforo(real, esp, fin):
     hoy = datetime.today()
-    try:
-        d_ini = datetime.strptime(fmt_fecha(inicio), "%d/%m/%Y")
-        d_fin = datetime.strptime(fmt_fecha(fin), "%d/%m/%Y")
-        total = (d_fin - d_ini).days
-        trans = (hoy - d_ini).days
-        esp   = max(0, min(100, int((trans / total) * 100))) if total > 0 else 0
-    except Exception:
-        esp = real
-
-    # Lógica igual a fórmula Excel:
-    # 1) Si ya venció la fecha fin → Atrasado
-    # 2) Si % real >= % esperado → A tiempo
-    # 3) Si % real <= % esperado - 11 → Atrasado
-    # 4) Sino (diferencia <= 11%) → En riesgo
     try:
         fin_vencido = datetime.strptime(fmt_fecha(fin), "%d/%m/%Y") < hoy
     except Exception:
         fin_vencido = False
+    if real >= 100:      return "Terminado"
+    elif fin_vencido:    return "Atrasado"
+    elif real >= esp:    return "A tiempo"
+    elif real <= esp-11: return "Atrasado"
+    else:                return "En riesgo"
 
-    if real >= 100:
-        sem = "Terminado"
-    elif fin_vencido:
-        sem = "Atrasado"
-    elif real >= esp:
-        sem = "A tiempo"
-    elif real <= esp - 11:
-        sem = "Atrasado"
-    else:
-        sem = "En riesgo"
-
-    proyectos.append({
-        "nombre": primary,
-        "inicio": fmt_fecha(inicio),
-        "fin":    fmt_fecha(fin),
-        "real":   real,
-        "esp":    esp,
-        "sem":    sem,
-        "area": "", "responsable": "", "solicitante": "", "descripcion": ""
+def fetch_report(report_id, modulo_label):
+    url = f"https://api.smartsheet.com/2.0/reports/{report_id}?pageSize=1000"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Accept": "application/json"
     })
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read())
 
-print(f"✅ {len(proyectos)} proyectos IMC de Smartsheet")
+    col_map = {}
+    for c in data.get("columns", []):
+        col_id = c.get("virtualId") or c.get("virtualColumnId") or c.get("id")
+        if col_id:
+            col_map[str(col_id)] = c.get("title", "")
 
-# ── Leer info_proyectos.csv (persistencia) ────────────────────
-info_extra = {}
-if os.path.exists(INFO_FILE):
-    with open(INFO_FILE, "r", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            nombre = row.get("nombre", "").strip()
-            if nombre:
-                info_extra[nombre.lower()] = {
-                    "area":        row.get("area", ""),
-                    "responsable": row.get("responsable", ""),
-                    "solicitante": row.get("solicitante", ""),
-                    "descripcion": row.get("descripcion", ""),
-                }
-    print(f"✅ info_proyectos.csv leído: {len(info_extra)} entradas")
-else:
-    print("ℹ️  info_proyectos.csv no existe aún — se creará al subir el CSV")
+    proyectos = []
+    hoy = datetime.today()
 
-# ── Merge info extra en los proyectos ─────────────────────────
-for p in proyectos:
-    extra = info_extra.get(p["nombre"].lower(), {})
-    if extra.get("area"):        p["area"]        = extra["area"]
-    if extra.get("responsable"): p["responsable"] = extra["responsable"]
-    if extra.get("solicitante"): p["solicitante"] = extra["solicitante"]
-    if extra.get("descripcion"): p["descripcion"] = extra["descripcion"]
+    for row in data.get("rows", []):
+        cells = {}
+        for cell in row.get("cells", []):
+            col_id = str(cell.get("virtualColumnId") or cell.get("columnId") or "")
+            col_title = col_map.get(col_id, "")
+            val = cell.get("displayValue") or cell.get("value") or ""
+            if col_title:
+                cells[col_title] = val
 
-# ── Inyectar en index.html ─────────────────────────────────────
+        sheet_name = str(cells.get("Sheet Name", "")).strip()
+        primary    = str(cells.get("Primary", "")).strip()
+        avance_raw = cells.get("Avance", "")
+        inicio     = cells.get("Fecha de inicio", "")
+        fin        = cells.get("Fecha de finalización", "")
+
+        if not sheet_name or not primary: continue
+        if sheet_name.lower() not in primary.lower(): continue
+
+        try:
+            real = int(float(str(avance_raw).replace("%", "").strip()))
+        except (ValueError, TypeError):
+            real = 0
+
+        try:
+            d_ini = datetime.strptime(fmt_fecha(inicio), "%d/%m/%Y")
+            d_fin = datetime.strptime(fmt_fecha(fin), "%d/%m/%Y")
+            total = (d_fin - d_ini).days
+            trans = (hoy - d_ini).days
+            esp   = max(0, min(100, int((trans / total) * 100))) if total > 0 else 0
+        except Exception:
+            esp = real
+
+        sem = calcular_semaforo(real, esp, fin)
+
+        proyectos.append({
+            "nombre": primary,
+            "inicio": fmt_fecha(inicio),
+            "fin":    fmt_fecha(fin),
+            "real":   real,
+            "esp":    esp,
+            "sem":    sem,
+            "area": "", "responsable": "", "solicitante": "", "descripcion": ""
+        })
+
+    print(f"✅ {len(proyectos)} proyectos {modulo_label} de Smartsheet")
+    return proyectos
+
+def load_csv(filepath):
+    info = {}
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                nombre = row.get("nombre", "").strip()
+                if nombre:
+                    info[nombre.lower()] = {
+                        "area":        row.get("area", ""),
+                        "responsable": row.get("responsable", ""),
+                        "solicitante": row.get("solicitante", ""),
+                        "descripcion": row.get("descripcion", ""),
+                    }
+        print(f"✅ {filepath} leído: {len(info)} entradas")
+    else:
+        print(f"ℹ️  {filepath} no existe aún")
+    return info
+
+def merge_info(proyectos, info_extra):
+    for p in proyectos:
+        extra = info_extra.get(p["nombre"].lower(), {})
+        for key in ("area", "responsable", "solicitante", "descripcion"):
+            if extra.get(key): p[key] = extra[key]
+
+def proyectos_to_js(proyectos, var_name):
+    js_rows = []
+    for p in proyectos:
+        nombre_js = p["nombre"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
+        area_js   = p["area"].replace("'", "\\'")
+        resp_js   = p["responsable"].replace("'", "\\'")
+        soli_js   = p["solicitante"].replace("'", "\\'")
+        desc_js   = p["descripcion"].replace("'", "\\'") if p["descripcion"] else "Sincronizado desde Smartsheet"
+        js_rows.append(
+            f'  {{tipo:"Proyecto",nombre:"{nombre_js}",area:"{area_js}",'
+            f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
+            f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{resp_js}",'
+            f'solicitante:"{soli_js}",descripcion:"{desc_js}"}}'
+        )
+    return f"const {var_name} = [\n" + ",\n".join(js_rows) + "\n];"
+
+# ── Configuración de módulos ───────────────────────────────────
+MODULOS = [
+    {"report_id": "1111996261945220",  "label": "IMC",       "var": "IMC_DATA", "csv": "info_proyectos.csv"},
+    {"report_id": "2916326996660100",  "label": "Desarrollo", "var": "DEV_DATA", "csv": "info_dev.csv"},
+]
+
+# ── Leer index.html ────────────────────────────────────────────
 with open("index.html", "r", encoding="utf-8") as f:
     html = f.read()
 
-js_rows = []
-for p in proyectos:
-    nombre_js = p["nombre"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
-    area_js   = p["area"].replace("'", "\\'")
-    resp_js   = p["responsable"].replace("'", "\\'")
-    soli_js   = p["solicitante"].replace("'", "\\'")
-    desc_js   = p["descripcion"].replace("'", "\\'") if p["descripcion"] else "Sincronizado desde Smartsheet"
-    js_rows.append(
-        f'  {{tipo:"Proyecto",nombre:"{nombre_js}",area:"{area_js}",'
-        f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
-        f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{resp_js}",'
-        f'solicitante:"{soli_js}",descripcion:"{desc_js}"}}'
-    )
+# ── Procesar cada módulo ───────────────────────────────────────
+for mod in MODULOS:
+    proyectos = fetch_report(mod["report_id"], mod["label"])
+    info_extra = load_csv(mod["csv"])
+    merge_info(proyectos, info_extra)
+    new_data = proyectos_to_js(proyectos, mod["var"])
+    pattern = rf"const {mod['var']}\s*=\s*\[.*?\];"
+    html = re.sub(pattern, new_data, html, flags=re.DOTALL)
 
-new_imc_data = "const IMC_DATA = [\n" + ",\n".join(js_rows) + "\n];"
-pattern = r"const IMC_DATA\s*=\s*\[.*?\];"
-html = re.sub(pattern, new_imc_data, html, flags=re.DOTALL)
-
-# ── Escribir timestamp de sync (meta tag) ──────────────────────
-ts_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# ── Timestamp de sync ──────────────────────────────────────────
+ts_iso     = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 ts_display = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-# Reemplazar o insertar meta last-sync
 meta_tag = f'<meta name="last-sync" content="{ts_iso}">'
 if 'name="last-sync"' in html:
     html = re.sub(r'<meta name="last-sync"[^>]*>', meta_tag, html)
