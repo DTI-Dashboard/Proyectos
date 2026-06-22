@@ -1,0 +1,10 @@
+ERROR: KeyError: 'url_plan'
+
+Traceback (most recent call last):
+  File "/home/runner/work/Proyectos/Proyectos/sync.py", line 191, in <module>
+    new_data   = proyectos_to_js(proyectos, mod["var"])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Proyectos/Proyectos/sync.py", line 159, in proyectos_to_js
+    f'url_plan:"{esc(p["url_plan"])}"}}'
+                     ~^^^^^^^^^^^^
+KeyError: 'url_plan'
