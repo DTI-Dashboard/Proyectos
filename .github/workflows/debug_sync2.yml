@@ -1,0 +1,25 @@
+name: Debug Sync Error V2
+on:
+  workflow_dispatch:
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Debug sync.py con traceback completo
+        env:
+          SMARTSHEET_TOKEN: ${{ secrets.SMARTSHEET_TOKEN }}
+        run: |
+          python3 -c "
+import traceback, sys
+sys.path.insert(0, '.')
+try:
+    exec(open('sync.py').read())
+except Exception as e:
+    print('ERROR:', type(e).__name__, str(e))
+    traceback.print_exc()
+    sys.exit(0)
+"
