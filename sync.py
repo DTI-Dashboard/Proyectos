@@ -33,7 +33,7 @@ def fetch_report(report_id, modulo_label, filter_mode="sheet_match"):
       'sheet_match' → fila es proyecto si sheet_name está dentro de primary (IMC)
       'parent_row'  → fila es proyecto si parentId es None (DDI/Desarrollo)
     """
-    url = f"https://api.smartsheet.com/2.0/reports/{report_id}?pageSize=1000"
+    url = f"https://api.smartsheet.com/2.0/reports/{report_id}?pageSize=10000"
     req = urllib.request.Request(url, headers={
         "Authorization": f"Bearer {TOKEN}",
         "Accept": "application/json"
@@ -178,12 +178,23 @@ with open("index.html", "r", encoding="utf-8") as f:
 
 # ── Procesar cada módulo ──────────────────────────────────────
 for mod in MODULOS:
-    proyectos  = fetch_report(mod["report_id"], mod["label"], mod["filter_mode"])
-    info_extra = load_csv(mod["csv"])
-    merge_info(proyectos, info_extra)
-    new_data   = proyectos_to_js(proyectos, mod["var"])
-    pattern    = rf"const {mod['var']}\s*=\s*\[.*?\];"
-    html = re.sub(pattern, lambda m: new_data, html, flags=re.DOTALL)
+    try:
+        proyectos  = fetch_report(mod["report_id"], mod["label"], mod["filter_mode"])
+        info_extra = load_csv(mod["csv"])
+        merge_info(proyectos, info_extra)
+        new_data   = proyectos_to_js(proyectos, mod["var"])
+        pattern    = rf"const {mod['var']}\s*=\s*\[.*?\];"
+        match = re.search(pattern, html, flags=re.DOTALL)
+        if not match:
+            print(f"⚠️  Patrón no encontrado para {mod['var']} — saltando")
+            continue
+        html = html[:match.start()] + new_data + html[match.end():]
+        print(f"✅ {mod['var']} inyectado: {len(proyectos)} proyectos")
+    except Exception as e:
+        import traceback
+        print(f"❌ Error procesando {mod['label']}: {e}")
+        traceback.print_exc()
+        raise
 
 # ── Timestamp ─────────────────────────────────────────────────
 ts_iso     = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
