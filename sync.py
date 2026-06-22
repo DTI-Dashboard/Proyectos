@@ -114,7 +114,8 @@ try:
                 "area":        "",
                 "responsable": "",
                 "solicitante": "",
-                "descripcion": ""
+                "descripcion": "",
+                "url_plan": ""
             })
 
         print(f"✅ {len(proyectos)} proyectos {modulo_label} de Smartsheet")
