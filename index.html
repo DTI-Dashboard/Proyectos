@@ -422,12 +422,15 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
   <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
     <strong style="color:var(--gold)">¿Cómo funciona?</strong><br>
-    1️⃣ Descarga la plantilla — ya tiene todos tus proyectos con sus nombres exactos<br>
-    2️⃣ Abre en Excel y llena las columnas que necesites: <strong>Área, Responsable, Solicitante, Descripción</strong><br>
-    3️⃣ Opcional: en la columna <strong style="color:var(--gold)">url_plan</strong> pega la URL del plan de Smartsheet de cada proyecto — aparecerá como botón <strong>"📋 Consultar plan de trabajo"</strong> en el modal<br>
-    4️⃣ Guarda como <strong>CSV UTF-8</strong> y súbelo — solo se actualizan las columnas que llenaste, el resto no se toca
+    1️⃣ Descarga la plantilla CSV — tiene todos los proyectos con sus nombres exactos<br>
+    2️⃣ Llena las columnas que necesites y guarda como <strong>CSV UTF-8</strong><br>
+    3️⃣ Sube el archivo — solo se actualizan los campos que llenaste
   </div>
-  <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+  <div class="upload-zone"
+  onclick="document.getElementById('file-input').click()"
+  ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(201,168,76,0.08)'"
+  ondragleave="this.style.borderColor='';this.style.background=''"
+  ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';if(event.dataTransfer.files.length)loadCSV({target:{files:event.dataTransfer.files,value:''}})">
     <div class="uz-icon">📄</div>
     <div class="uz-title">Arrastra tu archivo CSV aquí o haz clic para seleccionar</div>
     <div class="uz-sub">Columnas: modulo, nombre, area, responsable, solicitante, descripcion, url_plan</div>
@@ -504,7 +507,7 @@ IMC,DGA || Odoo-General,Dirección General,Juan Pérez,DGA,Implementación Odoo,
       <div class="modal-footer">
         <span id="m-sem"></span>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:11px;color:var(--gold);font-weight:600;text-decoration:none;border:1px solid rgba(201,168,76,0.3);border-radius:5px;padding:3px 10px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.1)'" onmouseout="this.style.background=''">📋 Consultar plan de trabajo →</a>
+          <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--gold);font-weight:700;text-decoration:none;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:8px;padding:8px 18px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">📋 Consultar plan de trabajo →</a>
           <span class="modal-hint">Clic fuera para cerrar</span>
         </div>
       </div>
@@ -858,7 +861,7 @@ function buildGantt(projects, canvasId){
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
       scales:{
-        x:{stacked:true,ticks:{color:'rgba(255,255,255,.5)',font:{size:9},
+        x:{stacked:true,ticks:{color:'#ffffff',font:{size:11},
             callback:v=>{const d=new Date(minT+v);return d.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});}},
           grid:{color:'rgba(255,255,255,.06)'},min:0,max:maxT-minT},
         y:{stacked:true,ticks:{color:'#fff',font:{size:11},maxTicksLimit:100,crossAlign:'far'},grid:{color:'rgba(255,255,255,.04)'},afterFit(scale){scale.width=270;}}
@@ -1311,6 +1314,7 @@ try{(function(){
         if(csvP.responsable) found.responsable=csvP.responsable;
         if(csvP.solicitante) found.solicitante=csvP.solicitante;
         if(csvP.descripcion) found.descripcion=csvP.descripcion;
+        if(csvP.url_plan!==undefined) found.url_plan=csvP.url_plan;
       }
     });
   }
