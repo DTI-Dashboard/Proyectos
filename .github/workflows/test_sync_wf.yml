@@ -1,0 +1,24 @@
+name: Test Sync Debug
+on:
+  push:
+    paths: ['test_sync.py']
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run test
+        env:
+          SMARTSHEET_TOKEN: ${{ secrets.SMARTSHEET_TOKEN }}
+        run: python test_sync.py
+      - name: Commit debug output
+        run: |
+          git config user.name "DTI-Dashboard Bot"
+          git config user.email "bot@dti-dashboard.github.io"
+          git add sync_debug.txt
+          git diff --staged --quiet || git commit -m "debug: sync output"
+          git pull --rebase origin main
+          git push
