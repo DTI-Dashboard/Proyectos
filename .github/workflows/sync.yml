@@ -21,10 +21,7 @@ jobs:
       - name: Ejecutar sync.py
         env:
           SMARTSHEET_TOKEN: ${{ secrets.SMARTSHEET_TOKEN }}
-        run: |
-          set -o pipefail
-          python sync.py 2>&1 | tee /tmp/sync_output.txt
-          echo "Exit code: $?"
+        run: python sync.py
 
       - name: Guardar cambios en el repo
         run: |
