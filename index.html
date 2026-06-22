@@ -1058,34 +1058,29 @@ async function exportPPTX(tab){
     s2.addText(k.l,{x:cx+0.05,y:cardY+1.1,w:cardW-0.1,h:0.42,fontSize:9,fontFace:'Calibri',color:'555555',align:'center'});
   });
 
-  // Treemap — Proyectos por Área
+  // Treemap — Proyectos por Área (colores dorado, todos visibles)
   const areas={};
   projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
   const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
-  const totalA=areaEntries.reduce((s,[,v])=>s+v,0);
-  const aColors=['3b82f6','22c55e','f59e0b','ef4444','8b5cf6','C9A84C','06b6d4','ec4899','84cc16','f97316'];
-  const tmY=3.2, tmH=1.85, tmX=0.4, tmW=12.53;
-  s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
-  let curX=tmX;
+  const tmY=3.55, tmH=1.95, tmX=0.4, tmW=12.53;
+  s2.addText('KPI de Proyectos',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
+  const numA=areaEntries.length||1;
+  const cellW=(tmW-(numA-1)*0.07)/numA;
+  const goldShades=['C9A84C','B8943A','D4B460','A07830','E0C070','C09040','D8BC58','B09038'];
   areaEntries.forEach(([area,cnt],i)=>{
-    const pct=totalA?cnt/totalA:0;
-    const w=Math.max(0.55, pct*tmW);
-    const col=aColors[i%aColors.length];
-    s2.addShape(R,{x:curX,y:tmY,w:w,h:tmH,fill:{color:col},line:{color:col}});
-    if(w>=0.7){
-      const fs=Math.min(24,Math.max(9,Math.round(w*11)));
-      s2.addText(String(cnt),{x:curX,y:tmY+0.25,w:w,h:0.65,fontSize:fs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'});
-      const lbl=area.length>14?area.slice(0,13)+'…':area;
-      s2.addText(lbl,{x:curX+0.02,y:tmY+0.98,w:w-0.04,h:0.55,fontSize:Math.min(7,Math.max(6,Math.round(w*3.5))),fontFace:'Calibri',color:'FFFFFF',align:'center'});
-    }
-    curX+=w+0.05;
-    if(curX>tmX+tmW) return;
+    const cx=tmX+i*(cellW+0.07);
+    const col=goldShades[i%goldShades.length];
+    s2.addShape(R,{x:cx,y:tmY,w:cellW,h:tmH,fill:{color:col},line:{color:col}});
+    const numFs=Math.min(28,Math.max(12,Math.round(cellW*14)));
+    s2.addText(String(cnt),{x:cx,y:tmY+0.2,w:cellW,h:0.75,fontSize:numFs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'});
+    const lbl=area.length>Math.floor(cellW*6)?area.slice(0,Math.floor(cellW*5.5))+'…':area;
+    s2.addText(lbl,{x:cx+0.03,y:tmY+1.05,w:cellW-0.06,h:0.75,fontSize:Math.min(8,Math.max(6,Math.round(cellW*4))),fontFace:'Calibri',color:'FFFFFF',align:'center',wrap:true});
   });
 
   // ── Slide 3 — Tabla de proyectos ─────────────────────────
   const s3 = pres.addSlide();
   s3.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s3.addText('TABLA DE PROYECTOS',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s3.addText('RESUMEN DE PROYECTOS',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s3.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
   s3.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
   const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
@@ -1110,7 +1105,17 @@ async function exportPPTX(tab){
   const ganttCanvas=document.getElementById(tab+'-gantt');
   if(ganttCanvas && ganttCanvas.width>0 && ganttCanvas.height>0){
     try{
+      // Pintar fondo oscuro antes de capturar (Chart.js usa fondo transparente)
+      const gCtx=ganttCanvas.getContext('2d');
+      const gData=gCtx.getImageData(0,0,ganttCanvas.width,ganttCanvas.height);
+      gCtx.save();
+      gCtx.globalCompositeOperation='destination-over';
+      gCtx.fillStyle='#1A2340';
+      gCtx.fillRect(0,0,ganttCanvas.width,ganttCanvas.height);
+      gCtx.restore();
       const ganttImg=ganttCanvas.toDataURL('image/png',1.0);
+      // Restaurar estado original
+      gCtx.putImageData(gData,0,0);
       const maxW=12.5, maxH=5.7;
       const ratio=ganttCanvas.height/ganttCanvas.width;
       const imgW=maxW, imgH=Math.min(maxH, imgW*ratio);
