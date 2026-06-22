@@ -1060,7 +1060,8 @@ function descargarPlantilla(){
       const resp = (p.responsable||'').replace(/"/g,'""');
       const soli = (p.solicitante||'').replace(/"/g,'""');
       const desc = (p.descripcion==='Sincronizado desde Smartsheet'?'':p.descripcion||'').replace(/"/g,'""');
-      rows.push(`${mod},"${nom}","${area}","${resp}","${soli}","${desc}"`);
+      const url  = (p.url_plan||'').replace(/"/g,'""');
+      rows.push(`${mod},"${nom}","${area}","${resp}","${soli}","${desc}","${url}"`);
     });
   };
 
