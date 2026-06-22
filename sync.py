@@ -48,6 +48,7 @@ def fetch_report(report_id, modulo_label, filter_mode="sheet_match"):
             col_map[str(col_id)] = c.get("title", "")
 
     proyectos = []
+    seen_sheets = set()
     hoy = datetime.today()
 
     for row in data.get("rows", []):
@@ -73,13 +74,13 @@ def fetch_report(report_id, modulo_label, filter_mode="sheet_match"):
             # IMC: el nombre del sheet está contenido en el Primary
             if not sheet_name or sheet_name.lower() not in primary.lower():
                 continue
-        elif filter_mode == "parent_row":
-            # DDI: filas sin parentId son los proyectos principales
-            if parent_id is not None:
+        elif filter_mode == "first_per_sheet":
+            # DDI: tomar solo la primera fila de cada hoja (= el proyecto resumen)
+            if not sheet_name:
                 continue
-            # Además requiere avance o fechas para ser un proyecto real
-            if not avance_raw and not inicio:
+            if sheet_name in seen_sheets:
                 continue
+            seen_sheets.add(sheet_name)
 
         try:
             real = int(float(str(avance_raw).replace("%", "").strip()))
@@ -165,7 +166,7 @@ MODULOS = [
         "label":       "Desarrollo",
         "var":         "DEV_DATA",
         "csv":         "info_dev.csv",
-        "filter_mode": "parent_row"
+        "filter_mode": "first_per_sheet"
     },
 ]
 
