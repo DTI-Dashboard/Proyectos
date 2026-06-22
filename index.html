@@ -138,6 +138,11 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .bb{width:100%;border-radius:4px 4px 0 0;}
 .bl{font-size:9px;color:#fff;text-align:center;}
 
+.th-sort:hover{color:var(--gold);background:rgba(201,168,76,0.06);}
+.th-sort .sort-icon{font-size:10px;opacity:.5;margin-left:3px;}
+.th-sort.asc .sort-icon::after{content:"↑";opacity:1;}
+.th-sort.desc .sort-icon::after{content:"↓";opacity:1;}
+.th-sort.asc .sort-icon,.th-sort.desc .sort-icon{font-size:0;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 .grid3c{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:18px;}
 .treemap-wrap{display:flex;flex-wrap:wrap;gap:8px;min-height:120px;}
@@ -250,7 +255,15 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos IMC — Vista detallada</div><span class="badge b" id="imc-count">0 proyectos</span></div>
-    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="imc-tbody"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('imc','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="imc-tbody"></tbody></table></div>
     </div>
   </div>
   <div class="grid2" style="margin-bottom:18px">
@@ -311,7 +324,15 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Desarrollo — Vista detallada</div><span class="badge b" id="dev-count">0 proyectos</span></div>
-    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="dev-tbody"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('dev','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="dev-tbody"></tbody></table></div>
     </div>
   </div>
   <div class="grid2" style="margin-bottom:18px">
@@ -372,7 +393,15 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Soporte e Infraestructura — Vista detallada</div><span class="badge b" id="inf-count">0 proyectos</span></div>
-    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Avance Real vs Esperado</th><th>Semáforo</th></tr></thead><tbody id="inf-tbody"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('inf','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="inf-tbody"></tbody></table></div>
     </div>
   </div>
   <div class="grid2" style="margin-bottom:18px">
@@ -865,6 +894,52 @@ function buildGantt(projects, canvasId){
       }
     }
   });
+}
+
+
+// ── Ordenar tabla por columna ──────────────────────────────
+const _sortState = {imc:{col:null,dir:1}, dev:{col:null,dir:1}, inf:{col:null,dir:1}};
+
+function parseDate(s){
+  if(!s||s==='—') return 0;
+  const[d,m,y]=s.split('/');
+  return new Date(+y,+m-1,+d).getTime();
+}
+
+function sortTab(tab, col, th){
+  const ss = _sortState[tab];
+  // Cambiar dirección si es la misma columna
+  if(ss.col===col){ ss.dir*=-1; } else { ss.col=col; ss.dir=1; }
+
+  // Actualizar clases visuales en los th
+  document.querySelectorAll(`#mod-${tab} .th-sort`).forEach(el=>{
+    el.classList.remove('asc','desc');
+  });
+  th.classList.add(ss.dir===1?'asc':'desc');
+
+  // Ordenar los datos
+  allProjects[tab].sort((a,b)=>{
+    let av=a[col], bv=b[col];
+    if(col==='inicio'||col==='fin'){
+      av=parseDate(av); bv=parseDate(bv);
+    } else if(col==='real'||col==='esp'){
+      av=Number(av)||0; bv=Number(bv)||0;
+    } else {
+      av=(av||'').toLowerCase(); bv=(bv||'').toLowerCase();
+    }
+    if(av<bv) return -1*ss.dir;
+    if(av>bv) return  1*ss.dir;
+    return 0;
+  });
+
+  // Re-renderizar solo el tbody
+  const cfg={
+    imc:{tbody:'imc-tbody'},
+    dev:{tbody:'dev-tbody'},
+    inf:{tbody:'inf-tbody'},
+  }[tab];
+  document.getElementById(cfg.tbody).innerHTML=
+    allProjects[tab].map((p,ri)=>buildRow(p,tab,ri)).join('');
 }
 
 function renderTab(tab){
