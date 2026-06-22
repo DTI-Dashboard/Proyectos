@@ -3,7 +3,6 @@ import json
 import urllib.request
 import re
 import csv
-import io
 from datetime import datetime, timezone
 
 TOKEN = os.environ["SMARTSHEET_TOKEN"]
@@ -22,13 +21,18 @@ def calcular_semaforo(real, esp, fin):
         fin_vencido = datetime.strptime(fmt_fecha(fin), "%d/%m/%Y") < hoy
     except Exception:
         fin_vencido = False
-    if real >= 100:      return "Terminado"
-    elif fin_vencido:    return "Atrasado"
-    elif real >= esp:    return "A tiempo"
-    elif real <= esp-11: return "Atrasado"
-    else:                return "En riesgo"
+    if real >= 100:       return "Terminado"
+    elif fin_vencido:     return "Atrasado"
+    elif real >= esp:     return "A tiempo"
+    elif real <= esp - 11: return "Atrasado"
+    else:                 return "En riesgo"
 
-def fetch_report(report_id, modulo_label):
+def fetch_report(report_id, modulo_label, filter_mode="sheet_match"):
+    """
+    filter_mode:
+      'sheet_match' → fila es proyecto si sheet_name está dentro de primary (IMC)
+      'parent_row'  → fila es proyecto si parentId es None (DDI/Desarrollo)
+    """
     url = f"https://api.smartsheet.com/2.0/reports/{report_id}?pageSize=1000"
     req = urllib.request.Request(url, headers={
         "Authorization": f"Bearer {TOKEN}",
@@ -55,14 +59,27 @@ def fetch_report(report_id, modulo_label):
             if col_title:
                 cells[col_title] = val
 
-        sheet_name = str(cells.get("Sheet Name", "")).strip()
+        sheet_name = str(cells.get("Sheet Name", "") or cells.get("Nombre de la hoja", "")).strip()
         primary    = str(cells.get("Primary", "")).strip()
         avance_raw = cells.get("Avance", "")
         inicio     = cells.get("Fecha de inicio", "")
         fin        = cells.get("Fecha de finalización", "")
+        parent_id  = row.get("parentId")
 
-        if not sheet_name or not primary: continue
-        if sheet_name.lower() not in primary.lower(): continue
+        if not primary:
+            continue
+
+        if filter_mode == "sheet_match":
+            # IMC: el nombre del sheet está contenido en el Primary
+            if not sheet_name or sheet_name.lower() not in primary.lower():
+                continue
+        elif filter_mode == "parent_row":
+            # DDI: filas sin parentId son los proyectos principales
+            if parent_id is not None:
+                continue
+            # Además requiere avance o fechas para ser un proyecto real
+            if not avance_raw and not inicio:
+                continue
 
         try:
             real = int(float(str(avance_raw).replace("%", "").strip()))
@@ -81,13 +98,16 @@ def fetch_report(report_id, modulo_label):
         sem = calcular_semaforo(real, esp, fin)
 
         proyectos.append({
-            "nombre": primary,
-            "inicio": fmt_fecha(inicio),
-            "fin":    fmt_fecha(fin),
-            "real":   real,
-            "esp":    esp,
-            "sem":    sem,
-            "area": "", "responsable": "", "solicitante": "", "descripcion": ""
+            "nombre":      primary,
+            "inicio":      fmt_fecha(inicio),
+            "fin":         fmt_fecha(fin),
+            "real":        real,
+            "esp":         esp,
+            "sem":         sem,
+            "area":        "",
+            "responsable": "",
+            "solicitante": "",
+            "descripcion": ""
         })
 
     print(f"✅ {len(proyectos)} proyectos {modulo_label} de Smartsheet")
@@ -107,7 +127,7 @@ def load_csv(filepath):
                         "solicitante": row.get("solicitante", ""),
                         "descripcion": row.get("descripcion", ""),
                     }
-        print(f"✅ {filepath} leído: {len(info)} entradas")
+        print(f"✅ {filepath}: {len(info)} entradas")
     else:
         print(f"ℹ️  {filepath} no existe aún")
     return info
@@ -121,50 +141,54 @@ def merge_info(proyectos, info_extra):
 def proyectos_to_js(proyectos, var_name):
     js_rows = []
     for p in proyectos:
-        nombre_js = p["nombre"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
-        area_js   = p["area"].replace("'", "\\'")
-        resp_js   = p["responsable"].replace("'", "\\'")
-        soli_js   = p["solicitante"].replace("'", "\\'")
-        desc_js   = p["descripcion"].replace("'", "\\'") if p["descripcion"] else "Sincronizado desde Smartsheet"
+        def esc(s): return s.replace("\\","\\\\").replace("'","\\'").replace('"','\\"')
+        desc = p["descripcion"] if p["descripcion"] else "Sincronizado desde Smartsheet"
         js_rows.append(
-            f'  {{tipo:"Proyecto",nombre:"{nombre_js}",area:"{area_js}",'
+            f'  {{tipo:"Proyecto",nombre:"{esc(p["nombre"])}",area:"{esc(p["area"])}",'
             f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
-            f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{resp_js}",'
-            f'solicitante:"{soli_js}",descripcion:"{desc_js}"}}'
+            f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{esc(p["responsable"])}",'
+            f'solicitante:"{esc(p["solicitante"])}",descripcion:"{esc(desc)}"}}'
         )
     return f"const {var_name} = [\n" + ",\n".join(js_rows) + "\n];"
 
-# ── Configuración de módulos ───────────────────────────────────
+# ── Configuración de módulos ──────────────────────────────────
 MODULOS = [
-    {"report_id": "1111996261945220",  "label": "IMC",       "var": "IMC_DATA", "csv": "info_proyectos.csv"},
-    {"report_id": "2916326996660100",  "label": "Desarrollo", "var": "DEV_DATA", "csv": "info_dev.csv"},
+    {
+        "report_id":   "1111996261945220",
+        "label":       "IMC",
+        "var":         "IMC_DATA",
+        "csv":         "info_proyectos.csv",
+        "filter_mode": "sheet_match"
+    },
+    {
+        "report_id":   "2916326996660100",
+        "label":       "Desarrollo",
+        "var":         "DEV_DATA",
+        "csv":         "info_dev.csv",
+        "filter_mode": "parent_row"
+    },
 ]
 
-# ── Leer index.html ────────────────────────────────────────────
+# ── Leer index.html ───────────────────────────────────────────
 with open("index.html", "r", encoding="utf-8") as f:
     html = f.read()
 
-# ── Procesar cada módulo ───────────────────────────────────────
+# ── Procesar cada módulo ──────────────────────────────────────
 for mod in MODULOS:
-    proyectos = fetch_report(mod["report_id"], mod["label"])
+    proyectos  = fetch_report(mod["report_id"], mod["label"], mod["filter_mode"])
     info_extra = load_csv(mod["csv"])
     merge_info(proyectos, info_extra)
-    new_data = proyectos_to_js(proyectos, mod["var"])
-    pattern = rf"const {mod['var']}\s*=\s*\[.*?\];"
-    html = re.sub(pattern, new_data, html, flags=re.DOTALL)
+    new_data   = proyectos_to_js(proyectos, mod["var"])
+    html = re.sub(rf"const {mod['var']}\s*=\s*\[.*?\];", new_data, html, flags=re.DOTALL)
 
-# ── Timestamp de sync ──────────────────────────────────────────
+# ── Timestamp ─────────────────────────────────────────────────
 ts_iso     = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 ts_display = datetime.now().strftime("%d/%m/%Y %H:%M")
-
-meta_tag = f'<meta name="last-sync" content="{ts_iso}">'
+meta_tag   = f'<meta name="last-sync" content="{ts_iso}">'
 if 'name="last-sync"' in html:
     html = re.sub(r'<meta name="last-sync"[^>]*>', meta_tag, html)
-else:
-    html = html.replace('<!-- LAST_SYNC -->\n</head>', f'<!-- LAST_SYNC -->\n{meta_tag}\n</head>')
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(html)
 
 print(f"✅ index.html actualizado — {ts_display}")
-print(f"✅ Timestamp de sync: {ts_iso}")
