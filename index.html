@@ -226,7 +226,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       
     </div>
     <div class="export-btns">
-      <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar PowerPoint</button>
+      <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
     </div>
   </div>
@@ -295,7 +295,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       
     </div>
     <div class="export-btns">
-      <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar PowerPoint</button>
+      <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
     </div>
   </div>
@@ -364,7 +364,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       
     </div>
     <div class="export-btns">
-      <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar PowerPoint</button>
+      <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
     </div>
   </div>
@@ -1018,50 +1018,74 @@ async function exportPPTX(tab){
     alert('La librería PowerPoint aún carga. Espera unos segundos e intenta de nuevo.');
     return;
   }
-  const projects=state[tab].data;
-  const modName=MODNAMES[tab];
-  const kpis=calcKPIs(projects);
-  const today=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
-  const fileDate=new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
+  const projects = state[tab].data;
+  const kpis = calcKPIs(projects);
+  const today = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+  const fileDate = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
+  const deptName = DEPT_NAMES[tab];
 
-  const pres=new PptxGenJS();
-  pres.layout='LAYOUT_WIDE';
-  const R=pres.ShapeType.rect;
+  const pres = new PptxGenJS();
+  pres.layout = 'LAYOUT_WIDE';
+  const R = pres.ShapeType.rect;
 
-  function base(s){
-    s.background={color:'FFFFFF'};
-    s.addShape(R,{x:0,y:0,w:13.33,h:0.38,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
-    s.addShape(R,{x:0,y:7.12,w:13.33,h:0.38,fill:{color:'1A1A2E'},line:{color:'1A1A2E'}});
-  }
-
-  // Slide 1 — Portada con fondo institucional
-  const s1=pres.addSlide();
+  // ── Slide 1 — Portada (sin cambios) ──────────────────────
+  const s1 = pres.addSlide();
   s1.addImage({data:BG_PORTADA, x:0, y:0, w:13.33, h:7.5});
-  s1.addText(DEPT_NAMES[tab],{x:1,y:4.1,w:11.33,h:1.0,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s1.addText(today,{x:1,y:5.1,w:11.33,h:0.5,fontSize:13,fontFace:'Calibri',color:'888888',align:'center'});
+  s1.addText(deptName, {x:1,y:4.1,w:11.33,h:1.0,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s1.addText(today, {x:1,y:5.1,w:11.33,h:0.5,fontSize:13,fontFace:'Calibri',color:'888888',align:'center'});
 
-  // Slide 2 — KPIs con fondo institucional
-  const s2=pres.addSlide();
+  // ── Slide 2 — RESUMEN DE PROYECTOS (KPIs + Treemap) ──────
+  const s2 = pres.addSlide();
   s2.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s2.addText(DEPT_NAMES[tab].toUpperCase(),{x:0.3,y:0.48,w:12.7,h:0.55,fontSize:20,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s2.addText(today,{x:0.3,y:0.93,w:12.7,h:0.35,fontSize:11,fontFace:'Calibri',color:'555555',align:'center'});
+  s2.addText('RESUMEN DE PROYECTOS', {x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s2.addText(today, {x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
+
+  // KPIs — borde dorado, número grande en dorado
   const kd=[
-    {l:'Total proyectos',v:kpis.total,c:'1A2340'},{l:'Terminados',v:kpis.term,c:'3b82f6'},
-    {l:'A tiempo',v:kpis.ok,c:'22c55e'},{l:'En riesgo',v:kpis.riesgo,c:'f59e0b'},
-    {l:'Atrasados',v:kpis.atr,c:'ef4444'},{l:'Por cerrar',v:kpis.pc,c:'C9A84C'},{l:'Stand By',v:kpis.sb,c:'8b5cf6'},
+    {l:'Total proyectos',v:kpis.total},{l:'Terminados',v:kpis.term},
+    {l:'A tiempo',v:kpis.ok},{l:'En riesgo',v:kpis.riesgo},
+    {l:'Atrasados',v:kpis.atr},{l:'Por cerrar',v:kpis.pc},
   ];
+  const cardW=1.95, cardH=1.6, cardGap=0.15;
+  const totalCardsW = kd.length*cardW + (kd.length-1)*cardGap;
+  const cardStartX = (13.33 - totalCardsW) / 2;
+  const cardY = 1.25;
   kd.forEach((k,i)=>{
-    const cx=0.35+i*1.81;
-    s2.addShape(R,{x:cx,y:1.65,w:1.72,h:1.3,fill:{color:'F8F9FA'},line:{color:'E2E8F0',width:0.5}});
-    s2.addShape(R,{x:cx,y:1.65,w:1.72,h:0.07,fill:{color:k.c},line:{color:k.c}});
-    s2.addText(String(k.v),{x:cx,y:1.73,w:1.72,h:0.65,fontSize:36,fontFace:'Calibri',color:k.c,bold:true,align:'center'});
-    s2.addText(k.l,{x:cx+0.05,y:2.42,w:1.62,h:0.38,fontSize:8,fontFace:'Calibri',color:'555555',align:'center'});
+    const cx = cardStartX + i*(cardW+cardGap);
+    s2.addShape(R,{x:cx,y:cardY,w:cardW,h:cardH,fill:{color:'FFFFFF'},line:{color:'C9A84C',width:1.5}});
+    s2.addShape(R,{x:cx,y:cardY,w:cardW,h:0.09,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
+    s2.addText(String(k.v),{x:cx,y:cardY+0.08,w:cardW,h:0.95,fontSize:44,fontFace:'Calibri',color:'C9A84C',bold:true,align:'center'});
+    s2.addText(k.l,{x:cx+0.05,y:cardY+1.1,w:cardW-0.1,h:0.42,fontSize:9,fontFace:'Calibri',color:'555555',align:'center'});
   });
 
-  // Slide 3 — Tabla con fondo institucional
-  const s3=pres.addSlide();
+  // Treemap — Proyectos por Área
+  const areas={};
+  projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
+  const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
+  const totalA=areaEntries.reduce((s,[,v])=>s+v,0);
+  const aColors=['3b82f6','22c55e','f59e0b','ef4444','8b5cf6','C9A84C','06b6d4','ec4899','84cc16','f97316'];
+  const tmY=3.2, tmH=1.85, tmX=0.4, tmW=12.53;
+  s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
+  let curX=tmX;
+  areaEntries.forEach(([area,cnt],i)=>{
+    const pct=totalA?cnt/totalA:0;
+    const w=Math.max(0.55, pct*tmW);
+    const col=aColors[i%aColors.length];
+    s2.addShape(R,{x:curX,y:tmY,w:w,h:tmH,fill:{color:col},line:{color:col}});
+    if(w>=0.7){
+      const fs=Math.min(24,Math.max(9,Math.round(w*11)));
+      s2.addText(String(cnt),{x:curX,y:tmY+0.25,w:w,h:0.65,fontSize:fs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'});
+      const lbl=area.length>14?area.slice(0,13)+'…':area;
+      s2.addText(lbl,{x:curX+0.02,y:tmY+0.98,w:w-0.04,h:0.55,fontSize:Math.min(7,Math.max(6,Math.round(w*3.5))),fontFace:'Calibri',color:'FFFFFF',align:'center'});
+    }
+    curX+=w+0.05;
+    if(curX>tmX+tmW) return;
+  });
+
+  // ── Slide 3 — Tabla de proyectos ─────────────────────────
+  const s3 = pres.addSlide();
   s3.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s3.addText('ÁREA DE '+DEPT_NAMES[tab].toUpperCase(),{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:14,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s3.addText('TABLA DE PROYECTOS',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
   s3.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
   s3.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
   const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
@@ -1072,17 +1096,36 @@ async function exportPPTX(tab){
   projects.slice(0,18).forEach((p,ri)=>{
     const ry=1.82+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
     s3.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
-    [p.tipo,p.nombre.slice(0,42),p.area.slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
+    [p.tipo,p.nombre.slice(0,42),(p.area||'').slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
       const isSem=ci===7||ci===5;
-      s3.addText(cell,{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
+      s3.addText(cell||'—',{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
     });
   });
 
-  // Slide 4 — Cierre con fondo institucional
-  const s4=pres.addSlide();
-  s4.addImage({data:BG_CIERRE, x:0, y:0, w:13.33, h:7.5});
+  // ── Slide 4 — Diagrama de Gantt ──────────────────────────
+  const s4 = pres.addSlide();
+  s4.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
+  s4.addText('DIAGRAMA DE GANTT',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+  s4.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
+  const ganttCanvas=document.getElementById(tab+'-gantt');
+  if(ganttCanvas && ganttCanvas.width>0 && ganttCanvas.height>0){
+    try{
+      const ganttImg=ganttCanvas.toDataURL('image/png',1.0);
+      const maxW=12.5, maxH=5.7;
+      const ratio=ganttCanvas.height/ganttCanvas.width;
+      const imgW=maxW, imgH=Math.min(maxH, imgW*ratio);
+      const imgY=1.3+(maxH-imgH)/2;
+      s4.addImage({data:ganttImg, x:0.4, y:imgY, w:imgW, h:imgH});
+    }catch(e){ s4.addText('Gantt no disponible',{x:1,y:3,w:11,h:1,fontSize:14,color:'999999',align:'center'}); }
+  } else {
+    s4.addText('Sin datos en el Gantt',{x:1,y:3,w:11,h:1,fontSize:14,fontFace:'Calibri',color:'999999',align:'center'});
+  }
 
-  await pres.writeFile({fileName:'DTI_'+tab.toUpperCase()+'_'+fileDate+'.pptx'});
+  // ── Slide 5 — Cierre (sin cambios) ───────────────────────
+  const s5 = pres.addSlide();
+  s5.addImage({data:BG_CIERRE, x:0, y:0, w:13.33, h:7.5});
+
+  await pres.writeFile({fileName:'DTI_Dashboard_'+tab.toUpperCase()+'_'+fileDate+'.pptx'});
 }
 
 // ─── EXPORT EXCEL ───
