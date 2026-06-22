@@ -494,6 +494,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
         <span id="m-sem"></span>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--gold);font-weight:700;text-decoration:none;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:8px;padding:8px 18px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">📋 Consultar plan de trabajo →</a>
+          <span id="m-plan-none" style="display:none;font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Sin registro de plan de trabajo</span>
           <span class="modal-hint">Clic fuera para cerrar</span>
         </div>
       </div>
@@ -1526,11 +1527,14 @@ function openModal(p){
   document.getElementById('m-sem').innerHTML='<span class="sem '+sc+'">'+semLabel(p.sem)+'</span>';
   // Enlace plan de trabajo
   const planLink=document.getElementById('m-plan-link');
+  const planNone=document.getElementById('m-plan-none');
   if(p.url_plan && p.url_plan.trim()){
     planLink.href=p.url_plan.trim();
     planLink.style.display='inline-flex';
+    planNone.style.display='none';
   } else {
     planLink.style.display='none';
+    planNone.style.display='inline';
   }
   document.getElementById('proj-modal').classList.add('active');
   document.body.style.overflow='hidden';
