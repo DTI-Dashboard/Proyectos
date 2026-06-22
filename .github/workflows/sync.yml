@@ -2,8 +2,8 @@ name: Sync Smartsheet → Dashboard
 
 on:
   schedule:
-    - cron: '0 * * * *'   # cada hora en punto
-  workflow_dispatch:        # también se puede correr manualmente
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -21,7 +21,10 @@ jobs:
       - name: Ejecutar sync.py
         env:
           SMARTSHEET_TOKEN: ${{ secrets.SMARTSHEET_TOKEN }}
-        run: python sync.py
+        run: |
+          set -o pipefail
+          python sync.py 2>&1 | tee /tmp/sync_output.txt
+          echo "Exit code: $?"
 
       - name: Guardar cambios en el repo
         run: |
