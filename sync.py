@@ -127,6 +127,7 @@ def load_csv(filepath):
                         "responsable": row.get("responsable", ""),
                         "solicitante": row.get("solicitante", ""),
                         "descripcion": row.get("descripcion", ""),
+                        "url_plan":    row.get("url_plan", ""),
                     }
         print(f"✅ {filepath}: {len(info)} entradas")
     else:
@@ -136,7 +137,7 @@ def load_csv(filepath):
 def merge_info(proyectos, info_extra):
     for p in proyectos:
         extra = info_extra.get(p["nombre"].lower(), {})
-        for key in ("area", "responsable", "solicitante", "descripcion"):
+        for key in ("area", "responsable", "solicitante", "descripcion", "url_plan"):
             if extra.get(key): p[key] = extra[key]
 
 def proyectos_to_js(proyectos, var_name):
@@ -148,7 +149,8 @@ def proyectos_to_js(proyectos, var_name):
             f'  {{tipo:"Proyecto",nombre:"{esc(p["nombre"])}",area:"{esc(p["area"])}",'
             f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
             f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{esc(p["responsable"])}",'
-            f'solicitante:"{esc(p["solicitante"])}",descripcion:"{esc(desc)}"}}'
+            f'solicitante:"{esc(p["solicitante"])}",descripcion:"{esc(desc)}",'
+            f'url_plan:"{esc(p["url_plan"])}"}}'
         )
     return f"const {var_name} = [\n" + ",\n".join(js_rows) + "\n];"
 
