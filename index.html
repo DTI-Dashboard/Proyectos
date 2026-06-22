@@ -400,7 +400,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
     <strong style="color:var(--gold)">¿Cómo funciona?</strong><br>
     1️⃣ Descarga la plantilla — ya tiene todos tus proyectos con sus nombres exactos<br>
-    2️⃣ Abre en Excel y llena solo: <strong>Área, Responsable, Solicitante, Descripción</strong><br>
+    2️⃣ Abre en Excel y llena solo: <strong>Área, Responsable, Solicitante, Descripción, URL del Plan</strong><br>
     3️⃣ Guarda como <strong>CSV UTF-8</strong> y súbelo — el dashboard combina la info sin tocar avances ni fechas
   </div>
   <div class="upload-zone" onclick="document.getElementById('file-input').click()">
@@ -411,13 +411,25 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="card">
     <div class="card-head"><div class="card-title">Formato esperado del CSV</div></div>
     <div style="padding:16px">
-      <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);white-space:pre;display:block;background:rgba(0,0,0,.3);padding:14px;border-radius:8px;overflow-x:auto">modulo,nombre,area,responsable,solicitante,descripcion
-IMC,Administración || AdContent - Catálogos,Administración,Miguel E.,DGA,Integración de catálogos
-Desarrollo,AI HUB — Módulo FLEX,Automatización,Ricardo A.,DTI,Módulo de IA conversacional
-Soporte,Migración oficinas Tlalnepantla,Infraestructura,Josue M.,DTI,Traslado oficinas</code>
+      <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);white-space:pre;display:block;background:rgba(0,0,0,.3);padding:14px;border-radius:8px;overflow-x:auto">modulo,nombre,area,responsable,solicitante,descripcion,url_plan
+IMC,Administración || AdContent - Catálogos,Administración,Miguel E.,DGA,Integración de catálogos,https://app.smartsheet.com/...
+Desarrollo,AI HUB — Módulo FLEX,Automatización,Ricardo A.,DTI,Módulo de IA conversacional,https://app.smartsheet.com/...
+Soporte,Migración oficinas Tlalnepantla,Infraestructura,Josue M.,DTI,Traslado oficinas,</code>
       <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.6)">
-        ℹ️ <strong style="color:#fff">No modifiques la columna nombre</strong> — es la clave para identificar cada proyecto. El resto de datos operativos (avance, fechas, semáforo) los controla Smartsheet automáticamente.
+        ℹ️ <strong style="color:#fff">No modifiques la columna nombre</strong> — es la clave para identificar cada proyecto. La columna <strong style="color:var(--gold)">url_plan</strong> es opcional: pega la URL compartida de Smartsheet de cada proyecto y aparecerá como enlace en el modal de detalle.
       </div>
+    </div>
+  </div>
+  <!-- Sección descarga plantilla de links -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-head">
+      <div class="card-title">📋 Plantilla de Links (Plan de Trabajo)</div>
+      <button onclick="descargarPlantillaLinks()" style="background:var(--navy-mid);border:1px solid var(--gold);color:var(--gold);padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;">⬇️ Descargar plantilla</button>
+    </div>
+    <div style="padding:14px 16px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.7">
+      Descarga esta plantilla para agregar la URL del plan de trabajo de cada proyecto.<br>
+      Abre en Excel, pega la liga de Smartsheet en la columna <strong style="color:var(--gold)">url_plan</strong> y sube el archivo en la zona de arriba.<br>
+      El enlace aparecerá en el modal de detalle de cada proyecto como <strong>"📋 Consultar plan de trabajo"</strong>.
     </div>
   </div>
   <div id="upload-preview" style="display:none">
@@ -1488,6 +1500,28 @@ function closeModal(){
   document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── Plantilla de Links ────────────────────────────────────────
+function descargarPlantillaLinks(){
+  const todos=[...state.imc.data,...state.dev.data,...state.inf.data];
+  if(!todos.length){alert('No hay proyectos cargados aún.');return;}
+  const modLabel={imc:'IMC',dev:'Desarrollo',inf:'Soporte'};
+  // Determinar módulo de cada proyecto
+  const rows=[];
+  ['imc','dev','inf'].forEach(tab=>{
+    state[tab].data.forEach(p=>{
+      rows.push({modulo:modLabel[tab]||tab, nombre:p.nombre, url_plan:p.url_plan||''});
+    });
+  });
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const csv='\uFEFF'+'modulo,nombre,url_plan\n'+
+    rows.map(r=>`${r.modulo},"${esc(r.nombre)}","${esc(r.url_plan)}"`).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='plantilla_links_plan_trabajo.csv';
+  a.click();
+}
 
 // ── Exportar Gantt a PDF ──────────────────────────────────────
 function exportGanttPDF(tab){
