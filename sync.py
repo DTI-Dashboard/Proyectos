@@ -182,7 +182,8 @@ for mod in MODULOS:
     info_extra = load_csv(mod["csv"])
     merge_info(proyectos, info_extra)
     new_data   = proyectos_to_js(proyectos, mod["var"])
-    html = re.sub(rf"const {mod['var']}\s*=\s*\[.*?\];", new_data, html, flags=re.DOTALL)
+    pattern    = rf"const {mod['var']}\s*=\s*\[.*?\];"
+    html = re.sub(pattern, lambda m: new_data, html, flags=re.DOTALL)
 
 # ── Timestamp ─────────────────────────────────────────────────
 ts_iso     = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
