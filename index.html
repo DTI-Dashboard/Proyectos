@@ -615,7 +615,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
     <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
     <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
-    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
+    <div style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:8px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Ivan Franco"></div>
       
@@ -629,16 +629,8 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
           <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
         </select>
       </div>
-      <div><label class="act-inp-lbl">ESTATUS</label>
-        <select id="act-inp-estatus" class="act-inp">
-          <option value="En proceso" style="background:#1c2535;color:#6366f1">🔵 En proceso</option>
-          <option value="Concluido" style="background:#1c2535;color:#22c55e">🟢 Concluido</option>
-          <option value="Atrasado" style="background:#1c2535;color:#ef4444">🔴 Atrasado</option>
-        </select>
-      </div>
-      <div style="grid-column:span 2"><label class="act-inp-lbl">NOTAS / OBSERVACIONES (opcional)</label>
-        <textarea id="act-inp-notas" class="act-inp" placeholder="Bloqueos, comentarios, contexto adicional..." rows="3" style="resize:vertical"></textarea>
-      </div>
+<!-- estatus removido del modal - siempre En proceso al crear -->
+<!-- notas removido del modal -->
     </div>
     <input type="hidden" id="act-inp-id">
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
@@ -2008,24 +2000,23 @@ function openActModal(id){
     const a=_actividades.find(x=>x.id===id);
     if(!a) return;
     document.getElementById('act-modal-tag').textContent='EDITAR ACTIVIDAD';
-    document.getElementById('act-modal-title').textContent='Editar Actividad';
+    // titulo secundario eliminado
     document.getElementById('act-inp-id').value=id;
     document.getElementById('act-inp-nombre').value=a.nombre;
     // area removida del modal
     document.getElementById('act-inp-actividad').value=a.actividad;
     document.getElementById('act-inp-fecha').value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
-    document.getElementById('act-inp-estatus').value=a.estatus;
+    // estatus removido del modal
     // semana removida del modal
-    document.getElementById('act-inp-notas').value=a.notas||'';
+    // notas removido del modal
   } else {
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
-    document.getElementById('act-modal-title').textContent='Agregar Actividad';
-    ['act-inp-id','act-inp-nombre','act-inp-actividad','act-inp-notas'].forEach(i=>document.getElementById(i).value='');
+    // titulo secundario eliminado
+    ['act-inp-id','act-inp-nombre','act-inp-actividad'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
-    document.getElementById('act-inp-estatus').value='En proceso';
-    // semana removida del modal
+    // estatus y notas removidos del modal
   }
 }
 
@@ -2047,8 +2038,8 @@ function saveActividad(){
     prioridad: document.getElementById('act-inp-prioridad').value,
     fechaFin: fecha,
     semana: existing.semana||semana,
-    estatus: document.getElementById('act-inp-estatus').value,
-    notas: (document.getElementById('act-inp-notas').value||'').trim(),
+    estatus: id ? (existing.estatus||'En proceso') : 'En proceso',
+    notas: id ? (existing.notas||'') : '',
     updatedAt: now
   };
   if(id){
