@@ -1973,7 +1973,7 @@ function exportGanttPDF(tab){
 // MÓDULO ACTIVIDADES SEMANALES
 // ════════════════════════════════════════════════
 let _actividades = [];
-let _actSemana   = null; // null=no init, ''=todas, 'YYYY-Wnn'=semana especifica
+let _actSemana   = ''; // ''=todas, 'YYYY-Wnn'=semana especifica
 
 function _isoWeek(date){
   const d=new Date(date); d.setHours(12);
@@ -2092,7 +2092,7 @@ function actNavWeek(dir){
 
 function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 
-function actSelectWeek(v){ if(!v) return; _actSemana=(v==='todas'?'':v); renderActividades(); }
+function actSelectWeek(v){ _actSemana=(v==='todas'||!v)?'':v; renderActividades(); }
 
 function renderActividades(){
   _loadAct();
@@ -2191,7 +2191,7 @@ function exportActXLSX(){
 }
 
 // Inicializar al cargar
-_actSemana = _isoWeek(new Date());
+_actSemana = ''; // Default: mostrar todas las actividades
 
 // Cargar datos de ejemplo si localStorage está vacío
 (function(){
