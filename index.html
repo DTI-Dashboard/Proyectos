@@ -2151,7 +2151,7 @@ function renderActividades(){
     const pc=pCols[a.prioridad]||'#f59e0b';
     const fechaStr=a.fechaFin?new Date(a.fechaFin+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
     const semanaN=a.semana?'S'+a.semana.split('-W')[1]:'—';
-    const notaIcon=a.notas?`<span title="${a.notas.replace(/"/g,'&quot;')}" style="cursor:help;color:var(--gold);margin-left:5px" title="Ver notas">💬</span>`:'';
+    const notaIcon='';
     const vencida=a.fechaFin&&new Date(a.fechaFin+'T23:59:59')<new Date()&&a.estatus!=='Concluido'?'color:#ef4444;':'';
     return `<tr>
       <td style="font-weight:600">${a.nombre}</td>
