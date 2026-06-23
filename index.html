@@ -540,6 +540,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
       <div class="act-multi-wrap">
         <button class="act-multi-btn" id="act-est-btn" onclick="toggleActPanel('estatus')">🔵 Todos los estatus ▾</button>
         <div class="act-multi-panel" id="act-estatus-panel">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700"><input type="checkbox" id="act-est-todos" onchange="actSelTodos('estatus',this)" style="accent-color:var(--gold)" checked> ✓ Todos los estatus</label>
           <label class="act-multi-lbl"><input type="checkbox" value="En proceso" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
           <label class="act-multi-lbl"><input type="checkbox" value="Concluido" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
           <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
@@ -2123,6 +2124,23 @@ function validarFechaLaboral(inp){
   }
 }
 
+function actSelTodos(tipo, chk){
+  if(tipo==='estatus'){
+    const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)')];
+    checks.forEach(c=>c.checked=chk.checked);
+    _actFiltroEst=chk.checked?[]:checks.filter(c=>c.checked).map(c=>c.value);
+    const btn=document.getElementById('act-est-btn');
+    btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active');
+  } else {
+    const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]:not(#act-nom-todos)')];
+    checks.forEach(c=>c.checked=chk.checked);
+    _actFiltroNom=chk.checked?[]:checks.filter(c=>c.checked).map(c=>c.value);
+    const btn=document.getElementById('act-nom-btn');
+    btn.textContent='👤 Todos los colaboradores ▾'; btn.classList.remove('active');
+  }
+  renderActividades();
+}
+
 function toggleActPanel(tipo){
   const paneles=['act-estatus-panel','act-nombre-panel'];
   paneles.forEach(id=>{
@@ -2138,19 +2156,27 @@ function toggleActPanel(tipo){
 
 function actCheckFilt(tipo){
   if(tipo==='estatus'){
-    const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]')];
+    const todos=document.getElementById('act-est-todos');
+    const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)')];
     _actFiltroEst=checks.filter(c=>c.checked).map(c=>c.value);
+    const allChecked=checks.every(c=>c.checked);
+    if(todos) todos.checked=allChecked;
     const btn=document.getElementById('act-est-btn');
-    if(_actFiltroEst.length===0){
+    if(_actFiltroEst.length===0||allChecked){
+      _actFiltroEst=[];
       btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active');
     } else {
-      btn.textContent=_actFiltroEst.join(', ')+' ▾'; btn.classList.add('active');
+      btn.textContent=_actFiltroEst.join(' + ')+' ▾'; btn.classList.add('active');
     }
   } else if(tipo==='nombre'){
-    const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]')];
+    const todos=document.getElementById('act-nom-todos');
+    const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]:not(#act-nom-todos)')];
     _actFiltroNom=checks.filter(c=>c.checked).map(c=>c.value);
+    const allChecked=checks.every(c=>c.checked);
+    if(todos) todos.checked=allChecked;
     const btn=document.getElementById('act-nom-btn');
-    if(_actFiltroNom.length===0){
+    if(_actFiltroNom.length===0||allChecked){
+      _actFiltroNom=[];
       btn.textContent='👤 Todos los colaboradores ▾'; btn.classList.remove('active');
     } else {
       btn.textContent=_actFiltroNom.length+' colaboradores ▾'; btn.classList.add('active');
@@ -2223,8 +2249,11 @@ function renderActividades(){
   const nomPanel=document.getElementById('act-nombre-checks');
   if(nomPanel){
     const cur=_actFiltroNom;
-    nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
-      <input type="checkbox" value="${n}" ${cur.includes(n)?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
+    const allNomSel=cur.length===0;
+    nomPanel.innerHTML=`<label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+      <input type="checkbox" id="act-nom-todos" ${allNomSel?'checked':''} onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
+    </label>`+nms.map(n=>`<label class="act-multi-lbl">
+      <input type="checkbox" value="${n}" ${cur.length===0||cur.includes(n)?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
     </label>`).join('');
   }
 
