@@ -2048,16 +2048,16 @@ function saveActividad(){
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
   const semana=_actSemana||_isoWeek(new Date());
-  const existingArea = id ? (_actividades.find(x=>x.id===id)||{}).area||'' : '';
-  const existingSemana = id ? (_actividades.find(x=>x.id===id)||{}).semana||semana : semana;
+  const existing=id?(_actividades.find(x=>x.id===id)||{}): {};
   const obj={
-    nombre,actividad,
-    area:existingArea
-    prioridad:document.getElementById('act-inp-prioridad').value,
-    fechaFin:fecha, semana:existingSemana,
-    estatus:document.getElementById('act-inp-estatus').value,
-    notas:(document.getElementById('act-inp-notas').value||'').trim(),
-    updatedAt:now
+    nombre, actividad,
+    area: existing.area||'',
+    prioridad: document.getElementById('act-inp-prioridad').value,
+    fechaFin: fecha,
+    semana: existing.semana||semana,
+    estatus: document.getElementById('act-inp-estatus').value,
+    notas: (document.getElementById('act-inp-notas').value||'').trim(),
+    updatedAt: now
   };
   if(id){
     const idx=_actividades.findIndex(x=>x.id===id);
