@@ -524,12 +524,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div class="kpi gold"><div class="kpi-lbl">Colaboradores</div><div class="kpi-val gold" id="act-k-personas">0</div><div class="kpi-sub">Activos esta semana</div></div>
   </div>
   <div class="act-week-nav">
-    <div class="act-week-ctrl">
-      <button class="act-week-btn" onclick="actNavWeek(-1)">◀</button>
-      <span id="act-week-label" style="font-weight:700;color:var(--gold);min-width:280px;text-align:center;font-size:14px">—</span>
-      <button class="act-week-btn" onclick="actNavWeek(1)">▶</button>
-      <button class="act-week-btn" onclick="actGoToday()" style="font-size:11px;padding:4px 10px">Hoy</button>
-    </div>
     <div class="act-filters-row">
       <select id="act-f-estatus" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
         <option value="">Todos los estatus</option>
@@ -2082,6 +2076,11 @@ function changeActEstatus(id,val){
 }
 
 
+
+function _semanaDeFinDate(fechaFin){
+  if(!fechaFin) return '';
+  return _isoWeek(new Date(fechaFin+'T12:00:00'));
+}
 function actNavWeek(dir){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
   if(!_actSemana){ const[yr2,ww2]=(_isoWeek(new Date())).split('-W'); const d2=new Date(parseInt(yr2),0,1+(parseInt(ww2)-1)*7); _actSemana=_isoWeek(d2); }
@@ -2103,9 +2102,9 @@ function renderActividades(){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
 
   const lbl=document.getElementById('act-week-label');
-  if(lbl) lbl.textContent=_actSemana?_weekLabel(_actSemana):'📋 Todas las actividades';
+  // nav bar removida
 
-  const weekActs=_actSemana?_actividades.filter(a=>a.semana===_actSemana):_actividades;
+  const weekActs=_actSemana?_actividades.filter(a=>_semanaDeFinDate(a.fechaFin)===_actSemana):_actividades;
   const setK=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   setK('act-k-total',weekActs.length);
   setK('act-k-proc',weekActs.filter(a=>a.estatus==='En proceso').length);
@@ -2115,7 +2114,7 @@ function renderActividades(){
 
   // Filtrar para la tabla
   let filtered=_actividades.filter(a=>{
-    if(_actSemana && a.semana!==_actSemana) return false;
+    if(_actSemana && _semanaDeFinDate(a.fechaFin)!==_actSemana) return false;
     if(fEst && a.estatus!==fEst) return false;
     if(fNom && a.nombre!==fNom) return false;
     if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
