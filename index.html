@@ -2186,7 +2186,6 @@ function validarFechaLaboral(inp){
 }
 
 function actSelTodos(tipo, chk){
-  // chk.checked ya refleja el nuevo estado tras el clic
   const newState=chk.checked;
   if(tipo==='estatus'){
     const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)')];
@@ -2195,9 +2194,14 @@ function actSelTodos(tipo, chk){
     const btn=document.getElementById('act-est-btn');
     btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active');
   } else {
-    const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]:not(#act-nom-todos)')];
-    checks.forEach(c=>c.checked=newState);
-    _actFiltroNom=newState?[]:checks.map(c=>c.value);
+    // Colaboradores: newState=true → todos, newState=false → ninguno
+    if(newState){
+      _actFiltroNom=[]; // vacío = todos
+    } else {
+      // Obtener todos los nombres actuales y marcarlos como excluidos
+      const nms=[...new Set(_actividades.map(a=>a.nombre))].sort();
+      _actFiltroNom=['__ninguno__']; // valor especial: nadie seleccionado
+    }
     const btn=document.getElementById('act-nom-btn');
     btn.textContent='👤 Todos los colaboradores ▾'; btn.classList.remove('active');
   }
@@ -2289,7 +2293,7 @@ function renderActividades(){
   let filtered=_actividades.filter(a=>{
     if(_actSemana && _semanaDeFinDate(a.fechaFin)!==_actSemana) return false;
     if(fEst.length && !fEst.includes(a.estatus)) return false;
-    if(fNom.length && !fNom.includes(a.nombre)) return false;
+    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
     if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
     return true;
@@ -2315,9 +2319,10 @@ function renderActividades(){
     const allNomSel=cur.length===0;
     // Actualizar el checkbox "Todos" sin regenerarlo (es estático en el HTML)
     const todosChk=document.getElementById('act-nom-todos');
-    if(todosChk) todosChk.checked=allNomSel;
+    const ninguno=_actFiltroNom.length===1&&_actFiltroNom[0]==='__ninguno__';
+    if(todosChk) todosChk.checked=allNomSel&&!ninguno;
     nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
-      <input type="checkbox" value="${n}" ${cur.length===0||cur.includes(n)?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
+      <input type="checkbox" value="${n}" ${cur.length===0||(cur[0]!=='__ninguno__'&&cur.includes(n))?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
     </label>`).join('');
   }
 
