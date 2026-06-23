@@ -567,43 +567,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
 </section>
 
-<!-- Modal Actividad -->
-<div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
-    <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
-    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
-    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Eduardo Sanchez"></div>
-      <div><label class="act-inp-lbl">ÁREA / DEPARTAMENTO</label><input id="act-inp-area" class="act-inp" placeholder="Ej: Capital Humano"></div>
-      <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
-      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
-      <div><label class="act-inp-lbl">SEMANA</label><input id="act-inp-semana" type="week" class="act-inp"></div>
-      <div><label class="act-inp-lbl">PRIORIDAD</label>
-        <select id="act-inp-prioridad" class="act-inp">
-          <option value="Alta">🔴 Alta</option>
-          <option value="Media" selected>🟡 Media</option>
-          <option value="Baja">🟢 Baja</option>
-        </select>
-      </div>
-      <div><label class="act-inp-lbl">ESTATUS</label>
-        <select id="act-inp-estatus" class="act-inp">
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
-        </select>
-      </div>
-      <div style="grid-column:span 2"><label class="act-inp-lbl">NOTAS / OBSERVACIONES (opcional)</label>
-        <textarea id="act-inp-notas" class="act-inp" placeholder="Bloqueos, comentarios, contexto adicional..." rows="3" style="resize:vertical"></textarea>
-      </div>
-    </div>
-    <input type="hidden" id="act-inp-id">
-    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
-      <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
-      <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">💾 Guardar actividad</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══ CARGA ═══ -->
 <section class="module" id="mod-carga" style="position:relative">
@@ -653,6 +616,46 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     </div>
   </div>
 </section>
+
+
+<!-- Modal Actividad -->
+<div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Eduardo Sanchez"></div>
+      <div><label class="act-inp-lbl">ÁREA / DEPARTAMENTO</label><input id="act-inp-area" class="act-inp" placeholder="Ej: Capital Humano"></div>
+      <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
+      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
+      <div><label class="act-inp-lbl">SEMANA</label><input id="act-inp-semana" type="week" class="act-inp"></div>
+      <div><label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="act-inp-prioridad" class="act-inp">
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media" selected>🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+      </div>
+      <div><label class="act-inp-lbl">ESTATUS</label>
+        <select id="act-inp-estatus" class="act-inp">
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2"><label class="act-inp-lbl">NOTAS / OBSERVACIONES (opcional)</label>
+        <textarea id="act-inp-notas" class="act-inp" placeholder="Bloqueos, comentarios, contexto adicional..." rows="3" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <input type="hidden" id="act-inp-id">
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">💾 Guardar actividad</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="modal-overlay" id="proj-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
@@ -1191,6 +1194,7 @@ function switchTab(id,el){
   document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('mod-'+id).classList.add('active');
+  if(id==='actividades') renderActividades();
 }
 
 // ─── EXPORT PPTX (PptxGenJS v4) ───
@@ -1770,6 +1774,23 @@ function exportActXLSX(){
 
 // Inicializar al cargar
 _actSemana = _isoWeek(new Date());
+
+// Cargar datos de ejemplo si localStorage está vacío
+(function(){
+  if(localStorage.getItem('dti_actividades')) return;
+  const sample=[
+    {id:'ex1',nombre:'Eduardo Sanchez',actividad:'Revisión de avance del proyecto Talleres || Mecánica Mx',area:'Talleres',prioridad:'Alta',fechaFin:'2026-06-23',semana:'2026-W26',estatus:'En proceso',notas:'Pendiente revisión con el cliente.',createdAt:'2026-06-23T09:00:00',updatedAt:'2026-06-23T09:00:00'},
+    {id:'ex2',nombre:'Miguel Benítez',actividad:'Documentar integración Smartsheet con dashboard DTI',area:'Capital Humano',prioridad:'Media',fechaFin:'2026-06-23',semana:'2026-W26',estatus:'Concluido',notas:'',createdAt:'2026-06-23T10:00:00',updatedAt:'2026-06-23T10:00:00'},
+    {id:'ex3',nombre:'Ricardo Ángeles',actividad:'Pruebas de conectividad API Mecánica MX Fase 2',area:'Integraciones',prioridad:'Alta',fechaFin:'2026-06-25',semana:'2026-W26',estatus:'Atrasado',notas:'Bloqueado por accesos al servidor de producción.',createdAt:'2026-06-23T08:00:00',updatedAt:'2026-06-23T11:00:00'},
+    {id:'ex4',nombre:'Josue Montoya',actividad:'Actualizar dashboard DTI con módulo Actividades Semanales',area:'DTI',prioridad:'Alta',fechaFin:'2026-06-23',semana:'2026-W26',estatus:'Concluido',notas:'',createdAt:'2026-06-23T07:00:00',updatedAt:'2026-06-23T07:00:00'},
+    {id:'ex5',nombre:'Eduardo Sanchez',actividad:'Reunión de seguimiento proyectos IMC con dirección',area:'Talleres',prioridad:'Media',fechaFin:'2026-06-24',semana:'2026-W26',estatus:'En proceso',notas:'',createdAt:'2026-06-23T09:30:00',updatedAt:'2026-06-23T09:30:00'},
+    {id:'ex6',nombre:'Miguel Benítez',actividad:'Configuración de campos BUK Personalizado Fase 2',area:'Capital Humano',prioridad:'Baja',fechaFin:'2026-06-26',semana:'2026-W26',estatus:'En proceso',notas:'',createdAt:'2026-06-23T10:30:00',updatedAt:'2026-06-23T10:30:00'},
+    {id:'ex7',nombre:'Ricardo Ángeles',actividad:'Entrega de análisis de requerimientos — AI HUB FLEX',area:'Automatización',prioridad:'Alta',fechaFin:'2026-06-20',semana:'2026-W25',estatus:'Concluido',notas:'',createdAt:'2026-06-16T09:00:00',updatedAt:'2026-06-20T16:00:00'},
+    {id:'ex8',nombre:'Josue Montoya',actividad:'Revisión de arquitectura del reporte Informe General',area:'DTI',prioridad:'Media',fechaFin:'2026-06-18',semana:'2026-W25',estatus:'Concluido',notas:'',createdAt:'2026-06-16T08:00:00',updatedAt:'2026-06-18T12:00:00'},
+  ];
+  localStorage.setItem('dti_actividades', JSON.stringify(sample));
+})();
+
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); });
 
 renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
