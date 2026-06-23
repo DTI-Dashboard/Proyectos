@@ -198,6 +198,17 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .act-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;box-sizing:border-box;outline:none;transition:.2s;}
 .act-inp:focus{border-color:var(--gold);}
 .act-inp-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.5px;}
+
+/* Actividades - filtros y fecha */
+input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;}
+.act-multi-btn{background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.act-multi-btn.active{border-color:var(--gold);color:var(--gold);}
+.act-multi-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:300;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.act-multi-wrap{position:relative;}
+.act-multi-lbl{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;font-size:12px;color:#fff;white-space:nowrap;}
+.act-multi-lbl:hover{background:rgba(255,255,255,.07);}
+.act-sort-th{cursor:pointer;user-select:none;}
+.act-sort-th:hover{color:var(--gold);}
 </style>
 <!-- LAST_SYNC -->
 <meta name="last-sync" content="2026-06-23T00:23:31Z">
@@ -525,19 +536,34 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
   <div class="act-week-nav">
     <div class="act-filters-row">
-      <select id="act-f-estatus" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">Todos los estatus</option>
-        <option value="En proceso">🔵 En proceso</option>
-        <option value="Concluido">🟢 Concluido</option>
-        <option value="Atrasado">🔴 Atrasado</option>
-      </select>
-      <select id="act-f-nombre" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">👤 Todos los colaboradores</option>
-      </select>
+      <!-- Multi-select Estatus -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-est-btn" onclick="toggleActPanel('estatus')">🔵 Todos los estatus ▾</button>
+        <div class="act-multi-panel" id="act-estatus-panel">
+          <label class="act-multi-lbl"><input type="checkbox" value="En proceso" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Concluido" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+        </div>
+      </div>
+      <!-- Multi-select Colaboradores -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
+        <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
+          <div id="act-nombre-checks"></div>
+        </div>
+      </div>
+      <!-- Semana -->
       <select id="act-f-semana" onchange="actSelectWeek(this.value)" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
         <option value="todas">📋 Todas las actividades</option>
       </select>
-      <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:190px">
+      <!-- Prioridad -->
+      <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">⚡ Todas las prioridades</option>
+        <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+        <option value="Media" style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+        <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+      </select>
+      <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:180px">
     </div>
   </div>
   <div class="card">
@@ -547,11 +573,11 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     </div>
     <div style="overflow-x:auto"><table class="tbl">
       <thead><tr>
-        <th style="width:130px">Nombre</th>
+        <th class="act-sort-th" style="width:130px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
         <th>Actividad</th>
-        <th style="width:90px">Prioridad</th>
-        <th style="width:100px">Fecha Fin</th>
-        <th style="width:130px">Estatus</th>
+        <th class="act-sort-th" style="width:90px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:100px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:130px" onclick="sortAct('estatus',this)">Estatus <span class="sort-icon">⇅</span></th>
         <th style="width:80px">Acciones</th>
       </tr></thead>
       <tbody id="act-tbody"></tbody>
@@ -620,7 +646,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Ivan Franco"></div>
       
       <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
-      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
+      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp" onchange="validarFechaLaboral(this)"></div>
       
       <div><label class="act-inp-lbl">PRIORIDAD</label>
         <select id="act-inp-prioridad" class="act-inp">
@@ -2084,10 +2110,78 @@ function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 
 function actSelectWeek(v){ _actSemana=(v==='todas'||!v)?'':v; renderActividades(); }
 
+// ── Actividades: multi-select filtros, sorting, validación fecha ──
+let _actFiltroEst=[], _actFiltroNom=[], _actSortCol='fechaFin', _actSortDir=1;
+
+function validarFechaLaboral(inp){
+  if(!inp.value) return;
+  const d=new Date(inp.value+'T12:00:00');
+  const day=d.getDay(); // 0=Dom, 6=Sab
+  if(day===0||day===6){
+    showToast('⚠️ Solo se permiten días de lunes a viernes','error');
+    inp.value='';
+  }
+}
+
+function toggleActPanel(tipo){
+  const paneles=['act-estatus-panel','act-nombre-panel'];
+  paneles.forEach(id=>{
+    const p=document.getElementById(id);
+    if(!p) return;
+    if(id==='act-'+tipo+'-panel'){
+      p.style.display=p.style.display==='none'?'block':'none';
+    } else {
+      p.style.display='none';
+    }
+  });
+}
+
+function actCheckFilt(tipo){
+  if(tipo==='estatus'){
+    const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]')];
+    _actFiltroEst=checks.filter(c=>c.checked).map(c=>c.value);
+    const btn=document.getElementById('act-est-btn');
+    if(_actFiltroEst.length===0){
+      btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active');
+    } else {
+      btn.textContent=_actFiltroEst.join(', ')+' ▾'; btn.classList.add('active');
+    }
+  } else if(tipo==='nombre'){
+    const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]')];
+    _actFiltroNom=checks.filter(c=>c.checked).map(c=>c.value);
+    const btn=document.getElementById('act-nom-btn');
+    if(_actFiltroNom.length===0){
+      btn.textContent='👤 Todos los colaboradores ▾'; btn.classList.remove('active');
+    } else {
+      btn.textContent=_actFiltroNom.length+' colaboradores ▾'; btn.classList.add('active');
+    }
+  }
+  renderActividades();
+}
+
+function sortAct(col, th){
+  if(_actSortCol===col){ _actSortDir*=-1; } else { _actSortCol=col; _actSortDir=1; }
+  document.querySelectorAll('.act-sort-th').forEach(el=>el.classList.remove('asc','desc'));
+  if(th){ th.classList.add(_actSortDir===1?'asc':'desc'); }
+  renderActividades();
+}
+
+// Cerrar paneles al clic fuera
+document.addEventListener('click',e=>{
+  ['act-estatus-panel','act-nombre-panel'].forEach(id=>{
+    const p=document.getElementById(id);
+    const btn=document.getElementById(id.replace('-panel','-btn').replace('estatus','est').replace('nombre','nom'));
+    if(p&&btn&&!p.contains(e.target)&&!btn.contains(e.target)){
+      p.style.display='none';
+    }
+  });
+});
+
 function renderActividades(){
   _loadAct();
-  const fEst=(document.getElementById('act-f-estatus')||{}).value||'';
-  const fNom=(document.getElementById('act-f-nombre')||{}).value||'';
+  const fEst=_actFiltroEst; // array multi-select
+  const fNom=_actFiltroNom; // array multi-select
+  const fPrio=(document.getElementById('act-f-prioridad')||{}).value||'';
   const fSrch=((document.getElementById('act-search')||{}).value||'').toLowerCase();
   // _actSemana='' = todas, no resetear
 
@@ -2105,22 +2199,33 @@ function renderActividades(){
   // Filtrar para la tabla
   let filtered=_actividades.filter(a=>{
     if(_actSemana && _semanaDeFinDate(a.fechaFin)!==_actSemana) return false;
-    if(fEst && a.estatus!==fEst) return false;
-    if(fNom && a.nombre!==fNom) return false;
+    if(fEst.length && !fEst.includes(a.estatus)) return false;
+    if(fNom.length && !fNom.includes(a.nombre)) return false;
+    if(fPrio && a.prioridad!==fPrio) return false;
     if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
     return true;
-  }).sort((a,b)=>a.fechaFin.localeCompare(b.fechaFin));
+  });
+  // Sorting
+  const priOrd={Alta:1,Media:2,Baja:3};
+  filtered.sort((a,b)=>{
+    let av=a[_actSortCol]||'', bv=b[_actSortCol]||'';
+    if(_actSortCol==='prioridad'){ av=priOrd[av]||9; bv=priOrd[bv]||9; return (av-bv)*_actSortDir; }
+    if(av<bv) return -1*_actSortDir;
+    if(av>bv) return 1*_actSortDir;
+    return 0;
+  });
 
   const cnt=document.getElementById('act-count');
   if(cnt) cnt.textContent=filtered.length+' actividades';
 
-  // Dropdown colaboradores
+  // Actualizar checkboxes de colaboradores
   const nms=[...new Set(_actividades.map(a=>a.nombre))].sort();
-  const fNSel=document.getElementById('act-f-nombre');
-  if(fNSel){
-    const cur=fNSel.value;
-    fNSel.innerHTML='<option value="">👤 Todos los colaboradores</option>'+
-      nms.map(n=>`<option value="${n}"${n===cur?' selected':''}>${n}</option>`).join('');
+  const nomPanel=document.getElementById('act-nombre-checks');
+  if(nomPanel){
+    const cur=_actFiltroNom;
+    nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
+      <input type="checkbox" value="${n}" ${cur.includes(n)?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
+    </label>`).join('');
   }
 
   // Historial de semanas
