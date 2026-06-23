@@ -541,7 +541,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
         <option value="">👤 Todos los colaboradores</option>
       </select>
       <select id="act-f-semana" onchange="actSelectWeek(this.value)" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">📅 Ver semana...</option><option value="todas">📋 Todas las actividades</option>
+        <option value="todas">📋 Todas las actividades</option>
       </select>
       <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:190px">
     </div>
@@ -1597,12 +1597,12 @@ function updateDate(){
     function fmt(){
       try{
         const diff = Math.floor((Date.now() - new Date(ts)) / 60000);
-        if(diff < 1)   return '\uD83D\uDD04 Sync: ahora';
-        if(diff < 60)  return '\uD83D\uDD04 Sync: hace '+diff+' min';
+        if(diff < 1)   return '🕐 Últ. actualización: ahora';
+        if(diff < 60)  return '🕐 Últ. actualización: hace '+diff+' min';
         const h = Math.floor(diff/60);
-        if(h < 24)     return '\uD83D\uDD04 Sync: hace '+h+'h';
-        return '\uD83D\uDD04 Sync: hace '+Math.floor(h/24)+'d';
-      }catch(e){ return '\uD83D\uDD04 Sync: --'; }
+        if(h < 24)     return '🕐 Últ. actualización: hace '+h+'h';
+        return '🕐 Últ. actualización: hace '+Math.floor(h/24)+'d';
+      }catch(e){ return '🕐 Últ. actualización: --'; }
     }
     el.textContent = fmt();
     el.style.display = 'inline-block';
@@ -1979,7 +1979,7 @@ function exportGanttPDF(tab){
 // MÓDULO ACTIVIDADES SEMANALES
 // ════════════════════════════════════════════════
 let _actividades = [];
-let _actSemana   = '';
+let _actSemana   = null; // null=no init, ''=todas, 'YYYY-Wnn'=semana especifica
 
 function _isoWeek(date){
   const d=new Date(date); d.setHours(12);
@@ -2045,7 +2045,7 @@ function saveActividad(){
   _loadAct();
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
-  const semana=_actSemana||_isoWeek(new Date());
+  const semana=(_actSemana&&_actSemana!=='')?_actSemana:_isoWeek(new Date());
   const existing=id?(_actividades.find(x=>x.id===id)||{}): {};
   const obj={
     nombre, actividad,
@@ -2084,6 +2084,7 @@ function changeActEstatus(id,val){
 
 function actNavWeek(dir){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
+  if(!_actSemana){ const[yr2,ww2]=(_isoWeek(new Date())).split('-W'); const d2=new Date(parseInt(yr2),0,1+(parseInt(ww2)-1)*7); _actSemana=_isoWeek(d2); }
   const [yr,ww]=_actSemana.split('-W');
   const d=new Date(parseInt(yr),0,1+(parseInt(ww)-1)*7+dir*7);
   _actSemana=_isoWeek(d);
@@ -2091,7 +2092,8 @@ function actNavWeek(dir){
 }
 
 function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
-function actSelectWeek(v){ _actSemana=(v==='todas'?'':v); renderActividades(); }
+
+function actSelectWeek(v){ if(!v) return; _actSemana=(v==='todas'?'':v); renderActividades(); }
 
 function renderActividades(){
   _loadAct();
@@ -2101,9 +2103,9 @@ function renderActividades(){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
 
   const lbl=document.getElementById('act-week-label');
-  if(lbl) lbl.textContent=_weekLabel(_actSemana);
+  if(lbl) lbl.textContent=_actSemana?_weekLabel(_actSemana):'📋 Todas las actividades';
 
-  const weekActs=_actividades.filter(a=>a.semana===_actSemana);
+  const weekActs=_actSemana?_actividades.filter(a=>a.semana===_actSemana):_actividades;
   const setK=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   setK('act-k-total',weekActs.length);
   setK('act-k-proc',weekActs.filter(a=>a.estatus==='En proceso').length);
@@ -2113,7 +2115,7 @@ function renderActividades(){
 
   // Filtrar para la tabla
   let filtered=_actividades.filter(a=>{
-    if(a.semana!==_actSemana) return false;
+    if(_actSemana && a.semana!==_actSemana) return false;
     if(fEst && a.estatus!==fEst) return false;
     if(fNom && a.nombre!==fNom) return false;
     if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
@@ -2137,8 +2139,7 @@ function renderActividades(){
   const wSel=document.getElementById('act-f-semana');
   if(wSel){
     const todasSel=!_actSemana?' selected':'';
-    wSel.innerHTML=`<option value="">📅 Ver semana...</option>`+
-      `<option value="todas"${todasSel}>📋 Todas las actividades</option>`+
+    wSel.innerHTML=`<option value="todas"${todasSel}>📋 Todas las actividades</option>`+
       sems.map(s=>`<option value="${s}"${s===_actSemana?' selected':''}>${_weekLabel(s)}</option>`).join('');
   }
 
