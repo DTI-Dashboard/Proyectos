@@ -280,6 +280,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     
     <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="imc-tipo-select" onchange="filterTipo('imc',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
     <select class="filter-resp" id="imc-resp-select" onchange="filterResp('imc',this.value)">
       <option value="">👤 Todos los responsables</option>
     </select>
@@ -288,7 +291,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos IMC — Vista detallada</div><span class="badge b" id="imc-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr>
-<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('imc','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('imc','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('imc','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('imc','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
@@ -349,6 +352,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     
     <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="dev-tipo-select" onchange="filterTipo('dev',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
     <select class="filter-resp" id="dev-resp-select" onchange="filterResp('dev',this.value)">
       <option value="">👤 Todos los responsables</option>
     </select>
@@ -357,7 +363,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Desarrollo — Vista detallada</div><span class="badge b" id="dev-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr>
-<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('dev','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('dev','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('dev','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('dev','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
@@ -418,6 +424,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     
     <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="inf-tipo-select" onchange="filterTipo('inf',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
     <select class="filter-resp" id="inf-resp-select" onchange="filterResp('inf',this.value)">
       <option value="">👤 Todos los responsables</option>
     </select>
@@ -426,7 +435,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Soporte e Infraestructura — Vista detallada</div><span class="badge b" id="inf-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr>
-<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('inf','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('inf','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('inf','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('inf','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
@@ -484,6 +493,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('ia','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('ia',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="ia-tipo-select" onchange="filterTipo('ia',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
     <select class="filter-resp" id="ia-resp-select" onchange="filterResp('ia',this.value)">
       <option value="">👤 Todos los responsables</option>
     </select>
@@ -492,7 +504,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div class="card">
     <div class="card-head"><div class="card-title">Proyectos Inteligencia Artificial — Vista detallada</div><span class="badge b" id="ia-count">0 proyectos</span></div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr>
-<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('ia','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('ia','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('ia','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
 <th class="th-sort" onclick="sortTab('ia','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
@@ -581,7 +593,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
     <div style="overflow-x:auto"><table class="tbl">
       <thead><tr>
-        <th class="act-sort-th" style="width:130px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:180px;min-width:180px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
         <th>Actividad</th>
         <th class="act-sort-th" style="width:90px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
         <th class="act-sort-th" style="width:100px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
@@ -780,10 +792,10 @@ const INF_DATA=[
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
 
 const state={
-  imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:''},
-  dev:{data:[...DEV_DATA],filter:'todos',search:'',resp:''},
-  inf:{data:[...INF_DATA],filter:'todos',search:'',resp:''},
-  ia:{data:[...IA_DATA],filter:'todos',search:'',resp:''},
+  imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:'',tipo:''},
+  dev:{data:[...DEV_DATA],filter:'todos',search:'',resp:'',tipo:''},
+  inf:{data:[...INF_DATA],filter:'todos',search:'',resp:'',tipo:''},
+  ia:{data:[...IA_DATA],filter:'todos',search:'',resp:'',tipo:''},
 };
 
 // ─── HELPERS ───
@@ -907,12 +919,32 @@ function getFiltered(tab){
   else if(s.filter!=='todos') p=p.filter(x=>semClass(x.sem)===semClass(s.filter));
   if(s.search) p=p.filter(x=>x.nombre.toLowerCase().includes(s.search)||x.area.toLowerCase().includes(s.search));
   if(s.resp) p=p.filter(x=>(x.responsable||'').toLowerCase().includes(s.resp.toLowerCase()));
+  if(s.tipo) p=p.filter(x=>(x.tipo||'').toLowerCase()===s.tipo.toLowerCase());
   return p;
 }
 
 function filterResp(tab,val){
   state[tab].resp=val;
   renderTab(tab);
+}
+
+function filterTipo(tab,val){
+  state[tab].tipo=val;
+  renderTab(tab);
+}
+
+function populateTipoSelect(tab){
+  const sel=document.getElementById(tab+'-tipo-select');
+  if(!sel) return;
+  const tipos=[...new Set(state[tab].data.map(p=>p.tipo||'').filter(t=>t.trim()!==''))].sort();
+  const cur=sel.value;
+  sel.innerHTML='<option value="">🏷️ Todos los tipos</option>';
+  tipos.forEach(t=>{
+    const o=document.createElement('option');
+    o.value=t; o.textContent=t;
+    if(t===cur) o.selected=true;
+    sel.appendChild(o);
+  });
 }
 
 function populateRespSelect(tab){
@@ -1176,6 +1208,7 @@ function renderTab(tab){
   buildGantt(p,cfg.gantt);
   buildTreemap(p,cfg.treemap);
   populateRespSelect(tab);
+  populateTipoSelect(tab);
 }
 
 // ── TREEMAP por área ──
@@ -2105,6 +2138,12 @@ function deleteActividad(id){
   _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
 }
 
+function confirmarConcluir(id){
+  if(confirm('¿Quieres cambiar el estatus a Concluido?')){
+    changeActEstatus(id,'Concluido');
+  }
+}
+
 function changeActEstatus(id,val){
   _loadAct();
   const a=_actividades.find(x=>x.id===id);
@@ -2144,20 +2183,16 @@ function validarFechaLaboral(inp){
 }
 
 function actSelTodos(tipo, chk){
+  // chk.checked ya refleja el nuevo estado tras el clic
+  const newState=chk.checked;
   if(tipo==='estatus'){
     const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)')];
-    const allChecked=checks.every(c=>c.checked);
-    const newState=!allChecked;
-    chk.checked=newState;
     checks.forEach(c=>c.checked=newState);
     _actFiltroEst=newState?[]:checks.map(c=>c.value);
     const btn=document.getElementById('act-est-btn');
     btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active');
   } else {
     const checks=[...document.querySelectorAll('#act-nombre-checks input[type=checkbox]:not(#act-nom-todos)')];
-    const allChecked=checks.every(c=>c.checked);
-    const newState=!allChecked;
-    chk.checked=newState;
     checks.forEach(c=>c.checked=newState);
     _actFiltroNom=newState?[]:checks.map(c=>c.value);
     const btn=document.getElementById('act-nom-btn');
@@ -2291,6 +2326,17 @@ function renderActividades(){
       sems.map(s=>`<option value="${s}"${s===_actSemana?' selected':''}>${_weekLabel(s)}</option>`).join('');
   }
 
+  // Estatus automático: si ya pasó la fecha y no está concluido → Atrasado
+  _actividades.forEach(a=>{
+    if(a.estatus!=='Concluido' && a.fechaFin){
+      const hoy=new Date(); hoy.setHours(0,0,0,0);
+      const fin=new Date(a.fechaFin+'T00:00:00');
+      const esHoyOFuturo=fin>=hoy;
+      const autoEst=esHoyOFuturo?'En proceso':'Atrasado';
+      if(a.estatus!==autoEst){ a.estatus=autoEst; a.updatedAt=new Date().toISOString(); }
+    }
+  });
+  _saveAct();
   const eCols={'En proceso':'#6366f1','Concluido':'#22c55e','Atrasado':'#ef4444'};
   const pCols={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
   const tbody=document.getElementById('act-tbody');
@@ -2313,13 +2359,14 @@ function renderActividades(){
     const notaIcon='';
     const vencida=a.fechaFin&&new Date(a.fechaFin+'T23:59:59')<new Date()&&a.estatus!=='Concluido'?'color:#ef4444;':'';
     return `<tr>
-      <td style="font-weight:600">${a.nombre}</td>
+      <td style="font-weight:600;min-width:180px;max-width:180px;word-break:break-word;white-space:normal"><div style="max-width:180px;overflow-wrap:break-word">${a.nombre}</div></td>
       <td><span title="${a.actividad}">${a.actividad}</span>${notaIcon}</td>
       <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
       <td style="font-size:12px;${vencida}">${fechaStr}</td>
       <td><span style="display:inline-flex;align-items:center;gap:5px;color:${ec};background:${ec}18;border:1px solid ${ec}55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">${a.estatus==='En proceso'?'🔵':''}${a.estatus==='Concluido'?'🟢':''}${a.estatus==='Atrasado'?'🔴':''} ${a.estatus}</span></td>
       <td style="white-space:nowrap">
         <button onclick="openActModal('${a.id}')" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
+        ${a.estatus!=='Concluido'?`<button onclick="confirmarConcluir('${a.id}')" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Marcar como Concluido">✓</button>`:''}
         <button onclick="deleteActividad('${a.id}')" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:12px" title="Eliminar">🗑️</button>
       </td>
     </tr>`;
@@ -2330,11 +2377,11 @@ function exportActXLSX(){
   _loadAct();
   if(!_actividades.length){ showToast('Sin actividades para exportar','error'); return; }
   const wb=XLSX.utils.book_new();
-  const data=[['Nombre','Actividad','Área','Prioridad','Fecha Fin','Semana','Estatus','Notas','Creado']];
+  const data=[['Nombre','Actividad','Prioridad','Fecha Fin','Estatus']];
   _actividades.sort((a,b)=>a.semana.localeCompare(b.semana)||a.fechaFin.localeCompare(b.fechaFin))
-    .forEach(a=>data.push([a.nombre,a.actividad,a.area||'',a.prioridad||'',a.fechaFin,_weekLabel(a.semana),a.estatus,a.notas||'',a.createdAt?.slice(0,10)||'']));
+    .forEach(a=>data.push([a.nombre,a.actividad,a.prioridad||'',a.fechaFin,a.estatus]));
   const ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=[{wch:18},{wch:45},{wch:18},{wch:10},{wch:14},{wch:38},{wch:14},{wch:40},{wch:12}];
+  ws['!cols']=[{wch:22},{wch:55},{wch:12},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws,'Actividades');
   XLSX.writeFile(wb,`Actividades_Semanales_${new Date().toLocaleDateString('es-MX').replace(/\//g,'-')}.xlsx`);
 }
