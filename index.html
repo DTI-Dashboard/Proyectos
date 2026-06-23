@@ -531,7 +531,6 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <button class="act-week-btn" onclick="actGoToday()" style="font-size:11px;padding:4px 10px">Hoy</button>
     </div>
     <div class="act-filters-row">
-      <button id="act-btn-todas" onclick="actToggleTodas()" style="background:var(--navy-light);color:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;transition:.2s">📋 Todas las actividades</button>
       <select id="act-f-estatus" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
         <option value="">Todos los estatus</option>
         <option value="En proceso">🔵 En proceso</option>
@@ -542,7 +541,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
         <option value="">👤 Todos los colaboradores</option>
       </select>
       <select id="act-f-semana" onchange="actSelectWeek(this.value)" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">📅 Historial de semanas</option>
+        <option value="">📅 Ver semana...</option><option value="todas">📋 Todas las actividades</option>
       </select>
       <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:190px">
     </div>
@@ -2083,23 +2082,6 @@ function changeActEstatus(id,val){
 }
 
 
-function actToggleTodas(){
-  const btn=document.getElementById('act-btn-todas');
-  if(_actSemana){
-    _actSemana='';
-    btn.style.background='var(--gold)';
-    btn.style.color='var(--navy)';
-    btn.style.borderColor='var(--gold)';
-    btn.textContent='✓ Todas las actividades';
-  } else {
-    _actSemana=_isoWeek(new Date());
-    btn.style.background='var(--navy-light)';
-    btn.style.color='rgba(255,255,255,.7)';
-    btn.style.borderColor='var(--border)';
-    btn.textContent='📋 Todas las actividades';
-  }
-  renderActividades();
-}
 function actNavWeek(dir){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
   const [yr,ww]=_actSemana.split('-W');
@@ -2109,7 +2091,7 @@ function actNavWeek(dir){
 }
 
 function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
-function actSelectWeek(v){ if(v){ _actSemana=v; renderActividades(); } }
+function actSelectWeek(v){ _actSemana=(v==='todas'?'':v); renderActividades(); }
 
 function renderActividades(){
   _loadAct();
@@ -2154,7 +2136,9 @@ function renderActividades(){
   const sems=[...new Set(_actividades.map(a=>a.semana))].sort().reverse();
   const wSel=document.getElementById('act-f-semana');
   if(wSel){
-    wSel.innerHTML='<option value="">📅 Historial de semanas</option>'+
+    const todasSel=!_actSemana?' selected':'';
+    wSel.innerHTML=`<option value="">📅 Ver semana...</option>`+
+      `<option value="todas"${todasSel}>📋 Todas las actividades</option>`+
       sems.map(s=>`<option value="${s}"${s===_actSemana?' selected':''}>${_weekLabel(s)}</option>`).join('');
   }
 
