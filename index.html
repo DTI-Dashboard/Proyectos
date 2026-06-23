@@ -569,6 +569,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
       <div class="act-multi-wrap">
         <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
         <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+            <input type="checkbox" id="act-nom-todos" checked onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
+          </label>
           <div id="act-nombre-checks"></div>
         </div>
       </div>
@@ -2310,9 +2313,10 @@ function renderActividades(){
   if(nomPanel){
     const cur=_actFiltroNom;
     const allNomSel=cur.length===0;
-    nomPanel.innerHTML=`<label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
-      <input type="checkbox" id="act-nom-todos" ${allNomSel?'checked':''} onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
-    </label>`+nms.map(n=>`<label class="act-multi-lbl">
+    // Actualizar el checkbox "Todos" sin regenerarlo (es estático en el HTML)
+    const todosChk=document.getElementById('act-nom-todos');
+    if(todosChk) todosChk.checked=allNomSel;
+    nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
       <input type="checkbox" value="${n}" ${cur.length===0||cur.includes(n)?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
     </label>`).join('');
   }
