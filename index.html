@@ -186,6 +186,18 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .lock-btn{width:100%;margin-top:14px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;}
 .lock-btn:hover{background:var(--gold-dim);}
 .lock-error{font-size:12px;color:#ef4444;margin-top:10px;min-height:18px;}
+
+/* ── Actividades Semanales ── */
+.act-week-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.act-week-ctrl{display:flex;align-items:center;gap:8px;}
+.act-week-btn{background:var(--navy-light);color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;transition:.2s;}
+.act-week-btn:hover{background:rgba(201,168,76,.12);}
+.act-filters-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn-act-add{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 18px;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-act-add:hover{background:#a8893e;}
+.act-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;box-sizing:border-box;outline:none;transition:.2s;}
+.act-inp:focus{border-color:var(--gold);}
+.act-inp-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.5px;}
 </style>
 <!-- LAST_SYNC -->
 <meta name="last-sync" content="2026-06-22T23:58:55Z">
@@ -214,6 +226,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
   <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
   <div class="tab" onclick="switchTab('ia',this)">🤖 IA</div>
+  <div class="tab" onclick="switchTab('actividades',this)">📋 Actividades Semanales</div>
   <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
 </nav>
 
@@ -491,6 +504,106 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="padding:16px;overflow-x:auto"><canvas id="ia-gantt"></canvas></div>
   </div>
 </section>
+
+<!-- ═══ ACTIVIDADES SEMANALES ═══ -->
+<section class="module" id="mod-actividades">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Actividades Semanales</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-act-add" onclick="openActModal(null)">➕ Nueva Actividad</button>
+      <button class="btn-xlsx" onclick="exportActXLSX()">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="act-k-total">0</div><div class="kpi-sub">Esta semana</div></div>
+    <div class="kpi" style="border-top-color:#6366f1"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="act-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="act-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+    <div class="kpi r"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="act-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Colaboradores</div><div class="kpi-val gold" id="act-k-personas">0</div><div class="kpi-sub">Activos esta semana</div></div>
+  </div>
+  <div class="act-week-nav">
+    <div class="act-week-ctrl">
+      <button class="act-week-btn" onclick="actNavWeek(-1)">◀</button>
+      <span id="act-week-label" style="font-weight:700;color:var(--gold);min-width:280px;text-align:center;font-size:14px">—</span>
+      <button class="act-week-btn" onclick="actNavWeek(1)">▶</button>
+      <button class="act-week-btn" onclick="actGoToday()" style="font-size:11px;padding:4px 10px">Hoy</button>
+    </div>
+    <div class="act-filters-row">
+      <select id="act-f-estatus" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">Todos los estatus</option>
+        <option value="En proceso">🔵 En proceso</option>
+        <option value="Concluido">🟢 Concluido</option>
+        <option value="Atrasado">🔴 Atrasado</option>
+      </select>
+      <select id="act-f-nombre" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">👤 Todos los colaboradores</option>
+      </select>
+      <select id="act-f-semana" onchange="actSelectWeek(this.value)" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">📅 Historial de semanas</option>
+      </select>
+      <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:190px">
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Actividades — Vista detallada</div>
+      <span class="badge b" id="act-count">0 actividades</span>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th style="width:130px">Nombre</th>
+        <th>Actividad</th>
+        <th style="width:110px">Área</th>
+        <th style="width:75px">Prioridad</th>
+        <th style="width:100px">Fecha Fin</th>
+        <th style="width:85px">Semana</th>
+        <th style="width:130px">Estatus</th>
+        <th style="width:80px">Acciones</th>
+      </tr></thead>
+      <tbody id="act-tbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- Modal Actividad -->
+<div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Eduardo Sanchez"></div>
+      <div><label class="act-inp-lbl">ÁREA / DEPARTAMENTO</label><input id="act-inp-area" class="act-inp" placeholder="Ej: Capital Humano"></div>
+      <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
+      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
+      <div><label class="act-inp-lbl">SEMANA</label><input id="act-inp-semana" type="week" class="act-inp"></div>
+      <div><label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="act-inp-prioridad" class="act-inp">
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media" selected>🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+      </div>
+      <div><label class="act-inp-lbl">ESTATUS</label>
+        <select id="act-inp-estatus" class="act-inp">
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2"><label class="act-inp-lbl">NOTAS / OBSERVACIONES (opcional)</label>
+        <textarea id="act-inp-notas" class="act-inp" placeholder="Bloqueos, comentarios, contexto adicional..." rows="3" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <input type="hidden" id="act-inp-id">
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">💾 Guardar actividad</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ CARGA ═══ -->
 <section class="module" id="mod-carga" style="position:relative">
@@ -1439,7 +1552,227 @@ function loadCSV(e){
           <td><span class="sem ${semClass(p.sem)}">${semLabel(p.sem)}</span></td>
         </tr>`).join('');
       document.getElementById('upload-preview').style.display='block';
-      renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
+      
+// ════════════════════════════════════════════════
+// MÓDULO ACTIVIDADES SEMANALES
+// ════════════════════════════════════════════════
+let _actividades = [];
+let _actSemana   = '';
+
+function _isoWeek(date){
+  const d=new Date(date); d.setHours(12);
+  const day=d.getDay()||7; d.setDate(d.getDate()+4-day);
+  const y=d.getFullYear();
+  const jan1=new Date(y,0,1);
+  const w=Math.ceil((((d-jan1)/86400000)+1)/7);
+  return `${y}-W${String(w).padStart(2,'0')}`;
+}
+
+function _weekLabel(iso){
+  if(!iso) return 'Todas las semanas';
+  const [yr,ww]=iso.split('-W');
+  const w=parseInt(ww), y=parseInt(yr);
+  const jan1=new Date(y,0,1);
+  const dayOfWeek=jan1.getDay()||7;
+  const monday=new Date(y,0,1+(w-1)*7-(dayOfWeek-1));
+  const sunday=new Date(monday); sunday.setDate(monday.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  return `Semana ${w} \u2014 ${fmt(monday)} al ${fmt(sunday)} ${sunday.getFullYear()}`;
+}
+
+function _loadAct(){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){ _actividades=[]; } }
+function _saveAct(){ localStorage.setItem('dti_actividades',JSON.stringify(_actividades)); }
+
+function openActModal(id){
+  _loadAct();
+  const bg=document.getElementById('act-modal-bg');
+  bg.style.display='flex';
+  if(id){
+    const a=_actividades.find(x=>x.id===id);
+    if(!a) return;
+    document.getElementById('act-modal-tag').textContent='EDITAR ACTIVIDAD';
+    document.getElementById('act-modal-title').textContent=a.actividad.slice(0,45)+(a.actividad.length>45?'…':'');
+    document.getElementById('act-inp-id').value=id;
+    document.getElementById('act-inp-nombre').value=a.nombre;
+    document.getElementById('act-inp-area').value=a.area||'';
+    document.getElementById('act-inp-actividad').value=a.actividad;
+    document.getElementById('act-inp-fecha').value=a.fechaFin;
+    document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
+    document.getElementById('act-inp-estatus').value=a.estatus;
+    document.getElementById('act-inp-semana').value=a.semana;
+    document.getElementById('act-inp-notas').value=a.notas||'';
+  } else {
+    document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
+    document.getElementById('act-modal-title').textContent='Agregar Actividad';
+    ['act-inp-id','act-inp-nombre','act-inp-area','act-inp-actividad','act-inp-notas'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('act-inp-fecha').value='';
+    document.getElementById('act-inp-prioridad').value='Media';
+    document.getElementById('act-inp-estatus').value='En proceso';
+    document.getElementById('act-inp-semana').value=_actSemana||_isoWeek(new Date());
+  }
+}
+
+function closeActModal(){ document.getElementById('act-modal-bg').style.display='none'; }
+
+function saveActividad(){
+  const nombre=(document.getElementById('act-inp-nombre').value||'').trim();
+  const actividad=(document.getElementById('act-inp-actividad').value||'').trim();
+  const fecha=document.getElementById('act-inp-fecha').value;
+  if(!nombre||!actividad||!fecha){ showToast('⚠️ Nombre, Actividad y Fecha son requeridos','error'); return; }
+  _loadAct();
+  const id=document.getElementById('act-inp-id').value;
+  const now=new Date().toISOString();
+  const semana=document.getElementById('act-inp-semana').value||_actSemana||_isoWeek(new Date());
+  const obj={
+    nombre,actividad,
+    area:(document.getElementById('act-inp-area').value||'').trim(),
+    prioridad:document.getElementById('act-inp-prioridad').value,
+    fechaFin:fecha, semana,
+    estatus:document.getElementById('act-inp-estatus').value,
+    notas:(document.getElementById('act-inp-notas').value||'').trim(),
+    updatedAt:now
+  };
+  if(id){
+    const idx=_actividades.findIndex(x=>x.id===id);
+    if(idx>=0) _actividades[idx]={..._actividades[idx],...obj};
+  } else {
+    _actividades.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),createdAt:now,...obj});
+  }
+  _saveAct(); closeActModal(); renderActividades();
+  showToast(id?'✅ Actividad actualizada':'✅ Actividad guardada');
+}
+
+function deleteActividad(id){
+  if(!confirm('¿Eliminar esta actividad? Esta acción no se puede deshacer.')) return;
+  _loadAct();
+  _actividades=_actividades.filter(x=>x.id!==id);
+  _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
+}
+
+function changeActEstatus(id,val){
+  _loadAct();
+  const a=_actividades.find(x=>x.id===id);
+  if(a){ a.estatus=val; a.updatedAt=new Date().toISOString(); }
+  _saveAct(); renderActividades();
+}
+
+function actNavWeek(dir){
+  if(!_actSemana) _actSemana=_isoWeek(new Date());
+  const [yr,ww]=_actSemana.split('-W');
+  const d=new Date(parseInt(yr),0,1+(parseInt(ww)-1)*7+dir*7);
+  _actSemana=_isoWeek(d);
+  renderActividades();
+}
+
+function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
+function actSelectWeek(v){ if(v){ _actSemana=v; renderActividades(); } }
+
+function renderActividades(){
+  _loadAct();
+  const fEst=(document.getElementById('act-f-estatus')||{}).value||'';
+  const fNom=(document.getElementById('act-f-nombre')||{}).value||'';
+  const fSrch=((document.getElementById('act-search')||{}).value||'').toLowerCase();
+  if(!_actSemana) _actSemana=_isoWeek(new Date());
+
+  const lbl=document.getElementById('act-week-label');
+  if(lbl) lbl.textContent=_weekLabel(_actSemana);
+
+  const weekActs=_actividades.filter(a=>a.semana===_actSemana);
+  const setK=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  setK('act-k-total',weekActs.length);
+  setK('act-k-proc',weekActs.filter(a=>a.estatus==='En proceso').length);
+  setK('act-k-conc',weekActs.filter(a=>a.estatus==='Concluido').length);
+  setK('act-k-atr',weekActs.filter(a=>a.estatus==='Atrasado').length);
+  setK('act-k-personas',[...new Set(weekActs.map(a=>a.nombre))].length);
+
+  // Filtrar para la tabla
+  let filtered=_actividades.filter(a=>{
+    if(a.semana!==_actSemana) return false;
+    if(fEst && a.estatus!==fEst) return false;
+    if(fNom && a.nombre!==fNom) return false;
+    if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
+    return true;
+  }).sort((a,b)=>a.fechaFin.localeCompare(b.fechaFin));
+
+  const cnt=document.getElementById('act-count');
+  if(cnt) cnt.textContent=filtered.length+' actividades';
+
+  // Dropdown colaboradores
+  const nms=[...new Set(_actividades.map(a=>a.nombre))].sort();
+  const fNSel=document.getElementById('act-f-nombre');
+  if(fNSel){
+    const cur=fNSel.value;
+    fNSel.innerHTML='<option value="">👤 Todos los colaboradores</option>'+
+      nms.map(n=>`<option value="${n}"${n===cur?' selected':''}>${n}</option>`).join('');
+  }
+
+  // Historial de semanas
+  const sems=[...new Set(_actividades.map(a=>a.semana))].sort().reverse();
+  const wSel=document.getElementById('act-f-semana');
+  if(wSel){
+    wSel.innerHTML='<option value="">📅 Historial de semanas</option>'+
+      sems.map(s=>`<option value="${s}"${s===_actSemana?' selected':''}>${_weekLabel(s)}</option>`).join('');
+  }
+
+  const eCols={'En proceso':'#6366f1','Concluido':'#22c55e','Atrasado':'#ef4444'};
+  const pCols={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
+  const tbody=document.getElementById('act-tbody');
+  if(!tbody) return;
+
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:50px;color:rgba(255,255,255,.3)">
+      <div style="font-size:32px;margin-bottom:10px">📋</div>
+      <div style="font-size:14px;margin-bottom:6px">Sin actividades para esta semana</div>
+      <div style="font-size:12px">Haz clic en <strong style="color:var(--gold)">➕ Nueva Actividad</strong> para agregar</div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=filtered.map(a=>{
+    const ec=eCols[a.estatus]||'#8b5cf6';
+    const pc=pCols[a.prioridad]||'#f59e0b';
+    const fechaStr=a.fechaFin?new Date(a.fechaFin+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    const semanaN=a.semana?'S'+a.semana.split('-W')[1]:'—';
+    const notaIcon=a.notas?`<span title="${a.notas.replace(/"/g,'&quot;')}" style="cursor:help;color:var(--gold);margin-left:5px" title="Ver notas">💬</span>`:'';
+    const vencida=a.fechaFin&&new Date(a.fechaFin+'T23:59:59')<new Date()&&a.estatus!=='Concluido'?'color:#ef4444;':'';
+    return `<tr>
+      <td style="font-weight:600">${a.nombre}</td>
+      <td><span title="${a.actividad}">${a.actividad}</span>${notaIcon}</td>
+      <td style="color:rgba(255,255,255,.65);font-size:12px">${a.area||'—'}</td>
+      <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
+      <td style="font-size:12px;${vencida}">${fechaStr}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.45)">${semanaN}</td>
+      <td><select onchange="changeActEstatus('${a.id}',this.value)" style="background:${ec}20;color:${ec};border:1px solid ${ec}55;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:600;cursor:pointer;max-width:120px">
+        <option value="En proceso"${a.estatus==='En proceso'?' selected':''}>🔵 En proceso</option>
+        <option value="Concluido"${a.estatus==='Concluido'?' selected':''}>🟢 Concluido</option>
+        <option value="Atrasado"${a.estatus==='Atrasado'?' selected':''}>🔴 Atrasado</option>
+      </select></td>
+      <td style="white-space:nowrap">
+        <button onclick="openActModal('${a.id}')" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
+        <button onclick="deleteActividad('${a.id}')" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:12px" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function exportActXLSX(){
+  _loadAct();
+  if(!_actividades.length){ showToast('Sin actividades para exportar','error'); return; }
+  const wb=XLSX.utils.book_new();
+  const data=[['Nombre','Actividad','Área','Prioridad','Fecha Fin','Semana','Estatus','Notas','Creado']];
+  _actividades.sort((a,b)=>a.semana.localeCompare(b.semana)||a.fechaFin.localeCompare(b.fechaFin))
+    .forEach(a=>data.push([a.nombre,a.actividad,a.area||'',a.prioridad||'',a.fechaFin,_weekLabel(a.semana),a.estatus,a.notas||'',a.createdAt?.slice(0,10)||'']));
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:18},{wch:45},{wch:18},{wch:10},{wch:14},{wch:38},{wch:14},{wch:40},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'Actividades');
+  XLSX.writeFile(wb,`Actividades_Semanales_${new Date().toLocaleDateString('es-MX').replace(/\//g,'-')}.xlsx`);
+}
+
+// Inicializar al cargar
+_actSemana = _isoWeek(new Date());
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); });
+
+renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
       // Reset file input so same file can be reloaded
       e.target.value='';
       // Go to IMC tab
