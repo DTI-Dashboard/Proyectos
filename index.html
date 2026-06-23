@@ -2008,7 +2008,7 @@ function openActModal(id){
     const a=_actividades.find(x=>x.id===id);
     if(!a) return;
     document.getElementById('act-modal-tag').textContent='EDITAR ACTIVIDAD';
-    document.getElementById('act-modal-title').textContent=a.actividad.slice(0,45)+(a.actividad.length>45?'…':'');
+    document.getElementById('act-modal-title').textContent='Editar Actividad';
     document.getElementById('act-inp-id').value=id;
     document.getElementById('act-inp-nombre').value=a.nombre;
     // area removida del modal
@@ -2083,7 +2083,6 @@ function _semanaDeFinDate(fechaFin){
 }
 function actNavWeek(dir){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
-  if(!_actSemana){ const[yr2,ww2]=(_isoWeek(new Date())).split('-W'); const d2=new Date(parseInt(yr2),0,1+(parseInt(ww2)-1)*7); _actSemana=_isoWeek(d2); }
   const [yr,ww]=_actSemana.split('-W');
   const d=new Date(parseInt(yr),0,1+(parseInt(ww)-1)*7+dir*7);
   _actSemana=_isoWeek(d);
@@ -2099,7 +2098,7 @@ function renderActividades(){
   const fEst=(document.getElementById('act-f-estatus')||{}).value||'';
   const fNom=(document.getElementById('act-f-nombre')||{}).value||'';
   const fSrch=((document.getElementById('act-search')||{}).value||'').toLowerCase();
-  if(!_actSemana) _actSemana=_isoWeek(new Date());
+  // _actSemana='' = todas, no resetear
 
   const lbl=document.getElementById('act-week-label');
   // nav bar removida
