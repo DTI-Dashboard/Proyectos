@@ -632,16 +632,16 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       
       <div><label class="act-inp-lbl">PRIORIDAD</label>
         <select id="act-inp-prioridad" class="act-inp">
-          <option value="Alta">🔴 Alta</option>
-          <option value="Media" selected>🟡 Media</option>
-          <option value="Baja">🟢 Baja</option>
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
         </select>
       </div>
       <div><label class="act-inp-lbl">ESTATUS</label>
         <select id="act-inp-estatus" class="act-inp">
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
+          <option value="En proceso" style="background:#1c2535;color:#6366f1">🔵 En proceso</option>
+          <option value="Concluido" style="background:#1c2535;color:#22c55e">🟢 Concluido</option>
+          <option value="Atrasado" style="background:#1c2535;color:#ef4444">🔴 Atrasado</option>
         </select>
       </div>
       <div style="grid-column:span 2"><label class="act-inp-lbl">NOTAS / OBSERVACIONES (opcional)</label>
@@ -2028,7 +2028,7 @@ function openActModal(id){
   } else {
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
     document.getElementById('act-modal-title').textContent='Agregar Actividad';
-    ['act-inp-id','act-inp-nombre','act-inp-area','act-inp-actividad','act-inp-notas'].forEach(i=>document.getElementById(i).value='');
+    ['act-inp-id','act-inp-nombre','act-inp-actividad','act-inp-notas'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
     document.getElementById('act-inp-estatus').value='En proceso';
@@ -2047,11 +2047,13 @@ function saveActividad(){
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
   const semana=document.getElementById('act-inp-semana').value||_actSemana||_isoWeek(new Date());
+  const existingArea = id ? (_actividades.find(x=>x.id===id)||{}).area||'' : '';
+  const existingSemana = id ? (_actividades.find(x=>x.id===id)||{}).semana||semana : semana;
   const obj={
     nombre,actividad,
-    area:'',  // campo removido del modal
+    area:existingArea
     prioridad:document.getElementById('act-inp-prioridad').value,
-    fechaFin:fecha, semana,
+    fechaFin:fecha, semana:existingSemana,
     estatus:document.getElementById('act-inp-estatus').value,
     notas:(document.getElementById('act-inp-notas').value||'').trim(),
     updatedAt:now
