@@ -213,6 +213,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   <div class="tab active" onclick="switchTab('imc',this)">🗂️ IMC</div>
   <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
   <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
+  <div class="tab" onclick="switchTab('ia',this)">🤖 IA</div>
   <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
 </nav>
 
@@ -425,6 +426,72 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
   </div>
 </section>
 
+<!-- ═══ IA ═══ -->
+<section class="module" id="mod-ia">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Inteligencia Artificial</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="ia-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="ia-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="ia-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="ia-pc">0</div><div class="kpi-sub">Este mes</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('ia','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('ia','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('ia','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
+    <button class="filter-btn" onclick="filterTab('ia','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('ia',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="ia-resp-select" onchange="filterResp('ia',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('ia',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Inteligencia Artificial — Vista detallada</div><span class="badge b" id="ia-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th>Tipo</th>
+<th class="th-sort" onclick="sortTab('ia','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="ia-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="ia-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="ia-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('ia')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="ia-gantt-btn" onclick="toggleGanttFilter('ia')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="ia-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="ia-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="ia-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="ia-gantt"></canvas></div>
+  </div>
+</section>
+
 <!-- ═══ CARGA ═══ -->
 <section class="module" id="mod-carga" style="position:relative">
   <!-- Overlay de contraseña -->
@@ -560,6 +627,7 @@ const DEV_DATA = [
   {tipo:"Proyecto",nombre:"Interconexión Plataforma Única de Identidad (PUI)",area:"",inicio:"23/03/2026",fin:"30/04/2026",real:18,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Proyecto FlexSys",area:"",inicio:"09/06/2026",fin:"09/06/2026",real:99,esp:0,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
 ];
+const IA_DATA=[];
 const INF_DATA=[
   {tipo:"Proyecto",nombre:"Migración oficinas Tlalnepantla",area:"Infraestructura",inicio:"01/03/2026",fin:"30/07/2026",real:78,esp:80,sem:"A tiempo"},
   {tipo:"Proyecto",nombre:"Renovación Firewall / VPN Corporativa",area:"Seguridad",inicio:"15/02/2026",fin:"30/06/2026",real:50,esp:65,sem:"En riesgo"},
@@ -568,12 +636,13 @@ const INF_DATA=[
   {tipo:"Mejoras",nombre:"Red estructurada — Edificio B",area:"Redes",inicio:"15/04/2026",fin:"31/08/2026",real:20,esp:40,sem:"Atrasado"},
 ];
 
-const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura'};
+const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
 
 const state={
   imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:''},
   dev:{data:[...DEV_DATA],filter:'todos',search:'',resp:''},
   inf:{data:[...INF_DATA],filter:'todos',search:'',resp:''},
+  ia:{data:[...IA_DATA],filter:'todos',search:'',resp:''},
 };
 
 // ─── HELPERS ───
@@ -753,7 +822,7 @@ function buildDonut(projects, canvasId){
 
 // ── GANTT (horizontal bar) ──
 // ── Estado de selección del Gantt por tab ──
-const _ganttSel={imc:null,dev:null,inf:null}; // null = todos
+const _ganttSel={imc:null,dev:null,inf:null,ia:null}; // null = todos
 
 function toggleGanttFilter(tab){
   const panel=document.getElementById(tab+'-gantt-panel');
@@ -819,7 +888,7 @@ function onGanttCheck(tab){
 
 // Cerrar panel al hacer clic fuera
 document.addEventListener('click',e=>{
-  ['imc','dev','inf'].forEach(tab=>{
+  ['imc','dev','inf','ia'].forEach(tab=>{
     const btn=document.getElementById(tab+'-gantt-btn');
     const panel=document.getElementById(tab+'-gantt-panel');
     if(panel && panel.style.display==='block' && btn && !btn.contains(e.target) && !panel.contains(e.target)){
@@ -898,7 +967,7 @@ function buildGantt(projects, canvasId){
 
 
 // ── Ordenar tabla por columna ──────────────────────────────
-const _sortState = {imc:{col:null,dir:1}, dev:{col:null,dir:1}, inf:{col:null,dir:1}};
+const _sortState = {imc:{col:null,dir:1}, dev:{col:null,dir:1}, inf:{col:null,dir:1}, ia:{col:null,dir:1}};
 
 function parseDate(s){
   if(!s||s==='—') return 0;
@@ -937,6 +1006,7 @@ function sortTab(tab, col, th){
     imc:{tbody:'imc-tbody'},
     dev:{tbody:'dev-tbody'},
     inf:{tbody:'inf-tbody'},
+    ia:{tbody:'ia-tbody'},
   }[tab];
   document.getElementById(cfg.tbody).innerHTML=
     allProjects[tab].map((p,ri)=>buildRow(p,tab,ri)).join('');
@@ -946,7 +1016,8 @@ function renderTab(tab){
   const cfg={
     imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',donut:'imc-donut',gantt:'imc-gantt',treemap:'imc-treemap'},
     dev:{tbody:'dev-tbody',count:'dev-count',kpfx:'dv',donut:'dev-donut',gantt:'dev-gantt',treemap:'dev-treemap'},
-    inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',donut:'inf-donut',gantt:'inf-gantt',treemap:'inf-treemap'},
+      inf:{tbody:'inf-tbody',count:'inf-count',kpfx:'inf',donut:'inf-donut',gantt:'inf-gantt',treemap:'inf-treemap'},
+    ia:{tbody:'ia-tbody',count:'ia-count',kpfx:'ia',donut:'ia-donut',gantt:'ia-gantt',treemap:'ia-treemap'},
   }[tab];
   const p=getFiltered(tab);
   allProjects[tab]=p;
@@ -1011,6 +1082,7 @@ const DEPT_NAMES = {
   imc: 'Dirección de Implementación y Mejora Continua',
   dev: 'Dirección de Desarrollo e Innovación',
   inf: 'Dirección de Soporte e Infraestructura',
+  ia:  'Dirección de Inteligencia Artificial',
 };
 
 async function exportPPTX(tab){
@@ -1218,6 +1290,7 @@ function descargarPlantilla(){
   addRows(state.imc.data, 'IMC');
   addRows(state.dev.data, 'Desarrollo');
   addRows(state.inf.data, 'Soporte');
+  addRows(state.ia.data, 'IA');
 
   const csv = '\uFEFF' + header + '\n' + rows.join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
@@ -1359,7 +1432,7 @@ function loadCSV(e){
           <td><span class="sem ${semClass(p.sem)}">${semLabel(p.sem)}</span></td>
         </tr>`).join('');
       document.getElementById('upload-preview').style.display='block';
-      renderTab('imc');renderTab('dev');renderTab('inf');
+      renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
       // Reset file input so same file can be reloaded
       e.target.value='';
       // Go to IMC tab
@@ -1418,6 +1491,7 @@ updateDate();
 renderTab('imc');
 renderTab('dev');
 renderTab('inf');
+renderTab('ia');
 
 // ── Auto-restore info extra desde localStorage al cargar la página ──
 try{(function(){
@@ -1459,7 +1533,7 @@ try{(function(){
   mergeLocal(state.imc.data,'IMC');
   mergeLocal(state.dev.data,'Desarrollo');
   mergeLocal(state.inf.data,'Soporte');
-  renderTab('imc');renderTab('dev');renderTab('inf');
+  renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
   console.log('Info extra restaurada desde localStorage');
 })();}catch(e){ console.warn('restore error:',e); }
 </script>
@@ -1727,7 +1801,7 @@ function descargarPlantillaLinks(){
   const modLabel={imc:'IMC',dev:'Desarrollo',inf:'Soporte'};
   // Determinar módulo de cada proyecto
   const rows=[];
-  ['imc','dev','inf'].forEach(tab=>{
+  ['imc','dev','inf','ia'].forEach(tab=>{
     state[tab].data.forEach(p=>{
       rows.push({modulo:modLabel[tab]||tab, nombre:p.nombre, url_plan:p.url_plan||''});
     });
@@ -1759,7 +1833,7 @@ function exportGanttPDF(tab){
   pdf.setFillColor(26,35,64);
   pdf.rect(0,0,pageW,pageH,'F');
   // Título
-  const tabLabel={imc:'IMC',dev:'Desarrollo',inf:'Soporte e Infraestructura'}[tab]||tab;
+  const tabLabel={imc:'IMC',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'}[tab]||tab;
   pdf.setTextColor(201,168,76);
   pdf.setFont('helvetica','bold');
   pdf.setFontSize(12);
