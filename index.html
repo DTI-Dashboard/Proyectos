@@ -1194,7 +1194,7 @@ function switchTab(id,el){
   document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('mod-'+id).classList.add('active');
-  if(id==='actividades') renderActividades();
+  if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
 }
 
 // ─── EXPORT PPTX (PptxGenJS v4) ───
@@ -1672,6 +1672,7 @@ function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 function actSelectWeek(v){ if(v){ _actSemana=v; renderActividades(); } }
 
 function renderActividades(){
+  try{
   _loadAct();
   const fEst=(document.getElementById('act-f-estatus')||{}).value||'';
   const fNom=(document.getElementById('act-f-nombre')||{}).value||'';
@@ -1722,6 +1723,7 @@ function renderActividades(){
   const pCols={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
   const tbody=document.getElementById('act-tbody');
   if(!tbody) return;
+  }catch(e){ console.error('renderActividades exception:',e); return; }
 
   if(!filtered.length){
     tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:50px;color:rgba(255,255,255,.3)">
@@ -1777,7 +1779,7 @@ _actSemana = _isoWeek(new Date());
 
 // Cargar datos de ejemplo si localStorage está vacío
 (function(){
-  if(localStorage.getItem('dti_actividades')) return;
+  try{ if(JSON.parse(localStorage.getItem('dti_actividades')||'[]').length>0) return; }catch(e){}
   const sample=[
     {id:'ex1',nombre:'Eduardo Sanchez',actividad:'Revisión de avance del proyecto Talleres || Mecánica Mx',area:'Talleres',prioridad:'Alta',fechaFin:'2026-06-23',semana:'2026-W26',estatus:'En proceso',notas:'Pendiente revisión con el cliente.',createdAt:'2026-06-23T09:00:00',updatedAt:'2026-06-23T09:00:00'},
     {id:'ex2',nombre:'Miguel Benítez',actividad:'Documentar integración Smartsheet con dashboard DTI',area:'Capital Humano',prioridad:'Media',fechaFin:'2026-06-23',semana:'2026-W26',estatus:'Concluido',notas:'',createdAt:'2026-06-23T10:00:00',updatedAt:'2026-06-23T10:00:00'},
@@ -1790,6 +1792,15 @@ _actSemana = _isoWeek(new Date());
   ];
   localStorage.setItem('dti_actividades', JSON.stringify(sample));
 })();
+
+// Inicializar render si ya estamos en la tab de actividades
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    if(document.getElementById('mod-actividades') && document.getElementById('mod-actividades').classList.contains('active')){
+      renderActividades();
+    }
+  }, 100);
+});
 
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); });
 
