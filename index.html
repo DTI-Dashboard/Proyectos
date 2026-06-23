@@ -91,7 +91,14 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .p-name{font-weight:500;color:#fff;line-height:1.3;}
 .p-area{font-size:11px;color:#fff;margin-top:2px;}
 .p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--blue);}
-.p-tipo.m{background:rgba(139,92,246,.15);color:var(--purple);}
+.p-tipo.t1{background:rgba(59,130,246,.18);color:#60a5fa;}
+.p-tipo.t2{background:rgba(139,92,246,.18);color:#a78bfa;}
+.p-tipo.t3{background:rgba(34,197,94,.18);color:#4ade80;}
+.p-tipo.t4{background:rgba(245,158,11,.18);color:#fbbf24;}
+.p-tipo.t5{background:rgba(239,68,68,.18);color:#f87171;}
+.p-tipo.t6{background:rgba(20,184,166,.18);color:#2dd4bf;}
+.p-tipo.t7{background:rgba(249,115,22,.18);color:#fb923c;}
+.p-tipo.t8{background:rgba(236,72,153,.18);color:#f472b6;}
 
 .sem{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .sem::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
@@ -792,6 +799,13 @@ function semClass(s){
 function semLabel(s){
   return {tiempo:'A tiempo',terminado:'Terminado',atrasado:'Atrasado',standby:'Stand By',riesgo:'En riesgo'}[semClass(s)]||s;
 }
+// Asigna clase CSS dinámica por tipo (paleta de 8 colores rotativos)
+const _tipoMap={};let _tipoIdx=0;
+function tipoClass(tipo){
+  const k=(tipo||'').trim().toLowerCase();
+  if(!_tipoMap[k]){ _tipoIdx++; _tipoMap[k]='t'+(((_tipoIdx-1)%8)+1); }
+  return _tipoMap[k];
+}
 function barColor(r,e,sem){
   // El color de la barra sigue el semáforo del proyecto
   const s=semClass(sem);
@@ -825,7 +839,7 @@ function buildRow(p,tab,ri){
   const sc=semClass(p.sem),bc=barColor(p.real,p.esp,p.sem);
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
-    <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
+    <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
     <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
@@ -1561,7 +1575,7 @@ function loadCSV(e){
       document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
         <tr>
           <td><span style="font-size:10px;font-weight:700;color:var(--gold)">${p.modulo}</span></td>
-          <td><span class="p-tipo ${p.tipo==='Mejoras'?'m':''}">${p.tipo}</span></td>
+          <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
           <td><div class="p-name">${p.nombre}</div></td>
           <td><div class="p-area">${p.area}</div></td>
           <td><div class="date-cell">${p.inicio}</div></td>
