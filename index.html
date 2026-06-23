@@ -531,6 +531,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <button class="act-week-btn" onclick="actGoToday()" style="font-size:11px;padding:4px 10px">Hoy</button>
     </div>
     <div class="act-filters-row">
+      <button id="act-btn-todas" onclick="actToggleTodas()" style="background:var(--navy-light);color:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;transition:.2s">📋 Todas las actividades</button>
       <select id="act-f-estatus" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
         <option value="">Todos los estatus</option>
         <option value="En proceso">🔵 En proceso</option>
@@ -555,10 +556,8 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
       <thead><tr>
         <th style="width:130px">Nombre</th>
         <th>Actividad</th>
-        <th style="width:110px">Área</th>
-        <th style="width:75px">Prioridad</th>
+        <th style="width:90px">Prioridad</th>
         <th style="width:100px">Fecha Fin</th>
-        <th style="width:85px">Semana</th>
         <th style="width:130px">Estatus</th>
         <th style="width:80px">Acciones</th>
       </tr></thead>
@@ -625,7 +624,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
     <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Eduardo Sanchez"></div>
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Ivan Franco"></div>
       
       <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
       <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
@@ -2083,6 +2082,24 @@ function changeActEstatus(id,val){
   _saveAct(); renderActividades();
 }
 
+
+function actToggleTodas(){
+  const btn=document.getElementById('act-btn-todas');
+  if(_actSemana){
+    _actSemana='';
+    btn.style.background='var(--gold)';
+    btn.style.color='var(--navy)';
+    btn.style.borderColor='var(--gold)';
+    btn.textContent='✓ Todas las actividades';
+  } else {
+    _actSemana=_isoWeek(new Date());
+    btn.style.background='var(--navy-light)';
+    btn.style.color='rgba(255,255,255,.7)';
+    btn.style.borderColor='var(--border)';
+    btn.textContent='📋 Todas las actividades';
+  }
+  renderActividades();
+}
 function actNavWeek(dir){
   if(!_actSemana) _actSemana=_isoWeek(new Date());
   const [yr,ww]=_actSemana.split('-W');
@@ -2147,7 +2164,7 @@ function renderActividades(){
   if(!tbody) return;
 
   if(!filtered.length){
-    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:50px;color:rgba(255,255,255,.3)">
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:50px;color:rgba(255,255,255,.3)">
       <div style="font-size:32px;margin-bottom:10px">📋</div>
       <div style="font-size:14px;margin-bottom:6px">Sin actividades para esta semana</div>
       <div style="font-size:12px">Haz clic en <strong style="color:var(--gold)">➕ Nueva Actividad</strong> para agregar</div>
@@ -2165,15 +2182,9 @@ function renderActividades(){
     return `<tr>
       <td style="font-weight:600">${a.nombre}</td>
       <td><span title="${a.actividad}">${a.actividad}</span>${notaIcon}</td>
-      <td style="color:rgba(255,255,255,.65);font-size:12px">${a.area||'—'}</td>
       <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
       <td style="font-size:12px;${vencida}">${fechaStr}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.45)">${semanaN}</td>
-      <td><select onchange="changeActEstatus('${a.id}',this.value)" style="background:var(--navy-mid);color:${ec};border:1px solid ${ec};border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;max-width:130px">
-        <option value="En proceso" style="background:#1c2535;color:#6366f1;font-weight:600" ${a.estatus==='En proceso'?'selected':''}>🔵 En proceso</option>
-        <option value="Concluido" style="background:#1c2535;color:#22c55e;font-weight:600" ${a.estatus==='Concluido'?'selected':''}>🟢 Concluido</option>
-        <option value="Atrasado" style="background:#1c2535;color:#ef4444;font-weight:600" ${a.estatus==='Atrasado'?'selected':''}>🔴 Atrasado</option>
-      </select></td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;color:${ec};background:${ec}18;border:1px solid ${ec}55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">${a.estatus==='En proceso'?'🔵':''}${a.estatus==='Concluido'?'🟢':''}${a.estatus==='Atrasado'?'🔴':''} ${a.estatus}</span></td>
       <td style="white-space:nowrap">
         <button onclick="openActModal('${a.id}')" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
         <button onclick="deleteActividad('${a.id}')" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:12px" title="Eliminar">🗑️</button>
