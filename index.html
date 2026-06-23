@@ -1999,9 +1999,10 @@ function _weekLabel(iso){
   const jan1=new Date(y,0,1);
   const dayOfWeek=jan1.getDay()||7;
   const monday=new Date(y,0,1+(w-1)*7-(dayOfWeek-1));
-  const sunday=new Date(monday); sunday.setDate(monday.getDate()+6);
-  const fmt=d=>d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
-  return `Semana ${w} \u2014 ${fmt(monday)} al ${fmt(sunday)} ${sunday.getFullYear()}`;
+  const friday=new Date(monday); friday.setDate(monday.getDate()+4);
+  const fmtD=d=>d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  const fmtDY=d=>d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  return `Semana del ${fmtD(monday)} al ${fmtDY(friday)}`;
 }
 
 function _loadAct(){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){ _actividades=[]; } }
@@ -2046,7 +2047,7 @@ function saveActividad(){
   _loadAct();
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
-  const semana=document.getElementById('act-inp-semana').value||_actSemana||_isoWeek(new Date());
+  const semana=_actSemana||_isoWeek(new Date());
   const existingArea = id ? (_actividades.find(x=>x.id===id)||{}).area||'' : '';
   const existingSemana = id ? (_actividades.find(x=>x.id===id)||{}).semana||semana : semana;
   const obj={
