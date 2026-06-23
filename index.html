@@ -626,10 +626,10 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
     <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px" id="act-modal-title">Agregar Actividad</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Eduardo Sanchez"></div>
-      <div><label class="act-inp-lbl">ÁREA / DEPARTAMENTO</label><input id="act-inp-area" class="act-inp" placeholder="Ej: Capital Humano"></div>
+      
       <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
       <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp"></div>
-      <div><label class="act-inp-lbl">SEMANA</label><input id="act-inp-semana" type="week" class="act-inp"></div>
+      
       <div><label class="act-inp-lbl">PRIORIDAD</label>
         <select id="act-inp-prioridad" class="act-inp">
           <option value="Alta">🔴 Alta</option>
@@ -2018,12 +2018,12 @@ function openActModal(id){
     document.getElementById('act-modal-title').textContent=a.actividad.slice(0,45)+(a.actividad.length>45?'…':'');
     document.getElementById('act-inp-id').value=id;
     document.getElementById('act-inp-nombre').value=a.nombre;
-    document.getElementById('act-inp-area').value=a.area||'';
+    // area removida del modal
     document.getElementById('act-inp-actividad').value=a.actividad;
     document.getElementById('act-inp-fecha').value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
     document.getElementById('act-inp-estatus').value=a.estatus;
-    document.getElementById('act-inp-semana').value=a.semana;
+    // semana removida del modal
     document.getElementById('act-inp-notas').value=a.notas||'';
   } else {
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
@@ -2032,7 +2032,7 @@ function openActModal(id){
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
     document.getElementById('act-inp-estatus').value='En proceso';
-    document.getElementById('act-inp-semana').value=_actSemana||_isoWeek(new Date());
+    // semana removida del modal
   }
 }
 
@@ -2049,7 +2049,7 @@ function saveActividad(){
   const semana=document.getElementById('act-inp-semana').value||_actSemana||_isoWeek(new Date());
   const obj={
     nombre,actividad,
-    area:(document.getElementById('act-inp-area').value||'').trim(),
+    area:'',  // campo removido del modal
     prioridad:document.getElementById('act-inp-prioridad').value,
     fechaFin:fecha, semana,
     estatus:document.getElementById('act-inp-estatus').value,
@@ -2092,7 +2092,6 @@ function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 function actSelectWeek(v){ if(v){ _actSemana=v; renderActividades(); } }
 
 function renderActividades(){
-  try{
   _loadAct();
   const fEst=(document.getElementById('act-f-estatus')||{}).value||'';
   const fNom=(document.getElementById('act-f-nombre')||{}).value||'';
@@ -2143,7 +2142,6 @@ function renderActividades(){
   const pCols={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
   const tbody=document.getElementById('act-tbody');
   if(!tbody) return;
-  }catch(e){ console.error('renderActividades exception:',e); return; }
 
   if(!filtered.length){
     tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:50px;color:rgba(255,255,255,.3)">
@@ -2168,10 +2166,10 @@ function renderActividades(){
       <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
       <td style="font-size:12px;${vencida}">${fechaStr}</td>
       <td style="font-size:11px;color:rgba(255,255,255,.45)">${semanaN}</td>
-      <td><select onchange="changeActEstatus('${a.id}',this.value)" style="background:${ec}20;color:${ec};border:1px solid ${ec}55;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:600;cursor:pointer;max-width:120px">
-        <option value="En proceso"${a.estatus==='En proceso'?' selected':''}>🔵 En proceso</option>
-        <option value="Concluido"${a.estatus==='Concluido'?' selected':''}>🟢 Concluido</option>
-        <option value="Atrasado"${a.estatus==='Atrasado'?' selected':''}>🔴 Atrasado</option>
+      <td><select onchange="changeActEstatus('${a.id}',this.value)" style="background:var(--navy-mid);color:${ec};border:1px solid ${ec};border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;max-width:130px">
+        <option value="En proceso" style="background:#1c2535;color:#6366f1;font-weight:600" ${a.estatus==='En proceso'?'selected':''}>🔵 En proceso</option>
+        <option value="Concluido" style="background:#1c2535;color:#22c55e;font-weight:600" ${a.estatus==='Concluido'?'selected':''}>🟢 Concluido</option>
+        <option value="Atrasado" style="background:#1c2535;color:#ef4444;font-weight:600" ${a.estatus==='Atrasado'?'selected':''}>🔴 Atrasado</option>
       </select></td>
       <td style="white-space:nowrap">
         <button onclick="openActModal('${a.id}')" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
