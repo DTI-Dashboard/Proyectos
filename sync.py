@@ -210,6 +210,50 @@ try:
             traceback.print_exc()
             raise
 
+    # ── Actividades desde CSV ────────────────────────────────────────
+    act_csv = "actividades.csv"
+    act_data = []
+    if os.path.exists(act_csv):
+        with open(act_csv, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                act_data.append({
+                    "id":        row.get("id",""),
+                    "nombre":    row.get("nombre",""),
+                    "actividad": row.get("actividad",""),
+                    "area":      row.get("area",""),
+                    "prioridad": row.get("prioridad",""),
+                    "fechaFin":  row.get("fechaFin",""),
+                    "semana":    row.get("semana",""),
+                    "estatus":   row.get("estatus",""),
+                    "notas":     row.get("notas",""),
+                    "createdAt": row.get("createdAt",""),
+                    "updatedAt": row.get("updatedAt",""),
+                })
+        print(f"✅ actividades.csv: {len(act_data)} registros")
+    else:
+        print("ℹ️  actividades.csv no existe aún")
+
+    def esc_js(s):
+        return (s or "").replace("\\","\\\\").replace("'","\\'").replace('"','\\"')
+
+    act_js_rows = []
+    for a in act_data:
+        act_js_rows.append(
+            f'  {{id:"{esc_js(a["id"])}",nombre:"{esc_js(a["nombre"])}",actividad:"{esc_js(a["actividad"])}",'
+            f'area:"{esc_js(a["area"])}",prioridad:"{esc_js(a["prioridad"])}",fechaFin:"{esc_js(a["fechaFin"])}",'
+            f'semana:"{esc_js(a["semana"])}",estatus:"{esc_js(a["estatus"])}",notas:"{esc_js(a["notas"])}",'
+            f'createdAt:"{esc_js(a["createdAt"])}",updatedAt:"{esc_js(a["updatedAt"])}"}}'
+        )
+    act_js = "const ACT_DATA = [\n" + ",\n".join(act_js_rows) + "\n]; // INYECTADO POR SYNC.PY"
+    pattern_act = r"const ACT_DATA = \[.*?\]; // INYECTADO POR SYNC\.PY"
+    match_act = re.search(pattern_act, html, flags=re.DOTALL)
+    if match_act:
+        html = html[:match_act.start()] + act_js + html[match_act.end():]
+        print(f"✅ ACT_DATA inyectado: {len(act_data)} actividades")
+    else:
+        print("⚠️  Patrón ACT_DATA no encontrado en HTML")
+
     # ── Timestamp ─────────────────────────────────────────────────
     ts_iso     = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     ts_display = datetime.now().strftime("%d/%m/%Y %H:%M")
