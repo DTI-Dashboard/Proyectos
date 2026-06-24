@@ -61,7 +61,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
-.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;} .kpi[onclick]{cursor:pointer;} .kpi[onclick]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:var(--gold);}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;} .kpi[onclick]{cursor:pointer;} .kpi[onclick]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:var(--gold);}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .kpi.g::after{background:var(--green);}
 .kpi.y::after{background:var(--yellow);}
@@ -69,10 +69,10 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .kpi.b::after{background:var(--blue);}
 .kpi.p::after{background:var(--purple);}
 .kpi.gold::after{background:var(--gold);}
-.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;margin-bottom:8px;font-weight:700;}
-.kpi-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;margin-bottom:8px;font-weight:700;text-align:center;}
+.kpi-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;text-align:center;}
 .kpi-val.g{color:var(--green)}.kpi-val.y{color:var(--yellow)}.kpi-val.r{color:var(--red)}.kpi-val.b{color:var(--blue)}.kpi-val.gold{color:var(--gold)}.kpi-val.p{color:var(--purple)}
-.kpi-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:5px;}
+.kpi-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:5px;text-align:center;}
 
 .card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
 .card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -793,6 +793,8 @@ const INF_DATA=[
 ];
 
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
+
+const ACT_DATA = []; // INYECTADO POR SYNC.PY
 
 const state={
   imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:'',tipo:''},
@@ -2088,8 +2090,56 @@ function _weekLabel(iso){
   return `Semana del ${fmtD(monday)} al ${fmtDY(friday)}`;
 }
 
-function _loadAct(){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){ _actividades=[]; } }
-function _saveAct(){ localStorage.setItem('dti_actividades',JSON.stringify(_actividades)); }
+function _loadAct(){
+  try {
+    // Prioridad: ACT_DATA inyectado por sync.py desde el repo (fuente de verdad)
+    if(typeof ACT_DATA !== 'undefined' && ACT_DATA.length > 0){
+      // Merge: usar ACT_DATA como base, preservar cambios locales más recientes
+      const local = JSON.parse(localStorage.getItem('dti_actividades')||'[]');
+      const repoMap = {};
+      ACT_DATA.forEach(a => repoMap[a.id] = a);
+      // Si hay actividades locales más nuevas que el repo, usarlas
+      local.forEach(la => {
+        if(!repoMap[la.id] || new Date(la.updatedAt) > new Date((repoMap[la.id]||{}).updatedAt||0)){
+          repoMap[la.id] = la;
+        }
+      });
+      _actividades = Object.values(repoMap);
+      // Sincronizar localStorage con el merge
+      localStorage.setItem('dti_actividades', JSON.stringify(_actividades));
+    } else {
+      _actividades = JSON.parse(localStorage.getItem('dti_actividades')||'[]');
+    }
+  } catch(e){ _actividades=[]; }
+}
+function _saveAct(){
+  localStorage.setItem('dti_actividades',JSON.stringify(_actividades));
+  _backupActGitHub();
+}
+
+async function _backupActGitHub(){
+  try {
+    const csv = _actToCSV(_actividades);
+    const res = await fetch(SYNC_PROXY_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'save_file', filename:'actividades.csv', content: csv })
+    });
+    if(res.ok){
+      const d = await res.json().catch(()=>({}));
+      if(d.ok) console.log('✅ Actividades respaldadas en GitHub');
+    }
+  } catch(e){ console.warn('Backup actividades (best effort):', e); }
+}
+
+function _actToCSV(acts){
+  const esc = s => (s||'').replace(/"/g,'""');
+  const header = 'id,nombre,actividad,area,prioridad,fechaFin,semana,estatus,notas,createdAt,updatedAt';
+  const rows = acts.map(a =>
+    `"${esc(a.id)}","${esc(a.nombre)}","${esc(a.actividad)}","${esc(a.area||'')}","${esc(a.prioridad||'')}","${esc(a.fechaFin||'')}","${esc(a.semana||'')}","${esc(a.estatus||'')}","${esc(a.notas||'')}","${esc(a.createdAt||'')}","${esc(a.updatedAt||'')}"`
+  );
+  return header + '\n' + rows.join('\n');
+}
 
 function openActModal(id){
   _loadAct();
