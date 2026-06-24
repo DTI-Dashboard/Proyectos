@@ -61,7 +61,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
-.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;} .kpi[onclick]{cursor:pointer;} .kpi[onclick]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:var(--gold);}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .kpi.g::after{background:var(--green);}
 .kpi.y::after{background:var(--yellow);}
@@ -263,13 +263,13 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
   </div>
   <div class="kpi-strip">
-    <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="k-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
-    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="k-term">0</div><div class="kpi-sub">Entregados</div></div>
-    <div class="kpi g"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="k-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
-    <div class="kpi y"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="k-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="k-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="k-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="k-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="k-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="k-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="k-atr">0</div><div class="kpi-sub">Escalados</div></div>
     
-    <div class="kpi gold"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="k-pc">0</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="k-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
   </div>
   <div class="filters">
     <span class="filter-label">Filtrar:</span>
@@ -335,13 +335,13 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
   </div>
   <div class="kpi-strip">
-    <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
-    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="dv-term">0</div><div class="kpi-sub">Entregados</div></div>
-    <div class="kpi g"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="dv-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
-    <div class="kpi y"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="dv-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="dv-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="dv-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="dv-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="dv-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="dv-atr">0</div><div class="kpi-sub">Escalados</div></div>
     
-    <div class="kpi gold"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="dv-pc">0</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="dv-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
   </div>
   <div class="filters">
     <span class="filter-label">Filtrar:</span>
@@ -407,13 +407,13 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
   </div>
   <div class="kpi-strip">
-    <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
-    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="inf-term">0</div><div class="kpi-sub">Entregados</div></div>
-    <div class="kpi g"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="inf-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
-    <div class="kpi y"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="inf-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="inf-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="inf-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="inf-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="inf-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="inf-atr">0</div><div class="kpi-sub">Escalados</div></div>
     
-    <div class="kpi gold"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="inf-pc">0</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="inf-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
   </div>
   <div class="filters">
     <span class="filter-label">Filtrar:</span>
@@ -478,12 +478,12 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
   </div>
   <div class="kpi-strip">
-    <div class="kpi b"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
-    <div class="kpi b"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
-    <div class="kpi g"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="ia-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
-    <div class="kpi y"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="ia-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="ia-atr">0</div><div class="kpi-sub">Escalados</div></div>
-    <div class="kpi gold"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="ia-pc">0</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="ia-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="ia-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="ia-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="ia-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
   </div>
   <div class="filters">
     <span class="filter-label">Filtrar:</span>
@@ -1232,6 +1232,23 @@ function buildTreemap(projects, elId){
       <span>${cnt}</span><span class="treemap-area">${area}</span>
     </div>`;
   }).join('')}</div>`;
+}
+
+function kpiFilter(tab, val){
+  // Encontrar el botón de filtro correspondiente y simularlo
+  const section = document.querySelector(`#mod-${tab==='imc'?'imc':tab==='dev'?'dev':tab==='inf'?'inf':'ia'} .filters, [id^="mod-"] .filters`);
+  let btn = null;
+  if(val==='todos'){
+    btn = document.querySelector(`#mod-${tab} .filters .filter-btn`);
+  } else if(val==='porcerrar'){
+    btn = document.querySelector(`#mod-${tab} .filters .filter-btn:last-child`);
+    filterTabPorCerrar(tab, btn);
+    return;
+  } else {
+    const btns = [...document.querySelectorAll(`#mod-${tab} .filters .filter-btn`)];
+    btn = btns.find(b => b.textContent.includes(val));
+  }
+  if(btn) filterTab(tab, val==='todos'?'todos':val, btn);
 }
 
 function filterTabPorCerrar(tab,el){
