@@ -177,14 +177,13 @@ try:
             "csv":         "info_dev.csv",
             "filter_mode": "first_per_sheet"
         },
-        # IA: agregar report_id cuando esté disponible
-        # {
-        #     "report_id":   "PENDIENTE",
-        #     "label":       "IA",
-        #     "var":         "IA_DATA",
-        #     "csv":         "info_ia.csv",
-        #     "filter_mode": "sheet_match"
-        # },
+        {
+            "report_id":   "6503854223871876",
+            "label":       "IA",
+            "var":         "IA_DATA",
+            "csv":         "info_ia.csv",
+            "filter_mode": "first_per_sheet"
+        },
     ]
 
     # ── Leer index.html ───────────────────────────────────────────
