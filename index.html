@@ -2166,7 +2166,11 @@ function openActModal(id){
     document.getElementById('act-inp-nombre').value=a.nombre;
     // area removida del modal
     document.getElementById('act-inp-actividad').value=a.actividad;
-    document.getElementById('act-inp-fecha').value=a.fechaFin;
+    const hoyStr=new Date().toISOString().split('T')[0];
+    const fechaInp=document.getElementById('act-inp-fecha');
+    // Si la fecha existente es pasada, permitir verla pero no bloquear
+    fechaInp.min=a.fechaFin && a.fechaFin < hoyStr ? a.fechaFin : hoyStr;
+    fechaInp.value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
     // estatus removido del modal
     // semana removida del modal
@@ -2175,6 +2179,7 @@ function openActModal(id){
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
     // titulo secundario eliminado
     ['act-inp-id','act-inp-nombre','act-inp-actividad'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('act-inp-fecha').min=new Date().toISOString().split('T')[0];
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
     // estatus y notas removidos del modal
@@ -2256,11 +2261,16 @@ let _actFiltroEst=[], _actFiltroNom=[], _actSortCol='fechaFin', _actSortDir=1;
 
 function validarFechaLaboral(inp){
   if(!inp.value) return;
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
   const d=new Date(inp.value+'T12:00:00');
-  const day=d.getDay(); // 0=Dom, 6=Sab
+  const day=d.getDay();
   if(day===0||day===6){
     showToast('⚠️ Solo se permiten días de lunes a viernes','error');
-    inp.value='';
+    inp.value=''; return;
+  }
+  if(d < hoy){
+    showToast('⚠️ No se puede seleccionar una fecha pasada','error');
+    inp.value=''; return;
   }
 }
 
