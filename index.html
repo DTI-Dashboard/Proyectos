@@ -216,11 +216,13 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .act-multi-lbl:hover{background:rgba(255,255,255,.07);}
 .act-sort-th{cursor:pointer;user-select:none;}
 .act-sort-th:hover{color:var(--gold);}
+.dashboard-init { opacity: 0; }
+.dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
 </style>
 <!-- LAST_SYNC -->
 <meta name="last-sync" content="2026-06-25T10:24:44Z">
 </head>
-<body>
+<body class="dashboard-init">
 
 <header class="topbar">
   <div class="brand">
@@ -1765,6 +1767,9 @@ try{(function(){
       document.getElementById('mod-'+savedTab) && document.getElementById('mod-'+savedTab).classList.add('active');
     }
   }
+  // Mostrar dashboard sin parpadeo
+  document.body.classList.remove('dashboard-init');
+  document.body.classList.add('dashboard-ready');
 })();
 </script>
 <!-- PptxGenJS cargado al final para no bloquear el dashboard -->
