@@ -1891,14 +1891,14 @@ var PptxGenJS=(S=>{function p(e,l,s,n){return new(s=s||Promise)(function(a,A){fu
 //# sourceMappingURL=pptxgen.min.js.map
 
 
-function showToast(msg, type='info'){
+function showToast(msg, type='info', duration=0){
   const old = document.querySelector('.toast');
   if(old) old.remove();
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(()=>{ t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(), 300); }, type==='error'?5000:3500);
+  setTimeout(()=>{ t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(), 300); }, duration||( type==='error'?5000:3500));
 }
 
 // ─── Botón "Actualizar Datos" — dispara sync.yml vía Cloudflare Worker ───
