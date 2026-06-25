@@ -634,7 +634,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
       <div class="mod-sub">Descarga la plantilla, llena los datos extra y vuelve a subir</div>
     </div>
     <div class="mod-header-right">
-      <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">⬇️ Descargar Plantilla CSV</button>
+      <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">⬇️ Descargar Layout</button>
     </div>
   </div>
   <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
@@ -657,7 +657,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div id="upload-preview" style="display:none">
     <div class="card">
       <div class="card-head"><div class="card-title">Datos Cargados</div><span class="badge g" id="upload-count-badge">0 filas</span></div>
-      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Módulo</th><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Inicio</th><th>Fin</th><th>Real</th><th>Esp.</th><th>Semáforo</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Módulo</th><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Responsable</th><th>Solicitante</th><th>Descripción</th><th>URL Plan</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
     </div>
   </div>
 </section>
@@ -1621,8 +1621,9 @@ function loadCSV(e){
       let matched=0, noMatch=[];
       function mergeData(stateData, csvRows){
         csvRows.forEach(csvP=>{
-          const nombreCSV=(csvP.nombre||'').trim().toLowerCase();
-          const found=stateData.find(p=>(p.nombre||'').trim().toLowerCase()===nombreCSV);
+          const norm=s=>(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+          const nombreCSV=norm(csvP.nombre);
+          const found=stateData.find(p=>norm(p.nombre)===nombreCSV);
           if(found){
             if(colsPresentes.has('area'))        found.area=csvP.area;
             if(colsPresentes.has('responsable')) found.responsable=csvP.responsable;
@@ -1642,14 +1643,13 @@ function loadCSV(e){
       document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
         <tr>
           <td><span style="font-size:10px;font-weight:700;color:var(--gold)">${p.modulo}</span></td>
-          <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
+          <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo||''}</span></td>
           <td><div class="p-name">${p.nombre}</div></td>
-          <td><div class="p-area">${p.area}</div></td>
-          <td><div class="date-cell">${p.inicio}</div></td>
-          <td><div class="date-cell">${p.fin}</div></td>
-          <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green)">${p.real}%</span></td>
-          <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff">${p.esp}%</span></td>
-          <td><span class="sem ${semClass(p.sem)}">${semLabel(p.sem)}</span></td>
+          <td><div class="p-area">${p.area||''}</div></td>
+          <td style="font-size:11px;color:#ccc">${p.responsable||''}</td>
+          <td style="font-size:11px;color:#ccc">${p.solicitante||''}</td>
+          <td style="font-size:11px;color:#ccc;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.descripcion||''}</td>
+          <td style="font-size:11px;color:#6eb5ff">${p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#6eb5ff">Ver plan</a>':''}</td>
         </tr>`).join('');
       document.getElementById('upload-preview').style.display='block';
       
@@ -1657,18 +1657,15 @@ function loadCSV(e){
 renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
       // Reset file input so same file can be reloaded
       e.target.value='';
-      // Go to IMC tab
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
-      document.querySelectorAll('.tab')[0].classList.add('active');
-      document.getElementById('mod-imc').classList.add('active');
+      // Mantener en módulo Carga de Datos después del upload
       // Success feedback
       const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length;
       if(noMatch.length>0){
-        showToast(`⚠️ ${matched} proyectos actualizados. ${noMatch.length} nombre(s) no coincidieron y fueron ignorados.`,'error');
+        const noMatchMsg = noMatch.map(n=>'• '+n).join('\n');
+        showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatchMsg,'error',8000);
         console.warn('Proyectos sin coincidencia:', noMatch);
       } else {
-        showToast(`✅ ${matched} proyectos actualizados — Área, Responsable, Solicitante y Descripción aplicados`,'success');
+        showToast('✅ '+matched+' proyectos actualizados correctamente','success');
       }
     } catch(err){
       showToast('❌ Error al leer el archivo: '+err.message,'error');
