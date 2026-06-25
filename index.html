@@ -1750,6 +1750,22 @@ try{(function(){
   renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
   console.log('Info extra restaurada desde localStorage');
 })();}catch(e){ console.warn('restore error:',e); }
+
+// Restaurar tab activo tras recargar (debe ir después de todos los renderTab)
+(function(){
+  const savedTab = sessionStorage.getItem('activeTab');
+  if(savedTab && savedTab !== 'imc'){
+    const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
+    const idx = tabMap[savedTab];
+    const tabs = document.querySelectorAll('.tab');
+    if(idx !== undefined && tabs[idx]){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+      tabs[idx].classList.add('active');
+      document.getElementById('mod-'+savedTab) && document.getElementById('mod-'+savedTab).classList.add('active');
+    }
+  }
+})();
 </script>
 <!-- PptxGenJS cargado al final para no bloquear el dashboard -->
 <script>/*!
@@ -2503,16 +2519,6 @@ _actSemana = ''; // Default: mostrar todas las actividades
 
 // Inicializar render si ya estamos en la tab de actividades
 document.addEventListener('DOMContentLoaded', function(){
-  // Restaurar tab activo al recargar
-  const savedTab = sessionStorage.getItem('activeTab');
-  if(savedTab){
-    const tabs = document.querySelectorAll('.tab');
-    const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
-    const idx = tabMap[savedTab];
-    if(idx !== undefined && tabs[idx]){
-      switchTab(savedTab, tabs[idx]);
-    }
-  }
   setTimeout(function(){
     if(document.getElementById('mod-actividades') && document.getElementById('mod-actividades').classList.contains('active')){
       renderActividades();
