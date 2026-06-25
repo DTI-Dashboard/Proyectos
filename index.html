@@ -2127,11 +2127,18 @@ async function _backupActGitHub(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'save_file', filename:'actividades.csv', content: csv })
     });
-    if(res.ok){
-      const d = await res.json().catch(()=>({}));
-      if(d.ok) console.log('✅ Actividades respaldadas en GitHub');
+    const d = await res.json().catch(()=>({}));
+    if(res.ok && d.ok){
+      console.log('✅ Actividades respaldadas en GitHub');
+      showToast('✅ Actividades guardadas en servidor');
+    } else {
+      console.error('❌ Backup falló:', res.status, JSON.stringify(d));
+      showToast('⚠️ Backup local OK, servidor pendiente');
     }
-  } catch(e){ console.warn('Backup actividades (best effort):', e); }
+  } catch(e){
+    console.error('❌ Backup error:', e);
+    showToast('⚠️ Backup local OK, servidor pendiente');
+  }
 }
 
 function _actToCSV(acts){
