@@ -2114,9 +2114,12 @@ function _loadAct(){
     }
   } catch(e){ _actividades=[]; }
 }
+let _backupTimer=null;
 function _saveAct(){
   localStorage.setItem('dti_actividades',JSON.stringify(_actividades));
-  _backupActGitHub();
+  // Debounce: espera 1.5s antes de hacer backup para evitar conflictos de SHA
+  clearTimeout(_backupTimer);
+  _backupTimer=setTimeout(()=>_backupActGitHub(), 1500);
 }
 
 async function _backupActGitHub(){
