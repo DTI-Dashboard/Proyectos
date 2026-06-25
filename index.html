@@ -1276,6 +1276,7 @@ function switchTab(id,el){
   document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('mod-'+id).classList.add('active');
+  sessionStorage.setItem('activeTab', id);
   if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
 }
 
@@ -2502,6 +2503,16 @@ _actSemana = ''; // Default: mostrar todas las actividades
 
 // Inicializar render si ya estamos en la tab de actividades
 document.addEventListener('DOMContentLoaded', function(){
+  // Restaurar tab activo al recargar
+  const savedTab = sessionStorage.getItem('activeTab');
+  if(savedTab){
+    const tabs = document.querySelectorAll('.tab');
+    const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
+    const idx = tabMap[savedTab];
+    if(idx !== undefined && tabs[idx]){
+      switchTab(savedTab, tabs[idx]);
+    }
+  }
   setTimeout(function(){
     if(document.getElementById('mod-actividades') && document.getElementById('mod-actividades').classList.contains('active')){
       renderActividades();
