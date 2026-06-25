@@ -577,10 +577,12 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
           <div id="act-nombre-checks"></div>
         </div>
       </div>
-      <!-- Semana -->
-      <select id="act-f-semana" onchange="actSelectWeek(this.value)" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="todas">📋 Todas las actividades</option>
-      </select>
+      <!-- Semana navegador -->
+      <div style="display:flex;align-items:center;gap:4px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:3px 6px;">
+        <button onclick="actNavSemana(-1)" title="Semana anterior" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">‹</button>
+        <span id="act-semana-label" style="font-size:12px;color:#fff;min-width:180px;text-align:center;cursor:pointer;" onclick="actNavSemanaHoy()" title="Ir a semana actual">📋 Todas las actividades</span>
+        <button onclick="actNavSemana(1)" title="Semana siguiente" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">›</button>
+      </div>
       <!-- Prioridad -->
       <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
         <option value="">⚡ Todas las prioridades</option>
@@ -2275,6 +2277,38 @@ function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 
 function actSelectWeek(v){ _actSemana=(v==='todas'||!v)?'':v; renderActividades(); }
 
+function _getAllSems(){
+  return [...new Set(_actividades.map(a=>a.semana).filter(Boolean))].sort();
+}
+
+function actNavSemana(dir){
+  const sems = _getAllSems();
+  if(!sems.length) return;
+  if(!_actSemana){
+    // Desde "todas": ir a semana actual o la más reciente
+    const hoy = _isoWeek(new Date());
+    const idx = sems.indexOf(hoy);
+    _actSemana = idx >= 0 ? hoy : sems[sems.length-1];
+  } else {
+    const idx = sems.indexOf(_actSemana);
+    const next = idx + dir;
+    if(next < 0){ _actSemana = ''; } // antes de la primera → todas
+    else if(next >= sems.length){ _actSemana = ''; } // después de la última → todas
+    else { _actSemana = sems[next]; }
+  }
+  renderActividades();
+}
+
+function actNavSemanaHoy(){
+  // Click en el label: si ya estamos en todas → ir a semana actual; si no → todas
+  if(!_actSemana){
+    _actSemana = _isoWeek(new Date());
+  } else {
+    _actSemana = '';
+  }
+  renderActividades();
+}
+
 // ── Actividades: multi-select filtros, sorting, validación fecha ──
 let _actFiltroEst=[], _actFiltroNom=[], _actSortCol='fechaFin', _actSortDir=1;
 
@@ -2434,13 +2468,13 @@ function renderActividades(){
     </label>`).join('');
   }
 
-  // Historial de semanas
-  const sems=[...new Set(_actividades.map(a=>a.semana))].sort().reverse();
-  const wSel=document.getElementById('act-f-semana');
-  if(wSel){
-    const todasSel=!_actSemana?' selected':'';
-    wSel.innerHTML=`<option value="todas"${todasSel}>📋 Todas las actividades</option>`+
-      sems.map(s=>`<option value="${s}"${s===_actSemana?' selected':''}>${_weekLabel(s)}</option>`).join('');
+  // Actualizar label del navegador de semanas
+  const wLabel = document.getElementById('act-semana-label');
+  if(wLabel){
+    wLabel.textContent = _actSemana ? _weekLabel(_actSemana) : '📋 Todas las actividades';
+    wLabel.title = _actSemana ? 'Clic para ver todas' : 'Clic para ir a semana actual';
+    // Resaltar en dorado si hay semana activa
+    wLabel.style.color = _actSemana ? 'var(--gold)' : '#fff';
   }
 
   // Estatus automático: si ya pasó la fecha y no está concluido → Atrasado
