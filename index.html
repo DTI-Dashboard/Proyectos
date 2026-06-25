@@ -2133,14 +2133,11 @@ async function _backupActGitHub(){
     const d = await res.json().catch(()=>({}));
     if(res.ok && d.ok){
       console.log('✅ Actividades respaldadas en GitHub');
-      showToast('✅ Actividades guardadas en servidor');
     } else {
       console.error('❌ Backup falló:', res.status, JSON.stringify(d));
-      showToast('⚠️ Backup local OK, servidor pendiente');
     }
   } catch(e){
     console.error('❌ Backup error:', e);
-    showToast('⚠️ Backup local OK, servidor pendiente');
   }
 }
 
