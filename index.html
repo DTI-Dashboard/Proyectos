@@ -248,6 +248,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <div class="topbar-right">
     <span class="date-chip" id="live-date"></span>
     <span class="date-chip" id="sync-chip" style="display:none;border-color:rgba(34,197,94,.4);color:rgba(34,197,94,.9);cursor:default;" title="Última sincronización con Smartsheet"></span>
+    <button onclick="toggleTheme()" id="theme-btn" title="Modo claro/oscuro" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;margin-right:4px">🌙</button>
     <button class="btn-sync" id="btn-sync" onclick="triggerSync()" title="Forzar una actualización inmediata desde Smartsheet">
       <span class="ico">🔄</span><span id="btn-sync-label">Actualizar Datos</span>
     </button>
@@ -670,7 +671,17 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
   <!-- Sección descarga plantilla de links eliminada - todo en una sola plantilla -->
   <div id="upload-preview" style="display:none">
     <div class="card">
-      <div class="card-head"><div class="card-title">Datos Cargados</div><span class="badge g" id="upload-count-badge">0 filas</span></div>
+      <div class="card-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="card-title">Vista Previa — Pendiente de Confirmar</div>
+          <span class="badge g" id="upload-count-badge">0 filas</span>
+          <span id="upload-error-badge" style="display:none;background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px"></span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="cancelarCarga()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);color:rgba(255,255,255,.6);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:12px;font-weight:600">✕ Cancelar</button>
+          <button onclick="confirmarCarga()" style="background:#22c55e;border:none;color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:12px;font-weight:700">✅ Confirmar y Aplicar</button>
+        </div>
+      </div>
       <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Módulo</th><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Responsable</th><th>Solicitante</th><th>Descripción</th><th>URL Plan</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
     </div>
   </div>
@@ -1632,7 +1643,35 @@ function loadCSV(e){
 
       // ── Merge en memoria: solo campos presentes en este CSV ────────
       let matched=0, noMatch=[];
-      function mergeData(stateData, csvRows){
+      function cancelarCarga(){
+  window._pendingUpload=null;
+  document.getElementById('upload-preview').style.display='none';
+  showToast('Carga cancelada','info');
+}
+
+function confirmarCarga(){
+  if(!window._pendingUpload){ showToast('No hay datos pendientes','error'); return; }
+  const {byMod,matched,noMatch}=window._pendingUpload;
+  if(byMod.IMC.length)        mergeData(state.imc.data,byMod.IMC);
+  if(byMod.Desarrollo.length) mergeData(state.dev.data,byMod.Desarrollo);
+  if(byMod.Soporte.length)    mergeData(state.inf.data,byMod.Soporte);
+  if(byMod.IA.length)         mergeData(state.ia.data,byMod.IA);
+  renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
+  const allRows=[...state.imc.data,...state.dev.data,...state.inf.data,...state.ia.data];
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const csvHeader='modulo,nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
+  const csvRows=allRows.map(p=>p.modulo+',"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"').join('\n');
+  localStorage.setItem('dti_info_extra', csvHeader+'\n'+csvRows);
+  window._pendingUpload=null;
+  document.getElementById('upload-preview').style.display='none';
+  if(noMatch.length>0){
+    showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatch.map(n=>'• '+n).join('\n'),'error',8000);
+  } else {
+    showToast('✅ '+matched+' proyectos actualizados correctamente','success');
+  }
+}
+
+function mergeData(stateData, csvRows){
         csvRows.forEach(csvP=>{
           const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
           const nombreCSV=norm(csvP.nombre);
@@ -1648,10 +1687,7 @@ function loadCSV(e){
           } else { noMatch.push(csvP.nombre); }
         });
       }
-      if(byMod.IMC.length)        mergeData(state.imc.data, byMod.IMC);
-      if(byMod.Desarrollo.length) mergeData(state.dev.data, byMod.Desarrollo);
-      if(byMod.Soporte.length)    mergeData(state.inf.data, byMod.Soporte);
-      if(byMod.IA.length)         mergeData(state.ia.data,  byMod.IA);
+
 
       document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
       // noMatch aún no está calculado aquí — se usa después; pasar set de nombres fallidos
@@ -1691,22 +1727,14 @@ function loadCSV(e){
           <td style="font-size:11px;color:#6eb5ff">${p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#6eb5ff">Ver plan</a>':''}</td>
         </tr>`;
       }).join('');
+      // Guardar datos pendientes — no aplicar hasta que el usuario confirme
+      window._pendingUpload={byMod,matched,noMatch};
       document.getElementById('upload-preview').style.display='block';
-      
-
-renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
-      // Reset file input so same file can be reloaded
       e.target.value='';
-      // Mantener en módulo Carga de Datos después del upload
-      // Success feedback
-      const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length+byMod.IA.length;
-      if(noMatch.length>0){
-        const noMatchMsg = noMatch.map(n=>'• '+n).join('\n');
-        showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatchMsg,'error',8000);
-        console.warn('Proyectos sin coincidencia:', noMatch);
-      } else {
-        showToast('✅ '+matched+' proyectos actualizados correctamente','success');
-      }
+      const eb=document.getElementById('upload-error-badge');
+      if(noMatch.length>0){ eb.style.display=''; eb.textContent=noMatch.length+' sin coincidencia'; }
+      else { eb.style.display='none'; }
+      showToast('👁️ Revisa la vista previa y confirma para aplicar los datos','info');
     } catch(err){
       showToast('❌ Error al leer el archivo: '+err.message,'error');
     }
@@ -1814,6 +1842,11 @@ try{(function(){
   // Mostrar dashboard sin parpadeo
   document.body.classList.remove('dashboard-init');
   document.body.classList.add('dashboard-ready');
+  if(localStorage.getItem('dti_theme')==='light'){
+    document.body.classList.add('light-mode');
+    const tb=document.getElementById('theme-btn');
+    if(tb) tb.textContent='☀️';
+  }
   // Cargar actividades al inicio
 })();
 
@@ -2169,6 +2202,11 @@ function saveActividad(){
   showToast(id?'✅ Actividad actualizada':'✅ Actividad guardada');
 }
 
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light-mode');
+  document.getElementById('theme-btn').textContent=isLight?'☀️':'🌙';
+  localStorage.setItem('dti_theme',isLight?'light':'dark');
+}
 function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCancel='Cancelar',danger=false,onOk}){
   const ov=document.createElement('div');
   ov.className='dti-modal-overlay';
