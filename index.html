@@ -233,6 +233,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
 </style>
 <!-- LAST_SYNC -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
 <meta name="last-sync" content="2026-06-26T17:19:25Z">
 </head>
 <body class="dashboard-init">
@@ -562,10 +563,10 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     </div>
   </div>
   <div class="kpi-strip">
-    <div class="kpi b"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="act-k-total">0</div><div class="kpi-sub">Esta semana</div></div>
-    <div class="kpi" style="border-top-color:#6366f1"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="act-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
-    <div class="kpi g"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="act-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="act-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi b" style="cursor:pointer" onclick="kpiActFilter('todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="act-k-total">0</div><div class="kpi-sub">Esta semana</div></div>
+    <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilter('En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="act-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+    <div class="kpi g" style="cursor:pointer" onclick="kpiActFilter('Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="act-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+    <div class="kpi r" style="cursor:pointer" onclick="kpiActFilter('Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="act-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
     <div class="kpi gold"><div class="kpi-lbl">Colaboradores</div><div class="kpi-val gold" id="act-k-personas">0</div><div class="kpi-sub">Activos esta semana</div></div>
   </div>
   <div class="act-week-nav">
@@ -2280,6 +2281,27 @@ function validarFechaLaboral(inp){
     showToast('⚠️ No se puede seleccionar una fecha pasada','error');
     inp.value=''; return;
   }
+}
+
+function kpiActFilter(val){
+  if(val==='todos'){
+    _actFiltroEst=[];
+    // Marcar todos los checkboxes de estatus
+    document.querySelectorAll('#act-estatus-panel input[type=checkbox]').forEach(c=>c.checked=true);
+    const btn=document.getElementById('act-est-btn');
+    if(btn){ btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active'); }
+  } else {
+    _actFiltroEst=[val];
+    // Actualizar checkboxes
+    document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)').forEach(c=>{
+      c.checked=(c.value===val);
+    });
+    const todosChk=document.getElementById('act-est-todos');
+    if(todosChk) todosChk.checked=false;
+    const btn=document.getElementById('act-est-btn');
+    if(btn){ btn.textContent='🔵 '+val+' ▾'; btn.classList.add('active'); }
+  }
+  renderActividades();
 }
 
 function actSelTodos(tipo, chk){
