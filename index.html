@@ -220,6 +220,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
 </style>
 <!-- LAST_SYNC -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 <meta name="last-sync" content="2026-06-25T23:55:40Z">
 </head>
 <body class="dashboard-init">
@@ -1572,12 +1573,13 @@ function loadCSV(e){
         modulo:      (r.modulo||'IMC').trim(),
       });
       const mapped=rows.map(mapRow);
-      const byMod={IMC:[],Desarrollo:[],Soporte:[]};
+      const byMod={IMC:[],Desarrollo:[],Soporte:[],IA:[]};
       mapped.forEach(p=>{
-        const m=p.modulo.toUpperCase();
+        const m=(p.modulo||'').toUpperCase().trim();
         if(m==='IMC') byMod.IMC.push(p);
         else if(m==='DESARROLLO') byMod.Desarrollo.push(p);
-        else if(m==='SOPORTE') byMod.Soporte.push(p);
+        else if(m==='SOPORTE'||m==='SOPORTE E INFRAESTRUCTURA'||m==='INFRAESTRUCTURA') byMod.Soporte.push(p);
+        else if(m==='IA') byMod.IA.push(p);
         else byMod.IMC.push(p);
       });
 
@@ -1639,6 +1641,7 @@ function loadCSV(e){
       if(byMod.IMC.length)        mergeData(state.imc.data, byMod.IMC);
       if(byMod.Desarrollo.length) mergeData(state.dev.data, byMod.Desarrollo);
       if(byMod.Soporte.length)    mergeData(state.inf.data, byMod.Soporte);
+      if(byMod.IA.length)         mergeData(state.ia.data,  byMod.IA);
 
       document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
       document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
@@ -1660,7 +1663,7 @@ renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
       e.target.value='';
       // Mantener en módulo Carga de Datos después del upload
       // Success feedback
-      const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length;
+      const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length+byMod.IA.length;
       if(noMatch.length>0){
         const noMatchMsg = noMatch.map(n=>'• '+n).join('\n');
         showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatchMsg,'error',8000);
