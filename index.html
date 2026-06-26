@@ -220,7 +220,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
 </style>
 <!-- LAST_SYNC -->
-<meta name="last-sync" content="2026-06-26T01:51:05Z">
+<meta name="last-sync" content="2026-06-25T23:55:40Z">
 </head>
 <body class="dashboard-init">
 
@@ -756,39 +756,38 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 
 // ─── DATOS ───
 const IMC_DATA = [
-  {tipo:"Proyecto",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"",inicio:"07/04/2026",fin:"01/07/2026",real:98,esp:94,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"",inicio:"07/04/2026",fin:"01/07/2026",real:98,esp:92,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Administración || AdContent - Catálogos",area:"",inicio:"01/04/2026",fin:"02/06/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Capital Humano || BUK Soporte – Incidencia",area:"",inicio:"02/03/2026",fin:"29/05/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Viewset / Autorola",area:"",inicio:"02/03/2026",fin:"14/09/2026",real:40,esp:58,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Capital Humano || BUK Campos Personalizados",area:"",inicio:"26/02/2026",fin:"25/05/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"TRIM || Marketplace || Caddi",area:"",inicio:"07/08/2025",fin:"04/08/2026",real:97,esp:89,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"TRIM || Marketplace || Caddi",area:"",inicio:"07/08/2025",fin:"04/08/2026",real:97,esp:88,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 1)",area:"",inicio:"14/08/2025",fin:"02/06/2026",real:95,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Operaciones Fleet || Desarrollos",area:"",inicio:"08/08/2025",fin:"05/06/2026",real:99,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Operaciones Fleet || Lobby Fix",area:"",inicio:"11/11/2025",fin:"29/06/2026",real:100,esp:98,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Nexcar || Desarrollo Status",area:"",inicio:"05/03/2026",fin:"10/07/2026",real:99,esp:88,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Operaciones Fleet || Data Lab",area:"",inicio:"20/01/2026",fin:"22/06/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"DGA || Odoo-General",area:"",inicio:"22/06/2026",fin:"08/07/2026",real:4,esp:18,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Cartera || Cambio de Pac de Timbrado",area:"",inicio:"07/07/2025",fin:"25/02/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Operaciones Fleet || Nueva Instancia",area:"",inicio:"08/08/2025",fin:"01/06/2026",real:100,esp:100,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Tesoreria || Adcontent H2H",area:"",inicio:"07/04/2026",fin:"26/08/2026",real:22,esp:56,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Talleres || Integración Mecanica Mx - SAE",area:"",inicio:"20/04/2026",fin:"20/07/2026",real:74,esp:73,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Talleres || Integración Mecanica Mx - SAE",area:"",inicio:"20/04/2026",fin:"20/07/2026",real:74,esp:72,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 2)",area:"",inicio:"21/04/2026",fin:"12/06/2026",real:99,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Capital Humano || BUK Personalizados Fase 2",area:"",inicio:"08/06/2026",fin:"11/08/2026",real:39,esp:28,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
+  {tipo:"Proyecto",nombre:"Capital Humano || BUK Personalizados Fase 2",area:"",inicio:"08/06/2026",fin:"11/08/2026",real:39,esp:26,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
 ];
 const DEV_DATA = [
   {tipo:"Proyecto",nombre:"Carga y depuración de documentos SFLEET-Core Image",area:"",inicio:"05/02/2026",fin:"19/06/2026",real:97,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Crédito automotriz Fase 2",area:"",inicio:"01/10/2025",fin:"15/06/2026",real:75,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Interconexión con Plataforma Única de Identidad (PUI) Fase 3",area:"",inicio:"23/03/2026",fin:"30/04/2026",real:18,esp:100,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
   {tipo:"Proyecto",nombre:"Optimización de Control de Flota en Flexsys",area:"",inicio:"09/06/2026",fin:"09/06/2026",real:99,esp:0,sem:"Atrasado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Mejoras 2do trimestre ciclo de activo fijo 2026",area:"",inicio:"01/04/2026",fin:"06/07/2026",real:96,esp:89,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Carga de fondeos UNIFIN, Bansi y Multiva LUMOSYS",area:"",inicio:"15/04/2026",fin:"28/07/2026",real:100,esp:69,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Mejoras cartera 2do trimestre 2026",area:"",inicio:"01/04/2026",fin:"08/07/2026",real:87,esp:87,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Gasto integral de unidades",area:"",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:64,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Apoyo proyectos IA",area:"",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:64,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Planeación cambio arquitectura",area:"",inicio:"29/04/2026",fin:"28/07/2026",real:99,esp:64,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"IFRS-Modelo Arrendatario Fase 3",area:"",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:64,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
+  {tipo:"Proyecto",nombre:"Mejoras 2do trimestre ciclo de activo fijo 2026",area:"",inicio:"01/04/2026",fin:"06/07/2026",real:96,esp:88,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Carga de fondeos UNIFIN, Bansi y Multiva LUMOSYS",area:"",inicio:"15/04/2026",fin:"28/07/2026",real:100,esp:68,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Mejoras cartera 2do trimestre 2026",area:"",inicio:"01/04/2026",fin:"08/07/2026",real:87,esp:86,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Gasto integral de unidades",area:"",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:63,sem:"Terminado",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
 ];
 const IA_DATA = [
-  {tipo:"Proyecto",nombre:"Proyecto 1",area:"",inicio:"07/04/2026",fin:"04/08/2026",real:94,esp:67,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
-  {tipo:"Proyecto",nombre:"Mejora 1",area:"",inicio:"07/04/2026",fin:"20/07/2026",real:90,esp:76,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
+  {tipo:"Proyecto",nombre:"Proyecto 1",area:"",inicio:"07/04/2026",fin:"04/08/2026",real:94,esp:66,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Mejora 1",area:"",inicio:"07/04/2026",fin:"20/07/2026",real:90,esp:75,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
 ];
 const INF_DATA=[
   {tipo:"Proyecto",nombre:"Migración oficinas Tlalnepantla",area:"Infraestructura",inicio:"01/03/2026",fin:"30/07/2026",real:78,esp:80,sem:"A tiempo"},
@@ -801,18 +800,12 @@ const INF_DATA=[
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
 
 const ACT_DATA = [
-  {id:"act001",nombre:"Eduardo Sanchez",actividad:"Revisión semanal de proyectos IMC con dirección",area:"IMC",prioridad:"Alta",fechaFin:"2026-06-27",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act002",nombre:"Miguel Elizondo",actividad:"Actualización de documentación técnica BUK",area:"Capital Humano",prioridad:"Media",fechaFin:"2026-06-27",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act003",nombre:"Josue Montoya",actividad:"Configuración del Dashboard DTI módulo Actividades",area:"DTI",prioridad:"Alta",fechaFin:"2026-06-27",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act004",nombre:"Donaji Barrios",actividad:"Integración y optimización de procesos SFLEET",area:"Operaciones Fleet",prioridad:"Alta",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-24T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act005",nombre:"Ricardo Ángeles",actividad:"Pruebas de conectividad API Mecánica MX Fase 2",area:"Talleres",prioridad:"Alta",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-24T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act006",nombre:"Eduardo Sanchez",actividad:"Reunión con proveedor Viewset Autorola",area:"Operaciones Fleet",prioridad:"Media",fechaFin:"2026-07-01",semana:"2026-W27",estatus:"En proceso",notas:"",createdAt:"2026-06-24T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act007",nombre:"Miguel Elizondo",actividad:"Validación de campos BUK personalizados Fase 2",area:"Capital Humano",prioridad:"Media",fechaFin:"2026-07-03",semana:"2026-W27",estatus:"En proceso",notas:"",createdAt:"2026-06-24T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act008",nombre:"Josue Montoya",actividad:"Documentar integración Smartsheet con Dashboard DTI",area:"DTI",prioridad:"Media",fechaFin:"2026-07-03",semana:"2026-W27",estatus:"En proceso",notas:"",createdAt:"2026-06-24T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act009",nombre:"Donaji Barrios",actividad:"Seguimiento crédito automotriz Fase 2",area:"Contabilidad",prioridad:"Media",fechaFin:"2026-07-04",semana:"2026-W27",estatus:"En proceso",notas:"",createdAt:"2026-06-25T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act010",nombre:"Ricardo Ángeles",actividad:"Revisión de arquitectura reporte Informe General",area:"DTI",prioridad:"Baja",fechaFin:"2026-07-08",semana:"2026-W28",estatus:"En proceso",notas:"",createdAt:"2026-06-25T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act011",nombre:"Eduardo Sanchez",actividad:"Presentación avance Q2 a dirección general",area:"IMC",prioridad:"Alta",fechaFin:"2026-07-10",semana:"2026-W28",estatus:"En proceso",notas:"",createdAt:"2026-06-25T09:00:00",updatedAt:"2026-06-25T09:00:00"},
-  {id:"act012",nombre:"Miguel Elizondo",actividad:"Configuración módulo Marketplace Caddi TRIM",area:"TRIM",prioridad:"Media",fechaFin:"2026-07-11",semana:"2026-W28",estatus:"En proceso",notas:"",createdAt:"2026-06-25T09:00:00",updatedAt:"2026-06-25T09:00:00"}
+  {id:"ex2",nombre:"Miguel Benítez3",actividad:"Documentar integración Smartsheet con dashboard DTIdsd",area:"Capital Humano",prioridad:"Media",fechaFin:"2026-07-03",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-23T10:00:00",updatedAt:"2026-06-23T17:32:40.552Z"},
+  {id:"mqqxblg91tg",nombre:"raul hernandez",actividad:"revisar computadoras",area:"",prioridad:"Media",fechaFin:"2026-06-24",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T17:33:59.769Z",updatedAt:"2026-06-25T15:04:14.827Z"},
+  {id:"mqtn223w69s",nombre:"Josue Montoya",actividad:"generar sesion",area:"",prioridad:"Media",fechaFin:"2026-07-08",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-25T15:09:57.164Z",updatedAt:"2026-06-25T15:09:57.164Z"},
+  {id:"mqtn86noodd",nombre:"lugo morales",actividad:"enviar correo",area:"",prioridad:"Media",fechaFin:"2026-06-30",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-25T15:14:42.996Z",updatedAt:"2026-06-25T15:14:42.996Z"},
+  {id:"mqtn9j5o85f",nombre:"hernesto cedillo",actividad:"fsfssdf",area:"",prioridad:"Media",fechaFin:"2026-07-01",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-25T15:15:45.852Z",updatedAt:"2026-06-25T15:15:45.852Z"},
+  {id:"mqtqyw66ofa",nombre:"rfsdrsdf",actividad:"fsdgsdgsd",area:"",prioridad:"Media",fechaFin:"2026-07-31",semana:"2026-W26",estatus:"En proceso",notas:"",createdAt:"2026-06-25T16:59:27.966Z",updatedAt:"2026-06-25T16:59:27.966Z"}
 ]; // INYECTADO POR SYNC.PY
 
 const state={
@@ -1579,14 +1572,13 @@ function loadCSV(e){
         modulo:      (r.modulo||'IMC').trim(),
       });
       const mapped=rows.map(mapRow);
-      const byMod={IMC:[],Desarrollo:[],Soporte:[],IA:[]};
+      const byMod={IMC:[],Desarrollo:[],Soporte:[]};
       mapped.forEach(p=>{
-        const m=(p.modulo||'').toUpperCase().trim();
+        const m=p.modulo.toUpperCase();
         if(m==='IMC') byMod.IMC.push(p);
         else if(m==='DESARROLLO') byMod.Desarrollo.push(p);
-        else if(m==='SOPORTE'||m==='SOPORTE E INFRAESTRUCTURA'||m==='INFRAESTRUCTURA') byMod.Soporte.push(p);
-        else if(m==='IA') byMod.IA.push(p);
-        else byMod.IMC.push(p); // fallback
+        else if(m==='SOPORTE') byMod.Soporte.push(p);
+        else byMod.IMC.push(p);
       });
 
       // ── MERGE: solo actualiza columnas presentes en este CSV ──────
@@ -1633,8 +1625,6 @@ function loadCSV(e){
           const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
           const nombreCSV=norm(csvP.nombre);
           const found=stateData.find(p=>norm(p.nombre)===nombreCSV);
-          if(!found) console.log('No coincidió:', JSON.stringify(csvP.nombre), '→ norm:', nombreCSV,
-            '\nNombres disponibles:', stateData.slice(0,3).map(p=>norm(p.nombre)));
           if(found){
             if(colsPresentes.has('area'))        found.area=csvP.area;
             if(colsPresentes.has('responsable')) found.responsable=csvP.responsable;
@@ -1649,7 +1639,6 @@ function loadCSV(e){
       if(byMod.IMC.length)        mergeData(state.imc.data, byMod.IMC);
       if(byMod.Desarrollo.length) mergeData(state.dev.data, byMod.Desarrollo);
       if(byMod.Soporte.length)    mergeData(state.inf.data, byMod.Soporte);
-      if(byMod.IA.length)         mergeData(state.ia.data, byMod.IA);
 
       document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
       document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
@@ -1671,7 +1660,7 @@ renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
       e.target.value='';
       // Mantener en módulo Carga de Datos después del upload
       // Success feedback
-      const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length+byMod.IA.length;
+      const total=byMod.IMC.length+byMod.Desarrollo.length+byMod.Soporte.length;
       if(noMatch.length>0){
         const noMatchMsg = noMatch.map(n=>'• '+n).join('\n');
         showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatchMsg,'error',8000);
@@ -1790,7 +1779,127 @@ try{(function(){
 
 
 
+function showToast(msg, type='info', duration=0){
+  const old = document.querySelector('.toast');
+  if(old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(), 300); }, duration||( type==='error'?5000:3500));
+}
 
+// ─── Botón "Actualizar Datos" — dispara sync.yml vía Cloudflare Worker ───
+// El token de GitHub vive solo dentro del Worker (Cloudflare), nunca en este archivo.
+const GH_OWNER = 'DTI-Dashboard';
+const GH_REPO = 'Proyectos';
+const GH_WORKFLOW = 'sync.yml';
+const SYNC_PROXY_URL = 'https://dti-dashboard-trigger.josuemontoya.workers.dev/';
+
+async function triggerSync(){
+  const btn = document.getElementById('btn-sync');
+  const label = document.getElementById('btn-sync-label');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  label.textContent = 'Disparando...';
+  const startedAt = new Date();
+
+  try{
+    const res = await fetch(SYNC_PROXY_URL, { method: 'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const data = await res.json().catch(()=>({}));
+
+    if(!res.ok || data.ok === false){
+      throw new Error(data.message || ('HTTP ' + res.status));
+    }
+
+    showToast('⏳ Actualización iniciada — esperando datos de Smartsheet...', 'info');
+    label.textContent = 'Sincronizando...';
+    pollSyncStatus(startedAt, btn, label);
+
+  }catch(err){
+    console.warn('triggerSync error:', err);
+    showToast('❌ No se pudo iniciar la actualización. Intenta de nuevo en un momento.', 'error');
+    resetSyncButton(btn, label);
+  }
+}
+
+async function pollSyncStatus(startedAt, btn, label, attempt=0){
+  const MAX_ATTEMPTS = 18; // ~90s
+  if(attempt >= MAX_ATTEMPTS){
+    showToast('⚠️ Está tardando más de lo esperado. Recarga la página en un minuto.', 'error');
+    resetSyncButton(btn, label);
+    return;
+  }
+  try{
+    // Lectura pública del repo — no requiere token
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/runs?per_page=5`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    const data = await res.json();
+    const run = (data.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt - 5000);
+
+    if(run && run.status === 'completed'){
+      if(run.conclusion === 'success'){
+        showToast('✅ Datos actualizados. Recargando dashboard...', 'success');
+        setTimeout(()=>location.reload(), 1500);
+      }else{
+        showToast('❌ La actualización terminó con errores (revisa GitHub Actions).', 'error');
+        resetSyncButton(btn, label);
+      }
+      return;
+    }
+  }catch(err){
+    console.warn('pollSyncStatus error:', err);
+  }
+  setTimeout(()=>pollSyncStatus(startedAt, btn, label, attempt+1), 5000);
+}
+
+function resetSyncButton(btn, label){
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  label.textContent = 'Actualizar Datos';
+}
+
+function openModal(p){
+  const semColors={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
+  const sc=semClass(p.sem), col=semColors[sc]||'8b5cf6';
+  document.getElementById('m-tipo').textContent=p.tipo+' · '+(p.area||'');
+  document.getElementById('m-nombre').textContent=p.nombre;
+  document.getElementById('m-desc').textContent=p.descripcion||'Sin descripción registrada.';
+  document.getElementById('m-resp').textContent=p.responsable||'—';
+  document.getElementById('m-user').textContent=p.solicitante||'—';
+  document.getElementById('m-area').textContent=p.area||'—';
+  document.getElementById('m-fechas').textContent=(p.inicio||'—')+' → '+(p.fin||'—');
+  document.getElementById('m-real-lbl').style.color='#'+col;
+  document.getElementById('m-real-lbl').textContent=p.real+'% real';
+  document.getElementById('m-esp-lbl').textContent='esp '+p.esp+'%';
+  document.getElementById('m-bar-real').style.width=Math.min(p.real,100)+'%';
+  document.getElementById('m-bar-real').style.background='#'+col;
+  document.getElementById('m-bar-esp').style.width=Math.min(p.esp,100)+'%';
+  document.getElementById('m-sem').innerHTML='<span class="sem '+sc+'">'+semLabel(p.sem)+'</span>';
+  // Enlace plan de trabajo
+  const planLink=document.getElementById('m-plan-link');
+  const planNone=document.getElementById('m-plan-none');
+  if(p.url_plan && p.url_plan.trim()){
+    planLink.href=p.url_plan.trim();
+    planLink.style.display='inline-flex';
+    planNone.style.display='none';
+  } else {
+    planLink.style.display='none';
+    planNone.style.display='inline';
+  }
+  document.getElementById('proj-modal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('proj-modal').classList.remove('active');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── Control de acceso Carga de Datos ─────────────────────────
+const _CLAVE_HASH = '00000000632c56df'; // hash de IMC2026
 function _hashSimple(s){
   let h=0;
   for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0;
@@ -2356,9 +2465,8 @@ document.addEventListener('DOMContentLoaded', function(){
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); });
 
 
-
 </script>
-<!-- PptxGenJS cargado al final para no bloquear el dashboard -->
+<!-- Librerías de exportación (cargadas después del código principal) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </body>
