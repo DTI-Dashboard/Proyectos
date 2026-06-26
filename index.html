@@ -753,6 +753,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 </main>
 
 <script>
+
 // ─── DATOS ───
 const IMC_DATA = [
   {tipo:"Proyecto",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"",inicio:"07/04/2026",fin:"01/07/2026",real:98,esp:94,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
@@ -1787,27 +1788,9 @@ try{(function(){
   document.body.classList.add('dashboard-ready');
 })();
 
-// ── Verificación de contraseña Carga de Datos ─────────────────────────────
-async function verificarClave(){
-  const pwd = document.getElementById('carga-pwd').value;
-  const err = document.getElementById('carga-err');
-  if(!pwd){ err.textContent = 'Ingresa la contraseña'; return; }
-  try {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
-    const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    if(hex.startsWith('00000000') && hex.includes('632c56df')){
-      document.getElementById('carga-lock').style.display='none';
-      sessionStorage.setItem('carga_ok','1');
-    } else {
-      err.textContent = 'Contraseña incorrecta';
-      document.getElementById('carga-pwd').value='';
-    }
-  } catch(e){
-    err.textContent = 'Error al verificar.';
-  }
-}
-</script>
-<script>
+
+
+
 function _hashSimple(s){
   let h=0;
   for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0;
@@ -2371,6 +2354,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); });
+
 
 
 </script>
