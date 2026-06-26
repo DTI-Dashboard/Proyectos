@@ -216,87 +216,22 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .act-multi-lbl:hover{background:rgba(255,255,255,.07);}
 .act-sort-th{cursor:pointer;user-select:none;}
 .act-sort-th:hover{color:var(--gold);}
-body.light-mode{
   --navy:#e8edf5;--navy-mid:#d4dce8;--navy-light:#c0ccd8;
   --surface:#f0f4fa;--surface2:#e4eaf4;--surface3:#d8e0ee;--border:rgba(0,0,0,.12);
 }
-body.light-mode .topbar{background:#1A2340 !important;}
-body.light-mode .topbar *{color:#fff !important;}
-body.light-mode .tabs{background:#1e2a4a !important;}
-body.light-mode .tab{color:rgba(255,255,255,.6) !important;}
-body.light-mode .tab.active{color:var(--gold) !important;}
-body.light-mode .main *{color:#1a2340 !important;}
-body.light-mode .card,body.light-mode .kpi{background:#e4eaf4 !important;border-color:rgba(0,0,0,.12) !important;}
-body.light-mode .tbl th{background:#d4dce8 !important;}
-body.light-mode .tbl tr:nth-child(even){background:rgba(0,0,0,.04);}
-body.light-mode .filter-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
-body.light-mode .filter-btn.active{color:var(--gold) !important;border-color:var(--gold) !important;}
-body.light-mode .filter-resp,body.light-mode select,body.light-mode input,body.light-mode textarea,body.light-mode .act-inp,body.light-mode .search-box,body.light-mode .act-multi-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
-body.light-mode ::placeholder{color:rgba(26,35,64,.45) !important;}
-body.light-mode .modal-box,body.light-mode .dti-modal-box,body.light-mode .act-multi-panel,body.light-mode .lock-box{background:#e4eaf4 !important;}
-body.light-mode .sem.tiempo{color:var(--green) !important;background:rgba(34,197,94,.15);}
-body.light-mode .sem.atrasado{color:var(--red) !important;background:rgba(239,68,68,.15);}
-body.light-mode .sem.riesgo{color:var(--yellow) !important;background:rgba(245,158,11,.15);}
-body.light-mode .sem.terminado{color:var(--blue) !important;background:rgba(59,130,246,.15);}
-body.light-mode .sem.standby{color:var(--purple) !important;background:rgba(139,92,246,.15);}
-body.light-mode .kpi-val.b{color:var(--blue) !important;}
-body.light-mode .kpi-val.g{color:var(--green) !important;}
-body.light-mode .kpi-val.r{color:var(--red) !important;}
-body.light-mode .kpi-val.y{color:var(--yellow) !important;}
-body.light-mode .kpi-val.gold{color:var(--gold) !important;}
-body.light-mode .btn-sync{color:var(--gold) !important;}
-body.light-mode .p-tipo{opacity:.9;}
 
 }
 /* TOPBAR Y TABS: siempre oscuro con texto blanco */
-body.light-mode .topbar{background:#1A2340 !important;}
-body.light-mode .topbar *{color:#fff !important;}
-body.light-mode .tabs{background:#1e2a4a !important;}
-body.light-mode .tab{color:rgba(255,255,255,.6) !important;}
-body.light-mode .tab.active{color:var(--gold) !important;}
 /* TODO LO DEMÁS: negro absoluto */
-body.light-mode .main,
-body.light-mode .module,
-body.light-mode .module *:not(.topbar):not(.tabs):not(.tab){
   color:#1a2340 !important;
 }
 /* Fondos claros */
-body.light-mode .module{background:#f0f4fa;}
-body.light-mode .card,body.light-mode .kpi{background:#e4eaf4 !important;border-color:rgba(0,0,0,.12) !important;}
-body.light-mode .tbl th{background:#d4dce8 !important;}
-body.light-mode .tbl tr:nth-child(even){background:rgba(0,0,0,.04);}
 /* Inputs/selects/botones */
-body.light-mode .filter-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
-body.light-mode .filter-btn.active{color:var(--gold) !important;border-color:var(--gold) !important;}
-body.light-mode .filter-resp,body.light-mode select{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
-body.light-mode input,body.light-mode textarea,body.light-mode .act-inp,body.light-mode .search-box,body.light-mode .act-multi-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
-body.light-mode ::placeholder{color:rgba(26,35,64,.45) !important;}
 /* Modales */
-body.light-mode .modal-box,body.light-mode .dti-modal-box,body.light-mode .act-multi-panel,body.light-mode .lock-box{background:#e4eaf4 !important;}
 /* Semáforos mantienen color */
-body.light-mode .sem.tiempo{color:var(--green) !important;background:rgba(34,197,94,.15);}
-body.light-mode .sem.atrasado{color:var(--red) !important;background:rgba(239,68,68,.15);}
-body.light-mode .sem.riesgo{color:var(--yellow) !important;background:rgba(245,158,11,.15);}
-body.light-mode .sem.terminado{color:var(--blue) !important;background:rgba(59,130,246,.15);}
-body.light-mode .sem.standby{color:var(--purple) !important;background:rgba(139,92,246,.15);}
 /* KPI valores mantienen color */
-body.light-mode .kpi-val.b{color:var(--blue) !important;}
-body.light-mode .kpi-val.g{color:var(--green) !important;}
-body.light-mode .kpi-val.r{color:var(--red) !important;}
-body.light-mode .kpi-val.y{color:var(--yellow) !important;}
-body.light-mode .kpi-val.gold{color:var(--gold) !important;}
 /* Badges de estatus en actividades */
-body.light-mode [style*="color:#6366f1"]{color:#6366f1 !important;}
-body.light-mode [style*="color:#22c55e"]{color:#22c55e !important;}
-body.light-mode [style*="color:#ef4444"]{color:#ef4444 !important;}
-body.light-mode [style*="color:#f59e0b"]{color:#f59e0b !important;}
-body.light-mode [style*="color:var(--gold)"]{color:var(--gold) !important;}
-body.light-mode [style*="color:var(--green)"]{color:var(--green) !important;}
-body.light-mode [style*="color:var(--red)"]{color:var(--red) !important;}
-body.light-mode [style*="color:var(--blue)"]{color:var(--blue) !important;}
 /* Botones exportar mantienen su color */
-body.light-mode .btn-sync{color:var(--gold) !important;}
-body.light-mode .btn-pptx{color:#1A2340 !important;}<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -332,7 +267,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .btn-upload:hover{background:var(--gold-dim);}
 
 .tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px;}
-.tab{padding:13px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;}
+
 .tab:hover{color:#fff;}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
@@ -514,14 +449,6 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .act-multi-lbl:hover{background:rgba(255,255,255,.07);}
 .act-sort-th{cursor:pointer;user-select:none;}
 .act-sort-th:hover{color:var(--gold);}
-body.light-mode{--navy:#e8edf5;--navy-mid:#d4dce8;--navy-light:#c0ccd8;--surface:#f0f4fa;--surface2:#e4eaf4;--surface3:#d8e0ee;--border:rgba(0,0,0,.1);}
-body.light-mode .topbar{background:#1A2340;}
-body.light-mode .tabs{background:#c0ccd8;}
-body.light-mode .tab{color:rgba(26,35,64,.5);}
-body.light-mode .tab.active{color:var(--gold);}
-body.light-mode .tbl td,body.light-mode .tbl th,body.light-mode .p-name,body.light-mode .p-area,body.light-mode .kpi-lbl,body.light-mode .kpi-sub{color:#1a2340;}
-body.light-mode .filter-btn{color:#1a2340;background:#d8e0ee;}
-body.light-mode .card,body.light-mode .kpi{background:#e4eaf4;}
 .dashboard-init { opacity: 0; }
 .dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
 .dti-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInOv .18s ease;}
@@ -537,7 +464,54 @@ body.light-mode .card,body.light-mode .kpi{background:#e4eaf4;}
 .dti-modal-btn.ok-danger{background:#ef4444;color:#fff;}
 .dti-modal-btn.ok-success{background:var(--gold);color:#1a2340;}
 .dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
-</style>
+
+/* ═══════════════════════════════════════════
+   MODO CLARO — light-mode
+   ═══════════════════════════════════════════ */
+body.light-mode{--navy:#e8edf5;--navy-mid:#d4dce8;--navy-light:#c0ccd8;--surface:#f0f4fa;--surface2:#e4eaf4;--surface3:#d8e0ee;--border:rgba(0,0,0,.12);}
+
+/* Topbar y tabs: SIEMPRE OSCURO */
+body.light-mode .topbar{background:#1A2340 !important;}
+body.light-mode .topbar *{color:#fff !important;}
+body.light-mode .tabs{background:#1e2a4a !important;}
+body.light-mode .tab{color:rgba(255,255,255,.55) !important;}
+body.light-mode .tab.active{color:var(--gold) !important;}
+
+/* Todo el contenido principal: NEGRO */
+body.light-mode .main *{color:#1a2340 !important;}
+
+/* Fondos */
+body.light-mode .module{background:#f0f4fa;}
+body.light-mode .card,body.light-mode .kpi{background:#e4eaf4 !important;border-color:rgba(0,0,0,.12) !important;}
+body.light-mode .tbl th{background:#d4dce8 !important;}
+body.light-mode .tbl tr:nth-child(even){background:rgba(0,0,0,.04);}
+
+/* Inputs, filtros, selects */
+body.light-mode .filter-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode .filter-btn.active{color:var(--gold) !important;border-color:var(--gold) !important;background:rgba(201,168,76,.12) !important;}
+body.light-mode .filter-resp,body.light-mode select{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode input,body.light-mode textarea,body.light-mode .act-inp,body.light-mode .search-box,body.light-mode .act-multi-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode ::placeholder{color:rgba(26,35,64,.45) !important;}
+
+/* Modales y overlays */
+body.light-mode .modal-box,body.light-mode .dti-modal-box,body.light-mode .act-multi-panel,body.light-mode .lock-box{background:#e4eaf4 !important;}
+
+/* Semáforos mantienen color */
+body.light-mode .sem.tiempo{color:var(--green) !important;background:rgba(34,197,94,.15);}
+body.light-mode .sem.atrasado{color:var(--red) !important;background:rgba(239,68,68,.15);}
+body.light-mode .sem.riesgo{color:var(--yellow) !important;background:rgba(245,158,11,.15);}
+body.light-mode .sem.terminado{color:var(--blue) !important;background:rgba(59,130,246,.15);}
+body.light-mode .sem.standby{color:var(--purple) !important;background:rgba(139,92,246,.15);}
+
+/* KPI valores mantienen color */
+body.light-mode .kpi-val.b{color:var(--blue) !important;}
+body.light-mode .kpi-val.g{color:var(--green) !important;}
+body.light-mode .kpi-val.r{color:var(--red) !important;}
+body.light-mode .kpi-val.y{color:var(--yellow) !important;}
+body.light-mode .kpi-val.gold{color:var(--gold) !important;}
+
+/* Botones especiales */
+body.light-mode .btn-sync{color:var(--gold) !important;}</style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
 <meta name="last-sync" content="2026-06-26T18:13:09Z">
