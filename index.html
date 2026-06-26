@@ -1644,17 +1644,33 @@ function loadCSV(e){
       if(byMod.IA.length)         mergeData(state.ia.data,  byMod.IA);
 
       document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
-      document.getElementById('upload-tbody').innerHTML=mapped.map(p=>`
-        <tr>
+      // noMatch aún no está calculado aquí — se usa después; pasar set de nombres fallidos
+      const _noMatchSet = new Set();
+      document.getElementById('upload-tbody').innerHTML=mapped.map(p=>{
+        // Verificar si este proyecto coincidirá (pre-check)
+        const norm2=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
+        const modUp=(p.modulo||'').toUpperCase().trim();
+        let stData=[];
+        if(modUp==='IMC') stData=state.imc.data;
+        else if(modUp==='DESARROLLO') stData=state.dev.data;
+        else if(modUp==='SOPORTE'||modUp==='SOPORTE E INFRAESTRUCTURA') stData=state.inf.data;
+        else if(modUp==='IA') stData=state.ia.data;
+        else stData=state.imc.data;
+        const found=stData.find(x=>norm2(x.nombre)===norm2(p.nombre));
+        const rowStyle=found?'':'background:rgba(239,68,68,0.12);border-left:3px solid #ef4444;';
+        const nameStyle=found?'':'color:#ef4444;font-weight:700;';
+        if(!found) _noMatchSet.add(p.nombre);
+        return `<tr style="${rowStyle}">
           <td><span style="font-size:10px;font-weight:700;color:var(--gold)">${p.modulo}</span></td>
           <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo||''}</span></td>
-          <td><div class="p-name">${p.nombre}</div></td>
+          <td><div class="p-name" style="${nameStyle}">${p.nombre}${found?'':' ⚠️'}</div></td>
           <td><div class="p-area">${p.area||''}</div></td>
           <td style="font-size:11px;color:#ccc">${p.responsable||''}</td>
           <td style="font-size:11px;color:#ccc">${p.solicitante||''}</td>
           <td style="font-size:11px;color:#ccc;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.descripcion||''}</td>
           <td style="font-size:11px;color:#6eb5ff">${p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#6eb5ff">Ver plan</a>':''}</td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
       document.getElementById('upload-preview').style.display='block';
       
 
