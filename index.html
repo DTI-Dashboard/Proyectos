@@ -1606,10 +1606,36 @@ function confirmarCarga(){
   localStorage.setItem('dti_info_extra',csvHeader+'\n'+csvRows);
   window._pendingUpload=null;
   document.getElementById('upload-preview').style.display='none';
+  // Guardar CSVs de info extra en el repo para que sobrevivan el sync
+  _backupInfoCSVs();
   if(noMatch&&noMatch.length>0){
     showToast('⚠️ '+mc+' actualizados. No coincidieron:\n'+noMatch.map(n=>'• '+n).join('\n'),'error',8000);
   } else {
-    showToast('✅ '+mc+' proyectos actualizados correctamente','success');
+    showToast('✅ '+mc+' proyectos actualizados y guardados en servidor','success');
+  }
+}
+
+async function _backupInfoCSVs(){
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const header='nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
+  const toCSV=(rows)=>header+'\n'+rows.map(p=>
+    '"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"'
+  ).join('\n');
+  const files=[
+    {filename:'info_proyectos.csv', data:state.imc.data},
+    {filename:'info_dev.csv',       data:state.dev.data},
+    {filename:'info_inf.csv',       data:state.inf.data},
+    {filename:'info_ia.csv',        data:state.ia.data},
+  ];
+  for(const f of files){
+    if(!f.data.length) continue;
+    try{
+      await fetch(SYNC_PROXY_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'save_file',filename:f.filename,content:toCSV(f.data)})
+      });
+    }catch(e){ console.warn('Backup info CSV falló:',f.filename,e); }
   }
 }
 
