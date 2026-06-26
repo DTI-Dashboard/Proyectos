@@ -1814,6 +1814,7 @@ try{(function(){
   document.body.classList.add('dashboard-ready');
   // Cargar actividades al inicio
   _loadAct();
+  if(document.getElementById('mod-actividades') && document.getElementById('mod-actividades').classList.contains('active')) renderActividades();
 })();
 
 
@@ -2050,24 +2051,23 @@ function _weekLabel(iso){
 
 function _loadAct(){
   try {
-    // Prioridad: ACT_DATA inyectado por sync.py desde el repo (fuente de verdad)
+    const local = JSON.parse(localStorage.getItem('dti_actividades')||'[]');
+    // Solo usar ACT_DATA si tiene actividades (csv no vacío)
     if(typeof ACT_DATA !== 'undefined' && ACT_DATA.length > 0){
-      // Merge: usar ACT_DATA como base, preservar cambios locales más recientes
-      const local = JSON.parse(localStorage.getItem('dti_actividades')||'[]');
       const repoMap = {};
       ACT_DATA.forEach(a => repoMap[a.id] = a);
-      // Si hay actividades locales más nuevas que el repo, usarlas
+      // Preservar actividades locales más recientes que el repo
       local.forEach(la => {
-        if(!repoMap[la.id] || new Date(la.updatedAt) > new Date((repoMap[la.id]||{}).updatedAt||0)){
+        if(!repoMap[la.id] || new Date(la.updatedAt||0) > new Date((repoMap[la.id]||{}).updatedAt||0)){
           repoMap[la.id] = la;
         }
       });
       _actividades = Object.values(repoMap);
-      // Sincronizar localStorage con el merge
-      localStorage.setItem('dti_actividades', JSON.stringify(_actividades));
     } else {
-      _actividades = JSON.parse(localStorage.getItem('dti_actividades')||'[]');
+      // ACT_DATA vacío → usar solo localStorage
+      _actividades = local;
     }
+    localStorage.setItem('dti_actividades', JSON.stringify(_actividades));
   } catch(e){ _actividades=[]; }
 }
 let _backupTimer=null;
