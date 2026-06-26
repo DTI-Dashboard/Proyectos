@@ -2388,7 +2388,6 @@ document.addEventListener('click',e=>{
 });
 
 function renderActividades(){
-  _loadAct();
   const fEst=_actFiltroEst; // array multi-select
   const fNom=_actFiltroNom; // array multi-select
   const fPrio=(document.getElementById('act-f-prioridad')||{}).value||'';
@@ -2514,7 +2513,6 @@ function renderActividades(){
 }
 
 function exportActXLSX(){
-  _loadAct();
   if(!_actividades.length){ showToast('Sin actividades para exportar','error'); return; }
   const wb=XLSX.utils.book_new();
   const data=[['Nombre','Actividad','Prioridad','Fecha Fin','Estatus']];
