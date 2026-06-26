@@ -1813,8 +1813,6 @@ try{(function(){
   document.body.classList.remove('dashboard-init');
   document.body.classList.add('dashboard-ready');
   // Cargar actividades al inicio
-  _loadAct();
-  if(document.getElementById('mod-actividades') && document.getElementById('mod-actividades').classList.contains('active')) renderActividades();
 })();
 
 
@@ -2371,6 +2369,8 @@ document.addEventListener('click',e=>{
 });
 
 function renderActividades(){
+  // Cargar desde localStorage si _actividades está vacío
+  if(!_actividades.length){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){} }
   const fEst=_actFiltroEst; // array multi-select
   const fNom=_actFiltroNom; // array multi-select
   const fPrio=(document.getElementById('act-f-prioridad')||{}).value||'';
