@@ -218,6 +218,19 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .act-sort-th:hover{color:var(--gold);}
 .dashboard-init { opacity: 0; }
 .dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
+.dti-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInOv .18s ease;}
+@keyframes fadeInOv{from{opacity:0}to{opacity:1}}
+.dti-modal-box{background:#1e2a4a;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:36px 40px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:popIn .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.dti-modal-icon{font-size:48px;margin-bottom:14px;line-height:1;}
+.dti-modal-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+.dti-modal-msg{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:26px;line-height:1.6;}
+.dti-modal-btns{display:flex;gap:10px;justify-content:center;}
+.dti-modal-btn{padding:10px 26px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:transform .12s,opacity .12s;letter-spacing:.02em;}
+.dti-modal-btn:hover{transform:translateY(-1px);opacity:.9;}
+.dti-modal-btn.ok-danger{background:#ef4444;color:#fff;}
+.dti-modal-btn.ok-success{background:var(--gold);color:#1a2340;}
+.dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
@@ -279,9 +292,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     <button class="filter-btn active" onclick="filterTab('imc','todos',this)">Todos</button>
     <button class="filter-btn" onclick="filterTab('imc','Terminado',this)">✅ Terminado</button>
     <button class="filter-btn" onclick="filterTab('imc','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTab('imc','Atrasado',this)">🔴 Atrasado</button>
     
-    <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
     <select class="filter-resp" id="imc-tipo-select" onchange="filterTipo('imc',this.value)" style="margin-right:6px">
       <option value="">🏷️ Todos los tipos</option>
@@ -351,9 +364,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     <button class="filter-btn active" onclick="filterTab('dev','todos',this)">Todos</button>
     <button class="filter-btn" onclick="filterTab('dev','Terminado',this)">✅ Terminado</button>
     <button class="filter-btn" onclick="filterTab('dev','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTab('dev','Atrasado',this)">🔴 Atrasado</button>
     
-    <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
     <select class="filter-resp" id="dev-tipo-select" onchange="filterTipo('dev',this.value)" style="margin-right:6px">
       <option value="">🏷️ Todos los tipos</option>
@@ -423,9 +436,9 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     <button class="filter-btn active" onclick="filterTab('inf','todos',this)">Todos</button>
     <button class="filter-btn" onclick="filterTab('inf','Terminado',this)">✅ Terminado</button>
     <button class="filter-btn" onclick="filterTab('inf','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTab('inf','Atrasado',this)">🔴 Atrasado</button>
     
-    <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
     <select class="filter-resp" id="inf-tipo-select" onchange="filterTipo('inf',this.value)" style="margin-right:6px">
       <option value="">🏷️ Todos los tipos</option>
@@ -493,8 +506,8 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
     <button class="filter-btn active" onclick="filterTab('ia','todos',this)">Todos</button>
     <button class="filter-btn" onclick="filterTab('ia','Terminado',this)">✅ Terminado</button>
     <button class="filter-btn" onclick="filterTab('ia','A tiempo',this)">🟢 A tiempo</button>
-    <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTab('ia','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
     <button class="filter-btn" onclick="filterTabPorCerrar('ia',this)">⭐ Por cerrar</button>
     <select class="filter-resp" id="ia-tipo-select" onchange="filterTipo('ia',this.value)" style="margin-right:6px">
       <option value="">🏷️ Todos los tipos</option>
@@ -1263,20 +1276,18 @@ function buildTreemap(projects, elId){
 }
 
 function kpiFilter(tab, val){
-  // Encontrar el botón de filtro correspondiente y simularlo
-  const section = document.querySelector(`#mod-${tab==='imc'?'imc':tab==='dev'?'dev':tab==='inf'?'inf':'ia'} .filters, [id^="mod-"] .filters`);
-  let btn = null;
+  const btns=[...document.querySelectorAll(`#mod-${tab} .filters .filter-btn`)];
+  let btn=null;
   if(val==='todos'){
-    btn = document.querySelector(`#mod-${tab} .filters .filter-btn`);
+    btn=btns[0];
+    if(btn) filterTab(tab,'todos',btn);
   } else if(val==='porcerrar'){
-    btn = document.querySelector(`#mod-${tab} .filters .filter-btn:last-child`);
-    filterTabPorCerrar(tab, btn);
-    return;
+    btn=btns.find(b=>b.textContent.includes('Por cerrar')||b.textContent.includes('cerrar'));
+    if(btn) filterTabPorCerrar(tab,btn);
   } else {
-    const btns = [...document.querySelectorAll(`#mod-${tab} .filters .filter-btn`)];
-    btn = btns.find(b => b.textContent.includes(val));
+    btn=btns.find(b=>b.textContent.includes(val));
+    if(btn) filterTab(tab,val,btn);
   }
-  if(btn) filterTab(tab, val==='todos'?'todos':val, btn);
 }
 
 function filterTabPorCerrar(tab,el){
@@ -2174,17 +2185,43 @@ function saveActividad(){
   showToast(id?'✅ Actividad actualizada':'✅ Actividad guardada');
 }
 
+function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCancel='Cancelar',danger=false,onOk}){
+  const ov=document.createElement('div');
+  ov.className='dti-modal-overlay';
+  ov.innerHTML=`<div class="dti-modal-box">
+    <div class="dti-modal-icon">${icon}</div>
+    <div class="dti-modal-title">${title}</div>
+    <div class="dti-modal-msg">${msg}</div>
+    <div class="dti-modal-btns">
+      <button class="dti-modal-btn cancel" id="dm-cancel">${btnCancel}</button>
+      <button class="dti-modal-btn ${danger?'ok-danger':'ok-success'}" id="dm-ok">${btnOk}</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#dm-cancel').onclick=()=>ov.remove();
+  ov.querySelector('#dm-ok').onclick=()=>{ov.remove();onOk&&onOk();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+
 function deleteActividad(id){
-  if(!confirm('¿Eliminar esta actividad? Esta acción no se puede deshacer.')) return;
+  showConfirm({
+    icon:'🗑️', title:'Eliminar actividad',
+    msg:'Esta acción <strong>no se puede deshacer</strong>.<br>¿Confirmas que deseas eliminar esta actividad?',
+    btnOk:'Sí, eliminar', btnCancel:'Cancelar', danger:true,
+    onOk:()=>{
   _loadAct();
   _actividades=_actividades.filter(x=>x.id!==id);
-  _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
+      _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
+    }
+  });
 }
 
 function confirmarConcluir(id){
-  if(confirm('¿Quieres cambiar el estatus a Concluido?')){
-    changeActEstatus(id,'Concluido');
-  }
+  showConfirm({
+    icon:'✅', title:'Marcar como Concluido',
+    msg:'¿Confirmas que esta actividad fue completada?<br>El estatus cambiará a <strong style="color:#22c55e">Concluido</strong>.',
+    btnOk:'Sí, concluir', btnCancel:'Cancelar', danger:false,
+    onOk:()=>changeActEstatus(id,'Concluido')
+  });
 }
 
 function changeActEstatus(id,val){
