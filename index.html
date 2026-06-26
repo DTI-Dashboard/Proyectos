@@ -1543,6 +1543,34 @@ function descargarPlantilla(){
 }
 
 // ─── CSV LOADER ───
+function cancelarCarga(){
+  window._pendingUpload=null;
+  document.getElementById('upload-preview').style.display='none';
+  showToast('Carga cancelada','info');
+}
+
+function confirmarCarga(){
+  if(!window._pendingUpload){ showToast('No hay datos pendientes','error'); return; }
+  const {byMod,matched,noMatch}=window._pendingUpload;
+  if(byMod.IMC.length)        mergeData(state.imc.data,byMod.IMC);
+  if(byMod.Desarrollo.length) mergeData(state.dev.data,byMod.Desarrollo);
+  if(byMod.Soporte.length)    mergeData(state.inf.data,byMod.Soporte);
+  if(byMod.IA.length)         mergeData(state.ia.data,byMod.IA);
+  renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
+  const allRows=[...state.imc.data,...state.dev.data,...state.inf.data,...state.ia.data];
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const csvHeader='modulo,nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
+  const csvRows=allRows.map(p=>p.modulo+',"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"').join('\n');
+  localStorage.setItem('dti_info_extra', csvHeader+'\n'+csvRows);
+  window._pendingUpload=null;
+  document.getElementById('upload-preview').style.display='none';
+  if(noMatch.length>0){
+    showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatch.map(n=>'• '+n).join('\n'),'error',8000);
+  } else {
+    showToast('✅ '+matched+' proyectos actualizados correctamente','success');
+  }
+}
+
 function loadCSV(e){
   const file=e.target.files[0]; if(!file)return;
   // Show loading toast
@@ -1643,34 +1671,6 @@ function loadCSV(e){
 
       // ── Merge en memoria: solo campos presentes en este CSV ────────
       let matched=0, noMatch=[];
-      function cancelarCarga(){
-  window._pendingUpload=null;
-  document.getElementById('upload-preview').style.display='none';
-  showToast('Carga cancelada','info');
-}
-
-function confirmarCarga(){
-  if(!window._pendingUpload){ showToast('No hay datos pendientes','error'); return; }
-  const {byMod,matched,noMatch}=window._pendingUpload;
-  if(byMod.IMC.length)        mergeData(state.imc.data,byMod.IMC);
-  if(byMod.Desarrollo.length) mergeData(state.dev.data,byMod.Desarrollo);
-  if(byMod.Soporte.length)    mergeData(state.inf.data,byMod.Soporte);
-  if(byMod.IA.length)         mergeData(state.ia.data,byMod.IA);
-  renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
-  const allRows=[...state.imc.data,...state.dev.data,...state.inf.data,...state.ia.data];
-  const esc=s=>(s||'').replace(/"/g,'""');
-  const csvHeader='modulo,nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
-  const csvRows=allRows.map(p=>p.modulo+',"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"').join('\n');
-  localStorage.setItem('dti_info_extra', csvHeader+'\n'+csvRows);
-  window._pendingUpload=null;
-  document.getElementById('upload-preview').style.display='none';
-  if(noMatch.length>0){
-    showToast('⚠️ '+matched+' actualizados. No coincidieron:\n'+noMatch.map(n=>'• '+n).join('\n'),'error',8000);
-  } else {
-    showToast('✅ '+matched+' proyectos actualizados correctamente','success');
-  }
-}
-
 function mergeData(stateData, csvRows){
         csvRows.forEach(csvP=>{
           const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
