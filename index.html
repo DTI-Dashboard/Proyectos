@@ -1658,12 +1658,15 @@ function loadCSV(e){
         else stData=state.imc.data;
         const found=stData.find(x=>norm2(x.nombre)===norm2(p.nombre));
         const rowStyle=found?'':'background:rgba(239,68,68,0.12);border-left:3px solid #ef4444;';
-        const nameStyle=found?'':'color:#ef4444;font-weight:700;';
+
         if(!found) _noMatchSet.add(p.nombre);
         return `<tr style="${rowStyle}">
-          <td><span style="font-size:10px;font-weight:700;color:var(--gold)">${p.modulo}</span></td>
+          <td>
+            <span style="font-size:10px;font-weight:700;color:${found?'var(--gold)':'#ef4444'}">${p.modulo}</span>
+            ${found?'':'<span title="Módulo no reconocido o nombre no encontrado" style="margin-left:4px;cursor:help;">⚠️</span>'}
+          </td>
           <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo||''}</span></td>
-          <td><div class="p-name" style="${nameStyle}">${p.nombre}${found?'':' ⚠️'}</div></td>
+          <td><div class="p-name">${p.nombre}</div></td>
           <td><div class="p-area">${p.area||''}</div></td>
           <td style="font-size:11px;color:#ccc">${p.responsable||''}</td>
           <td style="font-size:11px;color:#ccc">${p.solicitante||''}</td>
