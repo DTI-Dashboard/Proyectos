@@ -1,4 +1,4 @@
 id,nombre,actividad,area,prioridad,fechaFin,semana,estatus,notas,createdAt,updatedAt
 "ex2","Miguel Benítez","Documentar integración Smartsheet con dashboard DTI","Capital Humano","Media","2026-06-23","2026-W26","Concluido","","2026-06-23T10:00:00","2026-06-23T10:00:00"
 "ex6","Miguel Benítez","Configuración de campos BUK Personalizado Fase 22","Capital Humano","Baja","2026-06-26","2026-W26","En proceso","","2026-06-23T10:30:00","2026-06-26T17:26:52.867Z"
-"ex7","Ricardo Ángeles","Entrega de análisis de requerimientos — AI HUB FLEX","Automatización","Alta","2026-06-20","2026-W25","Concluido","","2026-06-16T09:00:00","2026-06-20T16:00:00"
+"ex7","Omar Aguilar","Entrega de análisis de requerimientos — AI HUB FLEX","Automatización","Alta","2026-06-20","2026-W25","Concluido","","2026-06-16T09:00:00","2026-06-26T17:56:44.439Z"
