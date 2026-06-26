@@ -2208,8 +2208,7 @@ function deleteActividad(id){
     msg:'Esta acción <strong>no se puede deshacer</strong>.<br>¿Confirmas que deseas eliminar esta actividad?',
     btnOk:'Sí, eliminar', btnCancel:'Cancelar', danger:true,
     onOk:()=>{
-  _loadAct();
-  _actividades=_actividades.filter(x=>x.id!==id);
+      _actividades=_actividades.filter(x=>x.id!==id);
       _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
     }
   });
