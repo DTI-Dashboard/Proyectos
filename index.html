@@ -1276,7 +1276,8 @@ function buildTreemap(projects, elId){
 }
 
 function kpiFilter(tab, val){
-  const btns=[...document.querySelectorAll(`#mod-${tab} .filters .filter-btn`)];
+  const modId={imc:'mod-imc',dev:'mod-desarrollo',inf:'mod-infraestructura',ia:'mod-ia'}[tab]||('mod-'+tab);
+  const btns=[...document.querySelectorAll(`#${modId} .filters .filter-btn`)];
   let btn=null;
   if(val==='todos'){
     btn=btns[0];
@@ -2160,7 +2161,6 @@ function saveActividad(){
   const actividad=(document.getElementById('act-inp-actividad').value||'').trim();
   const fecha=document.getElementById('act-inp-fecha').value;
   if(!nombre||!actividad||!fecha){ showToast('⚠️ Nombre, Actividad y Fecha son requeridos','error'); return; }
-  _loadAct();
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
   const semana=_isoWeek(new Date(fecha+'T12:00:00'));
