@@ -2286,22 +2286,23 @@ function validarFechaLaboral(inp){
 function kpiActFilter(val){
   if(val==='todos'){
     _actFiltroEst=[];
-    // Marcar todos los checkboxes de estatus
-    document.querySelectorAll('#act-estatus-panel input[type=checkbox]').forEach(c=>c.checked=true);
-    const btn=document.getElementById('act-est-btn');
-    if(btn){ btn.textContent='🔵 Todos los estatus ▾'; btn.classList.remove('active'); }
   } else {
     _actFiltroEst=[val];
-    // Actualizar checkboxes
-    document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)').forEach(c=>{
-      c.checked=(c.value===val);
-    });
-    const todosChk=document.getElementById('act-est-todos');
-    if(todosChk) todosChk.checked=false;
-    const btn=document.getElementById('act-est-btn');
-    if(btn){ btn.textContent='🔵 '+val+' ▾'; btn.classList.add('active'); }
   }
+  // Actualizar checkboxes después de renderizar
   renderActividades();
+  // Sincronizar checkboxes con el nuevo filtro
+  setTimeout(()=>{
+    const checks=[...document.querySelectorAll('#act-estatus-panel input[type=checkbox]:not(#act-est-todos)')];
+    checks.forEach(c=>{ c.checked=(_actFiltroEst.length===0||_actFiltroEst.includes(c.value)); });
+    const todosChk=document.getElementById('act-est-todos');
+    if(todosChk) todosChk.checked=_actFiltroEst.length===0;
+    const btn=document.getElementById('act-est-btn');
+    if(btn){
+      btn.textContent=_actFiltroEst.length===0?'🔵 Todos los estatus ▾':'🔵 '+val+' ▾';
+      _actFiltroEst.length===0?btn.classList.remove('active'):btn.classList.add('active');
+    }
+  },50);
 }
 
 function actSelTodos(tipo, chk){
