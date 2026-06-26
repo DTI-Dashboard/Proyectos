@@ -233,7 +233,7 @@ input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);c
 .dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
 </style>
 <!-- LAST_SYNC -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E"><text y='.9em' font-size='90'>📊</text></svg>">
+<text y='.9em' font-size='90'>📊</text></svg>">
 <meta name="last-sync" content="2026-06-26T17:08:00Z">
 </head>
 <body class="dashboard-init">
@@ -1812,6 +1812,8 @@ try{(function(){
   // Mostrar dashboard sin parpadeo
   document.body.classList.remove('dashboard-init');
   document.body.classList.add('dashboard-ready');
+  // Cargar actividades al inicio
+  _loadAct();
 })();
 
 
@@ -2105,7 +2107,6 @@ function _actToCSV(acts){
 }
 
 function openActModal(id){
-  _loadAct();
   const bg=document.getElementById('act-modal-bg');
   bg.style.display='flex';
   if(id){
@@ -2207,7 +2208,6 @@ function confirmarConcluir(id){
 }
 
 function changeActEstatus(id,val){
-  _loadAct();
   const a=_actividades.find(x=>x.id===id);
   if(a){ a.estatus=val; a.updatedAt=new Date().toISOString(); }
   _saveAct(); renderActividades();
