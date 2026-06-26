@@ -1549,6 +1549,23 @@ function cancelarCarga(){
   showToast('Carga cancelada','info');
 }
 
+function mergeData(stateData, csvRows){
+  csvRows.forEach(csvP=>{
+  const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
+  const nombreCSV=norm(csvP.nombre);
+  const found=stateData.find(p=>norm(p.nombre)===nombreCSV);
+  if(found){
+  if(colsPresentes.has('area'))  found.area=csvP.area;
+  if(colsPresentes.has('responsable')) found.responsable=csvP.responsable;
+  if(colsPresentes.has('solicitante')) found.solicitante=csvP.solicitante;
+  if(colsPresentes.has('descripcion')) found.descripcion=csvP.descripcion;
+  if(colsPresentes.has('url_plan'))    found.url_plan=csvP.url_plan;
+  if(colsPresentes.has('tipo'))  found.tipo=csvP.tipo;
+  matched++;
+  } else { noMatch.push(csvP.nombre); }
+  });
+}
+
 function confirmarCarga(){
   if(!window._pendingUpload){ showToast('No hay datos pendientes','error'); return; }
   const {byMod,matched,noMatch}=window._pendingUpload;
@@ -1671,22 +1688,7 @@ function loadCSV(e){
 
       // ── Merge en memoria: solo campos presentes en este CSV ────────
       let matched=0, noMatch=[];
-function mergeData(stateData, csvRows){
-        csvRows.forEach(csvP=>{
-          const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
-          const nombreCSV=norm(csvP.nombre);
-          const found=stateData.find(p=>norm(p.nombre)===nombreCSV);
-          if(found){
-            if(colsPresentes.has('area'))        found.area=csvP.area;
-            if(colsPresentes.has('responsable')) found.responsable=csvP.responsable;
-            if(colsPresentes.has('solicitante')) found.solicitante=csvP.solicitante;
-            if(colsPresentes.has('descripcion')) found.descripcion=csvP.descripcion;
-            if(colsPresentes.has('url_plan'))    found.url_plan=csvP.url_plan;
-            if(colsPresentes.has('tipo'))        found.tipo=csvP.tipo;
-            matched++;
-          } else { noMatch.push(csvP.nombre); }
-        });
-      }
+// mergeData movida a scope global}
 
 
       document.getElementById('upload-count-badge').textContent=mapped.length+' filas';
