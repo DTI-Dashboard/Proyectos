@@ -1576,7 +1576,8 @@ function mergeData(stateData, csvRows){
 
 function confirmarCarga(){
   if(!window._pendingUpload){ showToast('No hay datos pendientes','error'); return; }
-  const {byMod,noMatch,colsPresentes}=window._pendingUpload;
+  const {byMod,noMatch,colsArray}=window._pendingUpload;
+  const colsPresentes=new Set(colsArray||[]);
   let mc=0;
   const applyMerge=(stateData,csvRows)=>{
     csvRows.forEach(csvP=>{
@@ -1754,7 +1755,7 @@ function loadCSV(e){
         </tr>`;
       }).join('');
       // Guardar datos pendientes — no aplicar hasta que el usuario confirme
-      window._pendingUpload={byMod,matched,noMatch};
+      window._pendingUpload={byMod,matched,noMatch,colsArray:[...colsPresentes]};
       document.getElementById('upload-preview').style.display='block';
       e.target.value='';
       const eb=document.getElementById('upload-error-badge');
