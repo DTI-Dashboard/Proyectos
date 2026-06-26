@@ -1621,7 +1621,7 @@ function loadCSV(e){
       let matched=0, noMatch=[];
       function mergeData(stateData, csvRows){
         csvRows.forEach(csvP=>{
-          const norm=s=>(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+          const norm=s=>(s||'').replace(/^"|"$/g,'').trim().toLowerCase().replace(/\s+/g,' ');
           const nombreCSV=norm(csvP.nombre);
           const found=stateData.find(p=>norm(p.nombre)===nombreCSV);
           if(found){
@@ -1915,7 +1915,7 @@ async function triggerSync(){
   const startedAt = new Date();
 
   try{
-    const res = await fetch(SYNC_PROXY_URL, { method: 'POST' });
+    const res = await fetch(SYNC_PROXY_URL, { method: 'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
     const data = await res.json().catch(()=>({}));
 
     if(!res.ok || data.ok === false){
@@ -2219,14 +2219,14 @@ function saveActividad(){
   _loadAct();
   const id=document.getElementById('act-inp-id').value;
   const now=new Date().toISOString();
-  const semana=(_actSemana&&_actSemana!=='')?_actSemana:_isoWeek(new Date());
+  const semana=_isoWeek(new Date(fecha+'T12:00:00'));
   const existing=id?(_actividades.find(x=>x.id===id)||{}): {};
   const obj={
     nombre, actividad,
     area: existing.area||'',
     prioridad: document.getElementById('act-inp-prioridad').value,
     fechaFin: fecha,
-    semana: existing.semana||semana,
+    semana: semana,
     estatus: id ? (existing.estatus||'En proceso') : 'En proceso',
     notas: id ? (existing.notas||'') : '',
     updatedAt: now
@@ -2280,7 +2280,11 @@ function actGoToday(){ _actSemana=_isoWeek(new Date()); renderActividades(); }
 function actSelectWeek(v){ _actSemana=(v==='todas'||!v)?'':v; renderActividades(); }
 
 function _getAllSems(){
-  return [...new Set(_actividades.map(a=>a.semana).filter(Boolean))].sort();
+  // Calcular semana desde fechaFin para cada actividad (más confiable)
+  return [...new Set(_actividades
+    .filter(a=>a.fechaFin)
+    .map(a=>_isoWeek(new Date(a.fechaFin+'T12:00:00')))
+  )].sort();
 }
 
 function actNavSemana(dir){
@@ -2435,7 +2439,7 @@ function renderActividades(){
 
   // Filtrar para la tabla
   let filtered=_actividades.filter(a=>{
-    if(_actSemana && _semanaDeFinDate(a.fechaFin)!==_actSemana) return false;
+    if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
     if(fEst.length && !fEst.includes(a.estatus)) return false;
     if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
