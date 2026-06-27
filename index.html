@@ -1877,10 +1877,11 @@ function confirmarCarga(){
   if(byMod.Soporte.length)    applyMerge(state.inf.data,byMod.Soporte);
   if(byMod.IA.length)         applyMerge(state.ia.data,byMod.IA);
   renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
-  const allRows=[...state.imc.data,...state.dev.data,...state.inf.data,...state.ia.data];
   const esc=s=>(s||'').replace(/"/g,'""');
   const csvHeader='modulo,nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
-  const csvRows=allRows.map(p=>p.modulo+',"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"').join('\n');
+  const modMap={imc:'IMC',dev:'Desarrollo',inf:'Soporte',ia:'IA'};
+  const getmod=p=>p.modulo||(state.imc.data.includes(p)?'IMC':state.dev.data.includes(p)?'Desarrollo':state.inf.data.includes(p)?'Soporte':'IA');
+  const csvRows=[...state.imc.data.map(p=>({...p,_mod:'IMC'})),...state.dev.data.map(p=>({...p,_mod:'Desarrollo'})),...state.inf.data.map(p=>({...p,_mod:'Soporte'})),...state.ia.data.map(p=>({...p,_mod:'IA'}))].map(p=>p._mod+',"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"').join('\n');
   localStorage.setItem('dti_info_extra',csvHeader+'\n'+csvRows);
   window._pendingUpload=null;
   document.getElementById('upload-preview').style.display='none';
@@ -1895,7 +1896,7 @@ function confirmarCarga(){
 
 async function _backupInfoCSVs(){
   const esc=s=>(s||'').replace(/"/g,'""');
-  const header='nombre,tipo,area,responsable,solicitante,descripcion,url_plan';
+  const header='nombre,tipo,area,responsable,solicitante,descripcion,url_plan'; // por módulo, sin columna modulo
   const toCSV=(rows)=>header+'\n'+rows.map(p=>
     '"'+esc(p.nombre)+'","'+esc(p.tipo||'')+'","'+esc(p.area||'')+'","'+esc(p.responsable||'')+'","'+esc(p.solicitante||'')+'","'+esc(p.descripcion||'')+'","'+esc(p.url_plan||'')+'"'
   ).join('\n');
@@ -2158,8 +2159,9 @@ try{(function(){
   mergeLocal(state.imc.data,'IMC');
   mergeLocal(state.dev.data,'Desarrollo');
   mergeLocal(state.inf.data,'Soporte');
+  mergeLocal(state.ia.data,'IA');
   renderTab('imc');renderTab('dev');renderTab('inf');renderTab('ia');
-  console.log('Info extra restaurada desde localStorage');
+  console.log('Info extra restaurada desde localStorage ('+rows.length+' filas)');
 })();}catch(e){ console.warn('restore error:',e); }
 
 // Restaurar tab activo tras recargar (debe ir después de todos los renderTab)
