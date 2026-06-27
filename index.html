@@ -1905,16 +1905,22 @@ async function _backupInfoCSVs(){
     {filename:'info_inf.csv',       data:state.inf.data},
     {filename:'info_ia.csv',        data:state.ia.data},
   ];
+  let ok=0, fail=0;
   for(const f of files){
     if(!f.data.length) continue;
     try{
-      await fetch(SYNC_PROXY_URL,{
+      const res=await fetch(SYNC_PROXY_URL,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'save_file',filename:f.filename,content:toCSV(f.data)})
       });
-    }catch(e){ console.warn('Backup info CSV falló:',f.filename,e); }
+      const d=await res.json().catch(()=>({}));
+      if(res.ok && d.ok){ ok++; console.log('✅ Guardado:',f.filename); }
+      else { fail++; console.error('❌ Falló:',f.filename, d); }
+    }catch(e){ fail++; console.error('❌ Error:',f.filename,e); }
   }
+  if(ok>0) showToast('✅ Datos guardados en servidor ('+ok+' archivos)','success');
+  if(fail>0) showToast('⚠️ '+fail+' archivos fallaron al guardar','error',5000);
 }
 
 function loadCSV(e){
