@@ -2115,6 +2115,12 @@ function updateDate(){
 
 }
 updateDate();
+// Restaurar tema ANTES de renderizar gráficas para que _txtColor() sea correcto
+if(localStorage.getItem('dti_theme')==='light'){
+  document.body.classList.add('light-mode');
+  const _tb=document.getElementById('theme-btn');
+  if(_tb) _tb.textContent='☀️';
+}
 renderTab('imc');
 renderTab('dev');
 renderTab('inf');
