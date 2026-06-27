@@ -479,8 +479,10 @@ body.light-mode .tab.active{color:var(--gold) !important;}
 
 /* Todo el contenido principal: NEGRO */
 body.light-mode .main *{color:#1a2340 !important;}
-body.light-mode .mod-title{color:#fff !important;}
+body.light-mode .mod-title{color:#1a2340 !important;}
 body.light-mode .mod-title span{color:var(--gold) !important;}
+body.light-mode .btn-xlsx{color:#fff !important;}
+body.light-mode .btn-xlsx *{color:#fff !important;}
 
 /* Fondos */
 body.light-mode .module{background:#f0f4fa;}
@@ -2113,12 +2115,6 @@ function updateDate(){
 
 }
 updateDate();
-// Restaurar tema ANTES de renderizar gráficas
-if(localStorage.getItem('dti_theme')==='light'){
-  document.body.classList.add('light-mode');
-  const tb=document.getElementById('theme-btn');
-  if(tb) tb.textContent='☀️';
-}
 renderTab('imc');
 renderTab('dev');
 renderTab('inf');
