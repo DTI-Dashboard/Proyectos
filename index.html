@@ -1214,7 +1214,7 @@ function buildRow(p,tab,ri){
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${_eventualidades[p.nombre]?" ■":""}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -2450,13 +2450,12 @@ async function exportCierreSemanal(){
 
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
   var evArr=[];
-  var evKeys=Object.keys(_eventualidades);
-  for(var ki=0;ki<evKeys.length;ki++){
-    if(_eventualidades[evKeys[ki]]&&_eventualidades[evKeys[ki]].trim()!=='')
-      evArr.push({n:evKeys[ki],t:_eventualidades[evKeys[ki]]});
+  for(var i=0;i<D.length;i++){
+    if(_eventualidades[D[i].nombre]) evArr.push({n:D[i].nombre,t:_eventualidades[D[i].nombre]});
   }
-  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
-  if(true){
+
+  if(evArr.length>0){
+    var s3=await zip.file('ppt/slides/slide3.xml').async('string');
     var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
     function eCell(txt,al,sz){
       return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
