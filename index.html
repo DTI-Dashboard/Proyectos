@@ -536,7 +536,6 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 .ev-btn-delete{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;transition:.2s;margin-right:auto;}
 .ev-btn-delete:hover{background:rgba(239,68,68,0.22);}
 #ev-char-count{font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;text-align:right;}
-.p-name.has-ev::after{content:none;display:inline-block;width:7px;height:7px;border-radius:50%;background:#C9A84C;margin-left:6px;vertical-align:middle;position:relative;top:-1px;}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
@@ -1564,7 +1563,7 @@ function renderTab(tab){
   }[tab];
   const p=getFiltered(tab);
   allProjects[tab]=p;
-  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');document.getElementById(cfg.tbody).querySelectorAll('.p-name').forEach(function(el){if(_eventualidades[el.textContent.trim()])el.classList.add('has-ev');});
+  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');
   document.getElementById(cfg.count).textContent=p.length+' proyectos';
   buildKPIsDom(p,cfg.kpfx);
   buildDonut(p,cfg.donut);
