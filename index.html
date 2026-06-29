@@ -580,8 +580,8 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       
     </div>
     <div class="export-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
-      <button class="btn-pptx" onclick="exportCierreSemanal()" style="background:#1a2340;border:1px solid var(--gold);color:var(--gold);" title="Genera el reporte de cierre semanal IMC">📋 Reporte Semanal (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
     </div>
   </div>
@@ -2430,18 +2430,175 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 
 // ─── EXPORT CIERRE SEMANAL IMC ─────────────────────────────────────────────
-function exportCierreSemanal(){
+async function exportCierreSemanal(){
+  if(typeof PptxGenJS === 'undefined'){
+    showToast('La librería PowerPoint aún carga. Espera unos segundos.', 'error'); return;
+  }
+  // ── Calcular rango jueves-jueves ──
   const hoy = new Date();
-  const diaSemana = hoy.getDay();
-  const diasHastaJuevesAnterior = (diaSemana === 4) ? 0 : (diaSemana + 3) % 7;
-  const juevesPasado = new Date(hoy);
-  juevesPasado.setDate(hoy.getDate() - diasHastaJuevesAnterior);
-  const juevesActual = new Date(juevesPasado);
-  juevesActual.setDate(juevesPasado.getDate() + 7);
+  const dow = hoy.getDay(); // 0=Dom,4=Jue
+  const diasAtras = dow === 4 ? 0 : (dow + 3) % 7;
+  const jPasado = new Date(hoy); jPasado.setDate(hoy.getDate() - diasAtras);
+  const jActual = new Date(jPasado); jActual.setDate(jPasado.getDate() + 7);
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const fmt = d => d.getDate()+' de '+meses[d.getMonth()];
-  const fechaRango = fmt(juevesPasado)+' al '+fmt(juevesActual);
-  showToast('🚧 Reporte Semanal en construcción — Rango: '+fechaRango, 'info', 4000);
+  const fmtFecha = d => d.getDate()+' de '+meses[d.getMonth()];
+  const fmtCorto = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const rangoTexto = fmtFecha(jPasado)+' al '+fmtFecha(jActual);
+
+  // ── Datos IMC ──
+  const datos = (state.imc && state.imc.data) ? state.imc.data : [];
+  const total = datos.length;
+  const terminados = datos.filter(p=>semClass(p.sem)==='terminado').length;
+  const aTiempo = datos.filter(p=>semClass(p.sem)==='tiempo').length;
+  const enRiesgo = datos.filter(p=>semClass(p.sem)==='riesgo').length;
+  const atrasados = datos.filter(p=>semClass(p.sem)==='atrasado').length;
+  const porCerrar = datos.filter(p=>{ const r=parseFloat(p.real)||0; const sc=semClass(p.sem); return r>=90 && sc!=='terminado'; }).length;
+  const standby = datos.filter(p=>semClass(p.sem)==='standby').length;
+
+  // ── Proyectos con eventualidad (slide 3) ──
+  const conEvent = datos.filter(p=>_eventualidades[p.nombre]);
+
+  const GOLD='C9A84C', NAVY='1A2340', WHITE='FFFFFF', DARK='0f1623';
+  const semColores={tiempo:'22C55E',terminado:'3B82F6',atrasado:'EF4444',standby:'8B5CF6',riesgo:'F59E0B'};
+  const semEtiquetas={tiempo:'A tiempo',terminado:'Terminado',atrasado:'Atrasado',standby:'Stand By',riesgo:'Riesgo de atraso'};
+
+  const pptx = new PptxGenJS();
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.author = 'DTI Dashboard';
+
+  // ════════════════════════════════════════════
+  // SLIDE 1 — Portada
+  // ════════════════════════════════════════════
+  const s1 = pptx.addSlide();
+  s1.background = {color: WHITE};
+  // Barra superior e inferior
+  s1.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:0.18,fill:{color:NAVY}});
+  s1.addShape(pptx.ShapeType.rect,{x:0,y:'92%',w:'100%',h:0.18,fill:{color:NAVY}});
+  // Decoración lateral izquierda (rombo dorado)
+  s1.addShape(pptx.ShapeType.rect,{x:-0.3,y:2.2,w:0.9,h:1.8,fill:{color:GOLD},rotate:15});
+  // Decoración lateral derecha
+  s1.addShape(pptx.ShapeType.rect,{x:12.5,y:2.2,w:0.9,h:1.8,fill:{color:GOLD},rotate:15});
+  // Logo texto GRUPO INCEPADEM
+  s1.addText('GRUPO INCEPADEM', {x:2.5,y:0.9,w:8,h:0.9,fontSize:36,bold:true,color:NAVY,align:'center',fontFace:'Calibri'});
+  // Línea dorada
+  s1.addShape(pptx.ShapeType.line,{x:2.0,y:2.05,w:9.0,h:0,line:{color:GOLD,width:2}});
+  // Subtítulo dirección
+  s1.addText('Dirección de Implementación y Mejora Continua',{x:1.5,y:2.4,w:10.0,h:0.7,fontSize:22,bold:true,color:NAVY,align:'center',fontFace:'Calibri'});
+  // Fecha
+  s1.addText('Cierre semanal del '+rangoTexto,{x:5.5,y:6.2,w:7.0,h:0.4,fontSize:13,bold:true,color:NAVY,align:'right',fontFace:'Calibri'});
+
+  // ════════════════════════════════════════════
+  // SLIDE 2 — Área de Implementación (KPIs + tabla)
+  // ════════════════════════════════════════════
+  const s2 = pptx.addSlide();
+  s2.background = {color: WHITE};
+  s2.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:0.18,fill:{color:NAVY}});
+  s2.addShape(pptx.ShapeType.rect,{x:0,y:'92%',w:'100%',h:0.18,fill:{color:NAVY}});
+  // Logo pequeño
+  s2.addText('INCEPADEM',{x:0.15,y:0.22,w:1.8,h:0.35,fontSize:10,bold:true,color:NAVY,fontFace:'Calibri'});
+  // Título
+  s2.addText('ÁREA DE IMPLEMENTACIÓN',{x:0,y:0.22,w:13.33,h:0.4,fontSize:18,bold:true,color:NAVY,align:'center',fontFace:'Calibri'});
+  s2.addText('Cierre semanal del '+rangoTexto,{x:0,y:0.62,w:13.33,h:0.25,fontSize:10,color:'666666',align:'center',fontFace:'Calibri'});
+
+  // KPIs — 7 cajas
+  const kpis=[
+    {lbl:'Total de proyectos', val:total},
+    {lbl:'Terminado', val:terminados},
+    {lbl:'A tiempo', val:aTiempo},
+    {lbl:'En riesgo de atraso', val:enRiesgo},
+    {lbl:'Atrasados', val:atrasados},
+    {lbl:'Por cerrar', val:porCerrar},
+    {lbl:'Stand By', val:standby},
+  ];
+  const kpiW=1.7, kpiH=0.75, kpiY=0.95, kpiGap=0.08;
+  const kpiStartX=0.15;
+  kpis.forEach((k,i)=>{
+    const x=kpiStartX+i*(kpiW+kpiGap);
+    s2.addShape(pptx.ShapeType.rect,{x,y:kpiY,w:kpiW,h:kpiH,fill:{color:'F8F8F8'},line:{color:'DDDDDD',width:0.5}});
+    s2.addText(String(k.val),{x,y:kpiY+0.04,w:kpiW,h:0.38,fontSize:26,bold:true,color:NAVY,align:'center',fontFace:'Calibri'});
+    s2.addText(k.lbl,{x,y:kpiY+0.42,w:kpiW,h:0.28,fontSize:8,color:'555555',align:'center',fontFace:'Calibri',wrap:true});
+  });
+
+  // Tabla de proyectos
+  const colW=[1.1,3.4,0.85,0.85,0.65,0.65,2.88,1.0];
+  const hdrs=['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESP','BARRA DE AVANCE','SEMÁFORO'];
+  const rowH=0.22;
+  const tblX=0.1, tblY=1.82;
+
+  // Header row
+  let rows=[];
+  rows.push(hdrs.map((h,i)=>({
+    text:h, options:{bold:true,fontSize:7,color:WHITE,fill:NAVY,align:'center',valign:'middle',fontFace:'Calibri'}
+  })));
+
+  datos.forEach(p=>{
+    const sc=semClass(p.sem);
+    const col=semColores[sc]||'8B5CF6';
+    const lbl=semEtiquetas[sc]||p.sem||'—';
+    const real=Math.min(parseFloat(p.real)||0,100);
+    const esp=Math.min(parseFloat(p.esp)||0,100);
+    rows.push([
+      {text:p.tipo||'—',         options:{fontSize:7,color:'333333',align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:p.nombre||'—',       options:{fontSize:7,color:'333333',align:'left',valign:'middle',fontFace:'Calibri'}},
+      {text:p.inicio||'—',       options:{fontSize:6.5,color:'555555',align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:p.fin||'—',         options:{fontSize:6.5,color:'555555',align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:(p.real||'0')+'%',  options:{fontSize:7,bold:true,color:'1a1a1a',align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:(p.esp||'0')+'%',   options:{fontSize:7,color:'555555',align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:'',                  options:{fontSize:7,align:'left',valign:'middle',fontFace:'Calibri'}},
+      {text:lbl,                 options:{fontSize:7,bold:true,color:col,align:'center',valign:'middle',fontFace:'Calibri'}},
+    ]);
+  });
+
+  s2.addTable(rows,{x:tblX,y:tblY,w:13.1,rowH,colW,border:{pt:0.3,color:'DDDDDD'},autoPage:false});
+
+  // ════════════════════════════════════════════
+  // SLIDE 3 — Eventualidades
+  // ════════════════════════════════════════════
+  const s3 = pptx.addSlide();
+  s3.background = {color: WHITE};
+  s3.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:0.18,fill:{color:NAVY}});
+  s3.addShape(pptx.ShapeType.rect,{x:0,y:'92%',w:'100%',h:0.18,fill:{color:NAVY}});
+  s3.addText('INCEPADEM',{x:0.15,y:0.22,w:1.8,h:0.35,fontSize:10,bold:true,color:NAVY,fontFace:'Calibri'});
+  s3.addText('Eventualidades de proyectos con retraso',{x:0.15,y:0.7,w:12,h:0.55,fontSize:22,bold:true,color:NAVY,fontFace:'Calibri'});
+
+  if(conEvent.length === 0){
+    s3.addText('No se registraron eventualidades esta semana.',{x:1,y:2.5,w:11,h:0.5,fontSize:14,color:'888888',align:'center',fontFace:'Calibri'});
+  } else {
+    const evHdrs=[
+      {text:'No',options:{bold:true,fontSize:9,color:WHITE,fill:NAVY,align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:'Proyecto',options:{bold:true,fontSize:9,color:WHITE,fill:NAVY,align:'center',valign:'middle',fontFace:'Calibri'}},
+      {text:'Eventualidades',options:{bold:true,fontSize:9,color:WHITE,fill:NAVY,align:'center',valign:'middle',fontFace:'Calibri'}},
+    ];
+    const evRows=[evHdrs];
+    conEvent.forEach((p,i)=>{
+      evRows.push([
+        {text:String(i+1),options:{fontSize:9,align:'center',valign:'middle',color:'333333',fontFace:'Calibri'}},
+        {text:p.nombre,   options:{fontSize:9,align:'left',valign:'middle',color:'333333',fontFace:'Calibri'}},
+        {text:_eventualidades[p.nombre]||'',options:{fontSize:9,align:'left',valign:'middle',color:'333333',fontFace:'Calibri'}},
+      ]);
+    });
+    s3.addTable(evRows,{x:0.15,y:1.45,w:12.9,colW:[0.4,3.8,8.7],rowH:0.55,border:{pt:0.5,color:'DDDDDD'},autoPage:false});
+  }
+
+  // ════════════════════════════════════════════
+  // SLIDE 4 — Cierre
+  // ════════════════════════════════════════════
+  const s4 = pptx.addSlide();
+  s4.background = {color: WHITE};
+  // Formas geométricas decorativas doradas (estilo del template)
+  s4.addShape(pptx.ShapeType.rect,{x:6.5,y:-0.5,w:3.5,h:3.5,fill:{type:'none'},line:{color:GOLD,width:1.5},rotate:15});
+  s4.addShape(pptx.ShapeType.rect,{x:8.0,y:1.5,w:3.5,h:3.5,fill:{type:'none'},line:{color:GOLD,width:1.5},rotate:15});
+  s4.addShape(pptx.ShapeType.rect,{x:7.0,y:3.8,w:3.5,h:3.5,fill:{type:'none'},line:{color:GOLD,width:1.5},rotate:15});
+  s4.addShape(pptx.ShapeType.rect,{x:12.5,y:1.5,w:1.5,h:5.5,fill:{color:GOLD}});
+  s4.addText('GRUPO INCEPADEM',{x:0.5,y:2.5,w:5.5,h:0.7,fontSize:28,bold:true,color:NAVY,fontFace:'Calibri'});
+
+  const fecha=new Date();
+  const dd=String(fecha.getDate()).padStart(2,'0');
+  const mm=String(fecha.getMonth()+1).padStart(2,'0');
+  const yy=fecha.getFullYear();
+
+  await pptx.writeFile({fileName:'Cierre_Semanal_IMC_'+dd+'_'+mm+'_'+yy+'.pptx'});
+  showToast('✅ Reporte Semanal descargado', 'success');
 }
 
 // ── Control de acceso Carga de Datos ─────────────────────────
