@@ -2450,8 +2450,10 @@ async function exportCierreSemanal(){
 
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
   var evArr=[];
-  for(var i=0;i<D.length;i++){
-    if(_eventualidades[D[i].nombre]) evArr.push({n:D[i].nombre,t:_eventualidades[D[i].nombre]});
+  var _eks=Object.keys(_eventualidades);
+  for(var _ki=0;_ki<_eks.length;_ki++){
+    if(_eventualidades[_eks[_ki]]&&_eventualidades[_eks[_ki]].trim()!='')
+      evArr.push({n:_eks[_ki],t:_eventualidades[_eks[_ki]]});
   }
 
   if(evArr.length>0){
