@@ -519,7 +519,7 @@ body.light-mode .kpi-val.y{color:var(--yellow) !important;}
 body.light-mode .kpi-val.gold{color:var(--gold) !important;}
 
 /* Botones especiales */
-body.light-mode .btn-sync{color:var(--gold) !important;}
+body.light-mode .btn-sync{color:var(--gold) !important;}.ev-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#C9A84C;margin-left:5px;vertical-align:middle;}
 /* ── Modal Eventualidad ── */
 #ev-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;}
 #ev-modal-bg.active{display:flex;}
@@ -1212,9 +1212,10 @@ function calcKPIs(projects){
 function buildRow(p,tab,ri){
   const sc=semClass(p.sem),bc=barColor(p.real,p.esp,p.sem);
   const pData=encodeURIComponent(JSON.stringify(p));
+  const evIcon=_eventualidades[p.nombre]?'<span class="ev-dot"></span>':'';
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${evIcon}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -2450,8 +2451,10 @@ async function exportCierreSemanal(){
 
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
   var evArr=[];
-  for(var i=0;i<D.length;i++){
-    if(_eventualidades[D[i].nombre]) evArr.push({n:D[i].nombre,t:_eventualidades[D[i].nombre]});
+  var _eks=Object.keys(_eventualidades);
+  for(var _ki=0;_ki<_eks.length;_ki++){
+    if(_eventualidades[_eks[_ki]]&&_eventualidades[_eks[_ki]].trim()!="")
+      evArr.push({n:_eks[_ki],t:_eventualidades[_eks[_ki]]});
   }
 
   if(evArr.length>0){
