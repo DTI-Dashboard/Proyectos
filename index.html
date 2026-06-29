@@ -581,6 +581,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-pptx" onclick="exportCierreSemanal()" style="background:#1a2340;border:1px solid var(--gold);color:var(--gold);" title="Genera el reporte de cierre semanal IMC">📋 Reporte Semanal (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
     </div>
   </div>
@@ -1101,6 +1102,71 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 <script>
 
 // ─── DATOS ───
+
+// ─── Eventualidades IMC ──────────────────────────────────────────────────────
+let _eventualidades = {};
+let _evProyectoActual = '';
+
+function _loadEventualidades(){
+  try{ const r=localStorage.getItem('dti_eventualidades'); _eventualidades=r?JSON.parse(r):{}; }
+  catch(e){ _eventualidades={}; }
+}
+_loadEventualidades();
+
+function _saveEventualidades(){
+  localStorage.setItem('dti_eventualidades', JSON.stringify(_eventualidades));
+  const lines=['proyecto,eventualidad'];
+  Object.entries(_eventualidades).forEach(([p,e])=>{
+    lines.push('"'+p.replace(/"/g,'""')+'","'+e.replace(/"/g,'""')+'"');
+  });
+  fetch('https://dti-dashboard-trigger.josuemontoya.workers.dev/',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'save_file',filename:'eventualidades_imc.csv',content:lines.join('\n')})
+  }).catch(()=>{});
+}
+
+function openEvModal(){
+  _evProyectoActual = document.getElementById('m-nombre').textContent.trim();
+  document.getElementById('ev-nombre').textContent = _evProyectoActual;
+  const existing = _eventualidades[_evProyectoActual] || '';
+  const ta = document.getElementById('ev-textarea');
+  ta.value = existing;
+  document.getElementById('ev-char-count').textContent = existing.length+'/500';
+  document.getElementById('ev-btn-delete').style.display = existing ? 'inline-flex' : 'none';
+  document.getElementById('ev-modal-bg').classList.add('active');
+  ta.focus();
+}
+
+function closeEvModal(){
+  document.getElementById('ev-modal-bg').classList.remove('active');
+}
+
+function saveEventualidad(){
+  const texto = document.getElementById('ev-textarea').value.trim();
+  if(!texto){ deleteEventualidad(); return; }
+  _eventualidades[_evProyectoActual] = texto;
+  _saveEventualidades();
+  _updateEvBtn();
+  closeEvModal();
+}
+
+function deleteEventualidad(){
+  delete _eventualidades[_evProyectoActual];
+  _saveEventualidades();
+  _updateEvBtn();
+  closeEvModal();
+}
+
+function _updateEvBtn(){
+  const btn = document.getElementById('m-ev-btn');
+  if(!btn) return;
+  const tiene = !!_eventualidades[_evProyectoActual];
+  btn.innerHTML = tiene ? '⚠ Eventualidad documentada ✓' : '⚠ Documentar eventualidad';
+  btn.style.color = tiene ? 'var(--gold)' : 'rgba(255,255,255,0.75)';
+  btn.style.borderColor = tiene ? 'rgba(201,168,76,0.5)' : 'rgba(255,255,255,0.15)';
+  btn.style.background = tiene ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.05)';
+}
+
 const IMC_DATA = [
   {tipo:"Proyecto",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"Talleres",inicio:"07/04/2026",fin:"01/07/2026",real:98,esp:97,sem:"A tiempo",responsable:"Eduardo Sanchez",solicitante:"Administración de talleres",descripcion:"Implementación de mejoras funcionales, reportes y optimización de procesos en Mecánica MX.",url_plan:"https://app.smartsheet.com/sheets/pFqH6ggrMWfC69c5RM9xq2839gjqf3HFf38MH2R1?view=gantt"},
   {tipo:"Proyecto",nombre:"Administración || AdContent - Catálogos",area:"Administración",inicio:"01/04/2026",fin:"02/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Eduardo Sanchez",solicitante:"Control presupuestal",descripcion:"Administración y homologación de catálogos maestros para las diferentes líneas de negocio.",url_plan:"https://app.smartsheet.com/sheets/vWf7CMcVRv947wJ8g4VPVhVMQg5C35gWjXWWRfr1?view=gantt"},
@@ -2242,7 +2308,6 @@ function showToast(msg, type='info', duration=0){
   setTimeout(()=>{ t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(), 300); }, duration||( type==='error'?5000:3500));
 }
 
-_loadEventualidades();
 
 // ─── Botón "Actualizar Datos" — dispara sync.yml vía Cloudflare Worker ───
 // El token de GitHub vive solo dentro del Worker (Cloudflare), nunca en este archivo.
@@ -2357,88 +2422,27 @@ function openModal(p){
   document.body.style.overflow='hidden';
 }
 
-// ─── Eventualidades IMC ────────────────────────────────────────────────────
-let _eventualidades = {};   // { "Nombre del proyecto": "texto eventualidad" }
-let _evProyectoActual = ''; // nombre del proyecto en el mini modal
-
-function _loadEventualidades(){
-  try {
-    const raw = localStorage.getItem('dti_eventualidades');
-    _eventualidades = raw ? JSON.parse(raw) : {};
-  } catch(e){ _eventualidades = {}; }
-}
-
-function _saveEventualidades(){
-  localStorage.setItem('dti_eventualidades', JSON.stringify(_eventualidades));
-  // Backup al repo como CSV
-  const lines = ['proyecto,eventualidad'];
-  Object.entries(_eventualidades).forEach(([p,e])=>{
-    const pe = p.replace(/"/g,'""'), ee = e.replace(/"/g,'""');
-    lines.push('"'+pe+'","'+ee+'"');
-  });
-  const csv = lines.join('\n');
-  fetch(SYNC_PROXY_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'save_file', filename:'eventualidades_imc.csv', content:csv})
-  }).catch(()=>{});
-}
-
-function openEvModal(){
-  // Toma el nombre del proyecto activo en el modal principal
-  _evProyectoActual = document.getElementById('m-nombre').textContent.trim();
-  document.getElementById('ev-nombre').textContent = _evProyectoActual;
-  const existing = _eventualidades[_evProyectoActual] || '';
-  const ta = document.getElementById('ev-textarea');
-  ta.value = existing;
-  document.getElementById('ev-char-count').textContent = existing.length + '/500';
-  // Mostrar botón eliminar solo si ya existe
-  document.getElementById('ev-btn-delete').style.display = existing ? 'inline-flex' : 'none';
-  document.getElementById('ev-modal-bg').classList.add('active');
-  ta.focus();
-}
-
-function closeEvModal(){
-  document.getElementById('ev-modal-bg').classList.remove('active');
-}
-
-function saveEventualidad(){
-  const texto = document.getElementById('ev-textarea').value.trim();
-  if(!texto){ deleteEventualidad(); return; }
-  _eventualidades[_evProyectoActual] = texto;
-  _saveEventualidades();
-  _updateEvBtn();
-  closeEvModal();
-}
-
-function deleteEventualidad(){
-  delete _eventualidades[_evProyectoActual];
-  _saveEventualidades();
-  _updateEvBtn();
-  closeEvModal();
-}
-
-function _updateEvBtn(){
-  // Actualiza el ícono del botón en el modal principal según si hay eventualidad
-  const btn = document.getElementById('m-ev-btn');
-  if(!btn) return;
-  const tiene = !!_eventualidades[_evProyectoActual];
-  btn.innerHTML = tiene ? '⚠ Eventualidad documentada ✓' : '⚠ Documentar eventualidad';
-  btn.style.color = tiene ? 'var(--gold)' : 'rgba(255,255,255,0.75)';
-  btn.style.borderColor = tiene ? 'rgba(201,168,76,0.5)' : 'rgba(255,255,255,0.15)';
-  btn.style.background = tiene ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.05)';
-}
-
-// Cerrar con Escape
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape') closeEvModal();
-});
-
 function closeModal(){
   document.getElementById('proj-modal').classList.remove('active');
   document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+
+// ─── EXPORT CIERRE SEMANAL IMC ─────────────────────────────────────────────
+function exportCierreSemanal(){
+  const hoy = new Date();
+  const diaSemana = hoy.getDay();
+  const diasHastaJuevesAnterior = (diaSemana === 4) ? 0 : (diaSemana + 3) % 7;
+  const juevesPasado = new Date(hoy);
+  juevesPasado.setDate(hoy.getDate() - diasHastaJuevesAnterior);
+  const juevesActual = new Date(juevesPasado);
+  juevesActual.setDate(juevesPasado.getDate() + 7);
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const fmt = d => d.getDate()+' de '+meses[d.getMonth()];
+  const fechaRango = fmt(juevesPasado)+' al '+fmt(juevesActual);
+  showToast('🚧 Reporte Semanal en construcción — Rango: '+fechaRango, 'info', 4000);
+}
 
 // ── Control de acceso Carga de Datos ─────────────────────────
 const _CLAVE_HASH = '00000000632c56df'; // hash de IMC2026
