@@ -2430,110 +2430,152 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 
 // ─── EXPORT CIERRE SEMANAL IMC ─────────────────────────────────────────────
 async function exportCierreSemanal(){
-  const hoy=new Date(); const dow=hoy.getDay();
+  // ── Fechas jueves a jueves ──
+  const hoy=new Date(), dow=hoy.getDay();
   const diasAtras=dow===4?0:(dow+3)%7;
-  const jPasado=new Date(hoy); jPasado.setDate(hoy.getDate()-diasAtras);
-  const jActual=new Date(jPasado); jActual.setDate(jPasado.getDate()+7);
-  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const fmtL=d=>d.getDate()+' de '+MESES[d.getMonth()];
-  const rangoTexto=fmtL(jPasado)+' al '+fmtL(jActual);
-  const hoyFmt=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
+  const jP=new Date(hoy); jP.setDate(hoy.getDate()-diasAtras);
+  const jA=new Date(jP); jA.setDate(jP.getDate()+7);
+  const M=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const fL=d=>d.getDate()+' de '+M[d.getMonth()];
+  const rango=fL(jP)+' al '+fL(jA);
+  const hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
 
-  showToast('⏳ Generando reporte semanal...','info',10000);
+  showToast('⏳ Generando reporte...','info',12000);
 
-  let templateBytes;
+  // ── Descargar template ──
+  let tplBytes;
   try{
-    const resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/template_cierre.pptx?v='+Date.now());
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    templateBytes=await resp.arrayBuffer();
-  }catch(e){showToast('❌ No se pudo cargar el template: '+e.message,'error');return;}
-  if(typeof JSZip==='undefined'){showToast('❌ JSZip no disponible.','error');return;}
-  const zip=await JSZip.loadAsync(templateBytes);
+    const r=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/template_cierre.pptx?t='+Date.now());
+    if(!r.ok) throw new Error(r.status);
+    tplBytes=await r.arrayBuffer();
+  }catch(e){showToast('❌ Error cargando template: '+e.message,'error');return;}
+  if(typeof JSZip==='undefined'){showToast('❌ JSZip no cargó','error');return;}
+  const zip=await JSZip.loadAsync(tplBytes);
 
-  const datos=(state.imc&&state.imc.data)?state.imc.data:[];
-  const semC=p=>{const s=(p.sem||'').toLowerCase();if(s.includes('terminado'))return'Terminado';if(s.includes('tiempo'))return'A tiempo';if(s.includes('riesgo'))return'Riesgo de atraso';if(s.includes('stand'))return'Stand By';return'Atrasado';};
-  const total=datos.length;
-  const terminados=datos.filter(p=>semC(p)==='Terminado').length;
-  const atiempo=datos.filter(p=>semC(p)==='A tiempo').length;
-  const riesgo=datos.filter(p=>semC(p)==='Riesgo de atraso').length;
-  const atrasados=datos.filter(p=>semC(p)==='Atrasado').length;
-  const porcerrar=datos.filter(p=>(parseFloat(p.real)||0)>=90&&semC(p)!=='Terminado').length;
-  const standby=datos.filter(p=>semC(p)==='Stand By').length;
-  const evData=datos.filter(p=>_eventualidades[p.nombre]).map(p=>({nombre:p.nombre,texto:_eventualidades[p.nombre]}));
+  // ── Datos del módulo IMC ──
+  const D=(state.imc&&state.imc.data)?state.imc.data:[];
+  const sc=p=>{const s=(p.sem||'').toLowerCase();
+    if(s.includes('terminado'))return'Terminado';
+    if(s.includes('tiempo'))return'A tiempo';
+    if(s.includes('riesgo'))return'Riesgo de atraso';
+    if(s.includes('stand'))return'Stand By';
+    return'Atrasado';};
+  const tot=D.length;
+  const ter=D.filter(p=>sc(p)==='Terminado').length;
+  const ati=D.filter(p=>sc(p)==='A tiempo').length;
+  const rie=D.filter(p=>sc(p)==='Riesgo de atraso').length;
+  const atr=D.filter(p=>sc(p)==='Atrasado').length;
+  const pcr=D.filter(p=>(parseFloat(p.real)||0)>=90&&sc(p)!=='Terminado').length;
+  const stb=D.filter(p=>sc(p)==='Stand By').length;
+  const evArr=D.filter(p=>_eventualidades[p.nombre]).map(p=>({n:p.nombre,t:_eventualidades[p.nombre]}));
 
-  const semHex={'Terminado':'22C55E','A tiempo':'22C55E','Atrasado':'EF4444','Stand By':'111111','Riesgo de atraso':'F59E0B'};
-  const semTxt={'Terminado':'Terminado','A tiempo':'A tiempo','Atrasado':'Atrasado','Stand By':'Stand by','Riesgo de atraso':'Riesgo de atraso'};
+  // ── Helpers XML ──
   const NAVY='1A2340',GOLD='C9A84C',WHITE='FFFFFF',GRAY='555555',LGRAY='DDDDDD';
+  const sHex={'Terminado':'22C55E','A tiempo':'22C55E','Atrasado':'EF4444','Stand By':'111111','Riesgo de atraso':'F59E0B'};
+  const sTxt={'Terminado':'Terminado','A tiempo':'A tiempo','Atrasado':'Atrasado','Stand By':'Stand by','Riesgo de atraso':'Riesgo de atraso'};
   const xe=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const BORDER='<a:lnL w="9525"><a:solidFill><a:srgbClr val="'+LGRAY+'"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="'+LGRAY+'"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="'+LGRAY+'"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="'+LGRAY+'"/></a:solidFill></a:lnB>';
 
-  const mkCell=(text,sz,bold,color,align,fill)=>{
-    const fi=fill?`<a:solidFill><a:srgbClr val="${fill}"/></a:solidFill>`:'<a:noFill/>';
+  function mkCell(txt,sz,bold,color,align,fill){
+    const fi=fill?'<a:solidFill><a:srgbClr val="'+fill+'"/></a:solidFill>':'<a:noFill/>';
     const b=bold?' b="1"':'';
-    const br=`<a:lnL w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnB>`;
-    return `<a:tc><a:tcPr>${fi}${br}</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="${align}"/><a:r><a:rPr lang="es-MX" sz="${sz}"${b} dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(text)}</a:t></a:r></a:p></a:txBody></a:tc>`;
-  };
-  const mkBar=(real,sc)=>{
-    const h=semHex[sc]||'888888'; const p=Math.min(parseFloat(real)||0,100);
-    const st=Math.round(p*1000); const bg='E2E2E2'; const s3=Math.min(st+500,100000);
-    const fi=p>=100?`<a:solidFill><a:srgbClr val="${h}"/></a:solidFill>`:`<a:gradFill><a:gsLst><a:gs pos="0"><a:srgbClr val="${h}"/></a:gs><a:gs pos="${st}"><a:srgbClr val="${h}"/></a:gs><a:gs pos="${s3}"><a:srgbClr val="${bg}"/></a:gs><a:gs pos="100000"><a:srgbClr val="${bg}"/></a:gs></a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>`;
-    const br=`<a:lnL w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnB>`;
-    return `<a:tc><a:tcPr>${fi}${br}</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="es-MX" sz="590" b="1" dirty="0"><a:solidFill><a:srgbClr val="${h}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${Math.round(p)}%</a:t></a:r></a:p></a:txBody></a:tc>`;
-  };
+    return '<a:tc><a:tcPr>'+fi+BORDER+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+align+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' dirty="0"><a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
+  }
 
-  // SLIDE 1 — fecha
-  let s1xml=await zip.file('ppt/slides/slide1.xml').async('string');
-  s1xml=s1xml.replace(/Cierre semanal del [^<]+/g,'Cierre semanal del '+rangoTexto);
-  zip.file('ppt/slides/slide1.xml',s1xml);
+  function mkBar(real,semStr){
+    const h=sHex[semStr]||'888888';
+    const pct=Math.min(parseFloat(real)||0,100);
+    const st=Math.round(pct*1000), s3=Math.min(st+500,100000), bg='E2E2E2';
+    const fi=pct>=100?
+      '<a:solidFill><a:srgbClr val="'+h+'"/></a:solidFill>':
+      '<a:gradFill><a:gsLst><a:gs pos="0"><a:srgbClr val="'+h+'"/></a:gs><a:gs pos="'+st+'"><a:srgbClr val="'+h+'"/></a:gs><a:gs pos="'+s3+'"><a:srgbClr val="'+bg+'"/></a:gs><a:gs pos="100000"><a:srgbClr val="'+bg+'"/></a:gs></a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>';
+    return '<a:tc><a:tcPr>'+fi+BORDER+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="es-MX" sz="590" b="1" dirty="0"><a:solidFill><a:srgbClr val="'+h+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+Math.round(pct)+'%</a:t></a:r></a:p></a:txBody></a:tc>';
+  }
 
-  // SLIDE 2 — tabla + KPIs con slideLayout17 (fondo limpio, logo pequeño)
-  const colW=[760000,2470000,668000,668000,530000,594000,2210000,840000];
-  const totalW=colW.reduce((a,b)=>a+b,0);
-  const HDR_H=201168,ROW_H=195000,TBL_X=73152,TBL_Y=1094400;
-  const kpiW=1229616,kpiH=548640,kpiY=620000,kpiGap=50292,kpiX0=73152;
-  const kpis=[['Total de proyectos',total],['Terminado',terminados],['A tiempo',atiempo],['En riesgo de atraso',riesgo],['Atrasados',atrasados],['Por cerrar',porcerrar],['Stand By',standby]];
+  // ── SLIDE 1: actualizar fecha ──
+  let s1=await zip.file('ppt/slides/slide1.xml').async('string');
+  s1=s1.replace(/Cierre semanal del [^<]+/g,'Cierre semanal del '+rango);
+  zip.file('ppt/slides/slide1.xml',s1);
 
-  const hdrs=['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESPERADO','BARRA DE AVANCE','SEMÁFORO'];
-  let tblRows='<a:tr h="'+HDR_H+'">'+hdrs.map(h=>mkCell(h,620,true,NAVY,'ctr',GOLD)).join('')+'</a:tr>';
-  datos.forEach((p,ri)=>{
-    const sc=semC(p);const h=semHex[sc]||'888888';const t=semTxt[sc]||sc;
-    const bg=ri%2===0?'F5F7FA':'FFFFFF';
-    const cells=[mkCell(p.tipo||'',590,true,NAVY,'ctr',bg),mkCell(p.nombre||'',590,false,NAVY,'l',bg),mkCell(p.inicio||'',590,false,GRAY,'ctr',bg),mkCell(p.fin||'',590,false,GRAY,'ctr',bg),mkCell((p.real||'0')+'%',590,true,NAVY,'ctr',bg),mkCell((p.esp||'0')+'%',590,false,GRAY,'ctr',bg),mkBar(p.real,sc),mkCell(t,590,true,h,'ctr',bg)];
-    tblRows+='<a:tr h="'+ROW_H+'">'+cells.join('')+'</a:tr>';
+  // ── SLIDE 2: KPIs + tabla ──
+  const CW=[760000,2470000,668000,668000,530000,594000,2210000,840000];
+  const TW=CW.reduce((a,b)=>a+b,0);
+  const HH=201168, RH=195000, TX=73152, TY=1094400;
+  const KW=1229616, KH=548640, KY=620000, KG=50292, KX=73152;
+  const KPIS=[['Total de proyectos',tot],['Terminado',ter],['A tiempo',ati],['En riesgo de atraso',rie],['Atrasados',atr],['Por cerrar',pcr],['Stand By',stb]];
+  const HDRS=['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESPERADO','BARRA DE AVANCE','SEMAFORO'];
+
+  // Filas tabla
+  let rows='<a:tr h="'+HH+'">'+HDRS.map(h=>mkCell(h,620,true,NAVY,'ctr',GOLD)).join('')+'</a:tr>';
+  D.forEach(function(p,ri){
+    var s=sc(p), h=sHex[s]||'888888', t=sTxt[s]||s, bg=ri%2===0?'F5F7FA':'FFFFFF';
+    rows+='<a:tr h="'+RH+'">'+[
+      mkCell(p.tipo||'',590,true,NAVY,'ctr',bg),
+      mkCell(p.nombre||'',590,false,NAVY,'l',bg),
+      mkCell(p.inicio||'',590,false,GRAY,'ctr',bg),
+      mkCell(p.fin||'',590,false,GRAY,'ctr',bg),
+      mkCell((p.real||0)+'%',590,true,NAVY,'ctr',bg),
+      mkCell((p.esp||0)+'%',590,false,GRAY,'ctr',bg),
+      mkBar(p.real,s),
+      mkCell(t,590,true,h,'ctr',bg)
+    ].join('')+'</a:tr>';
   });
-  const tblGrid=colW.map(w=>'<a:gridCol w="'+w+'"/>').join('');
-  const tblXml='<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="100" name="tbl"/><p:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></p:cNvGraphicFramePr><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="'+TBL_X+'" y="'+TBL_Y+'"/><a:ext cx="'+totalW+'" cy="'+(HDR_H+datos.length*ROW_H)+'"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="0"/><a:tblGrid>'+tblGrid+'</a:tblGrid>'+tblRows+'</a:tbl></a:graphicData></a:graphic></p:graphicFrame>';
 
-  let kpiShapes='';
-  kpis.forEach(([lbl,val],i)=>{
-    const x=kpiX0+i*(kpiW+kpiGap);
-    kpiShapes+='<p:sp><p:nvSpPr><p:cNvPr id="'+(20+i*3)+'" name="kb'+i+'"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+kpiY+'"/><a:ext cx="'+kpiW+'" cy="'+kpiH+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="'+WHITE+'"/></a:solidFill><a:ln w="12700"><a:solidFill><a:srgbClr val="'+GOLD+'"/></a:solidFill></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>';
-    kpiShapes+='<p:sp><p:nvSpPr><p:cNvPr id="'+(21+i*3)+'" name="kv'+i+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+(kpiY+18000)+'"/><a:ext cx="'+kpiW+'" cy="290000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1800" b="1" dirty="0"><a:solidFill><a:srgbClr val="'+NAVY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+val+'</a:t></a:r></a:p></p:txBody></p:sp>';
-    kpiShapes+='<p:sp><p:nvSpPr><p:cNvPr id="'+(22+i*3)+'" name="kl'+i+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+(kpiY+316000)+'"/><a:ext cx="'+kpiW+'" cy="220000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="560" dirty="0"><a:solidFill><a:srgbClr val="'+GRAY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(lbl)+'</a:t></a:r></a:p></p:txBody></p:sp>';
+  const GRID=CW.map(function(w){return '<a:gridCol w="'+w+'"/>';}).join('');
+  const TBL='<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="100" name="tbl"/><p:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></p:cNvGraphicFramePr><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="'+TX+'" y="'+TY+'"/><a:ext cx="'+TW+'" cy="'+(HH+D.length*RH)+'"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="0"/><a:tblGrid>'+GRID+'</a:tblGrid>'+rows+'</a:tbl></a:graphicData></a:graphic></p:graphicFrame>';
+
+  // KPI shapes
+  var KS='';
+  KPIS.forEach(function(kp,i){
+    var x=KX+i*(KW+KG), lbl=kp[0], val=kp[1];
+    KS+='<p:sp><p:nvSpPr><p:cNvPr id="'+(20+i*3)+'" name="kb'+i+'"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+KY+'"/><a:ext cx="'+KW+'" cy="'+KH+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="'+WHITE+'"/></a:solidFill><a:ln w="12700"><a:solidFill><a:srgbClr val="'+GOLD+'"/></a:solidFill></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>';
+    KS+='<p:sp><p:nvSpPr><p:cNvPr id="'+(21+i*3)+'" name="kv'+i+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+(KY+18000)+'"/><a:ext cx="'+KW+'" cy="290000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1800" b="1" dirty="0"><a:solidFill><a:srgbClr val="'+NAVY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+val+'</a:t></a:r></a:p></p:txBody></p:sp>';
+    KS+='<p:sp><p:nvSpPr><p:cNvPr id="'+(22+i*3)+'" name="kl'+i+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="'+x+'" y="'+(KY+316000)+'"/><a:ext cx="'+KW+'" cy="220000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="560" dirty="0"><a:solidFill><a:srgbClr val="'+GRAY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(lbl)+'</a:t></a:r></a:p></p:txBody></p:sp>';
   });
 
-  const titleXml='<p:sp><p:nvSpPr><p:cNvPr id="10" name="tit"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1600200" y="36576"/><a:ext cx="5943600" cy="280000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1400" b="1" dirty="0"><a:solidFill><a:srgbClr val="'+NAVY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>ÁREA DE IMPLEMENTACIÓN</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="11" name="sub"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="0" y="320000"/><a:ext cx="9144000" cy="160000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="780" dirty="0"><a:solidFill><a:srgbClr val="'+GRAY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>Cierre semanal del '+xe('__RANGO__')+'</a:t></a:r></a:p></p:txBody></p:sp>'.replace('__RANGO__',rangoTexto);
+  var TITL='<p:sp><p:nvSpPr><p:cNvPr id="10" name="tit"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1600200" y="36576"/><a:ext cx="5943600" cy="280000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1400" b="1" dirty="0"><a:solidFill><a:srgbClr val="'+NAVY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>AREA DE IMPLEMENTACION</a:t></a:r></a:p></p:txBody></p:sp>'
+    +'<p:sp><p:nvSpPr><p:cNvPr id="11" name="sub"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="0" y="320000"/><a:ext cx="9144000" cy="160000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="780" dirty="0"><a:solidFill><a:srgbClr val="'+GRAY+'"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>Cierre semanal del '+xe(rango)+'</a:t></a:r></a:p></p:txBody></p:sp>';
 
-  const s2xml='<?xml version="1.0" encoding="utf-8"?>\n<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'+titleXml+kpiShapes+tblXml+'</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>';
+  var s2xml='<?xml version="1.0" encoding="utf-8"?>'
+    +'<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+    +' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+    +' xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">'
+    +'<p:cSld><p:spTree>'
+    +'<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
+    +'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'
+    +TITL+KS+TBL
+    +'</p:spTree></p:cSld>'
+    +'<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>'
+    +'</p:sld>';
 
   zip.file('ppt/slides/slide2.xml',s2xml);
   zip.file('ppt/slides/_rels/slide2.xml.rels','<?xml version="1.0" encoding="utf-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout17.xml"/></Relationships>');
 
-  // SLIDE 3 — eventualidades
-  let s3xml=await zip.file('ppt/slides/slide3.xml').async('string');
-  if(evData.length>0){
-    const eW=[418000,3240000,5060000];
-    const eH=142560,eR=460000;
-    const eC=(text,al,sz)=>'<a:tc><a:tcPr><a:noFill/><a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB></a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(text)+'</a:t></a:r></a:p></a:txBody></a:tc>';
-    let eRows='<a:tr h="'+eH+'">'+['No','Proyecto','Eventualidades'].map(h=>eC(h,'ctr',1000)).join('')+'</a:tr>';
-    evData.forEach((ev,i)=>{eRows+='<a:tr h="'+eR+'">'+[String(i+1),ev.nombre,ev.texto].map((v,ci)=>eC(v,ci===0?'ctr':'l',900)).join('')+'</a:tr>';});
-    const newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid>'+eW.map(w=>'<a:gridCol w="'+w+'"/>').join('')+'</a:tblGrid>'+eRows+'</a:tbl>';
-    s3xml=s3xml.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
+  // ── SLIDE 3: eventualidades ──
+  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
+  if(evArr.length>0){
+    var eW=[418000,3240000,5060000], eH=142560, eR=460000;
+    function eCell(txt,al,sz){
+      var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
+      return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
+    }
+    var eRows='<a:tr h="'+eH+'">'+['No','Proyecto','Eventualidades'].map(function(h){return eCell(h,'ctr',1000);}).join('')+'</a:tr>';
+    evArr.forEach(function(ev,i){
+      eRows+='<a:tr h="'+eR+'">'
+        +eCell(String(i+1),'ctr',900)
+        +eCell(ev.n,'l',900)
+        +eCell(ev.t,'l',900)
+        +'</a:tr>';
+    });
+    var eGrid=eW.map(function(w){return '<a:gridCol w="'+w+'"/>';}).join('');
+    var newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid>'+eGrid+'</a:tblGrid>'+eRows+'</a:tbl>';
+    s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
   }
-  zip.file('ppt/slides/slide3.xml',s3xml);
+  zip.file('ppt/slides/slide3.xml',s3);
 
-  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyFmt+'.pptx'; a.click();
+  var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyF+'.pptx'; a.click();
   URL.revokeObjectURL(url);
   showToast('✅ Reporte Semanal descargado','success');
 }
