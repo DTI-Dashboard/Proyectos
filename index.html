@@ -2437,37 +2437,30 @@ async function exportCierreSemanal(){
   const diasAtras = dow === 4 ? 0 : (dow + 3) % 7;
   const jPasado = new Date(hoy); jPasado.setDate(hoy.getDate() - diasAtras);
   const jActual = new Date(jPasado); jActual.setDate(jPasado.getDate() + 7);
-  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const fmtL = d => d.getDate()+' de '+MESES[d.getMonth()];
   const rangoTexto = fmtL(jPasado)+' al '+fmtL(jActual);
   const hoyFmt = String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
 
-  showToast('⏳ Generando reporte semanal...', 'info', 8000);
+  showToast('⏳ Generando reporte semanal...', 'info', 10000);
 
-  // ── Descargar template del repo ──
+  // ── Descargar template ──
   let templateBytes;
   try {
     const resp = await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/template_cierre.pptx?v='+Date.now());
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     templateBytes = await resp.arrayBuffer();
-  } catch(e){
-    showToast('❌ No se pudo cargar el template. Intenta de nuevo.', 'error'); return;
-  }
+  } catch(e){ showToast('❌ No se pudo cargar el template: '+e.message, 'error'); return; }
 
-  // ── Cargar PptxGenJS y JSZip ──
-  if(typeof JSZip === 'undefined'){
-    showToast('❌ JSZip no disponible. Espera unos segundos.', 'error'); return;
-  }
-
-  // Usamos JSZip/PizZip para modificar el PPTX directamente (más fiel al template)
+  if(typeof JSZip === 'undefined'){ showToast('❌ JSZip no disponible.','error'); return; }
   const zip = await JSZip.loadAsync(templateBytes);
 
   // ── Datos IMC ──
   const datos = (state.imc && state.imc.data) ? state.imc.data : [];
   const semC = p => {
     const s=(p.sem||'').toLowerCase();
-    if(s.includes('tiempo')) return 'A tiempo';
     if(s.includes('terminado')) return 'Terminado';
+    if(s.includes('tiempo')) return 'A tiempo';
     if(s.includes('riesgo')) return 'Riesgo de atraso';
     if(s.includes('stand')) return 'Stand By';
     return 'Atrasado';
@@ -2481,139 +2474,122 @@ async function exportCierreSemanal(){
   const standby=datos.filter(p=>semC(p)==='Stand By').length;
   const conEvent=datos.filter(p=>_eventualidades[p.nombre]);
 
-  const semColors={'Terminado':'3B82F6','A tiempo':'22C55E','Atrasado':'EF4444','Stand By':'8B5CF6','Riesgo de atraso':'F59E0B'};
-  const NAVY='1A2340', GOLD='C9A84C', WHITE='FFFFFF', GRAY='555555';
+  const semHex={'Terminado':'22C55E','A tiempo':'22C55E','Atrasado':'EF4444','Stand By':'111111','Riesgo de atraso':'F59E0B'};
+  const semTxt={'Terminado':'Terminado','A tiempo':'A tiempo','Atrasado':'Atrasado','Stand By':'Stand by','Riesgo de atraso':'Riesgo de atraso'};
+  const NAVY='1A2340',WHITE='FFFFFF',GRAY='555555',LGRAY='DDDDDD';
 
-  // ── Helper: escapar XML ──
   const xe = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  // ── Helper: celda de tabla XML OOXML ──
-  const xmlCell = (text, bold=false, color=NAVY, align='ctr', sz=700, fill=null) => {
-    const fillXml = fill ? `<a:solidFill><a:srgbClr val="${fill}"/></a:solidFill>` : '<a:noFill/>';
+  // ── Helper: celda XML con fill sólido ──
+  const xmlCell = (text, sz=700, bold=false, color=NAVY, align='ctr', fillColor=null) => {
+    const fillXml = fillColor
+      ? `<a:solidFill><a:srgbClr val="${fillColor}"/></a:solidFill>`
+      : '<a:noFill/>';
     const bAttr = bold ? ' b="1"' : '';
-    const pPr = align !== 'l' ? `<a:pPr algn="${align}"/>` : '';
-    return `<a:tc><a:tcPr>${fillXml}<a:lnL w="9525"><a:solidFill><a:srgbClr val="DDDDDD"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="DDDDDD"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="DDDDDD"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="DDDDDD"/></a:solidFill></a:lnB></a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p>${pPr}<a:r><a:rPr lang="es-MX" sz="${sz}"${bAttr} dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(text)}</a:t></a:r></a:p></a:txBody></a:tc>`;
+    const pPr = align !== 'l' ? `<a:pPr algn="${align}"/>` : '<a:pPr algn="l"/>';
+    const borders = `<a:lnL w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnB>`;
+    return `<a:tc><a:tcPr>${fillXml}${borders}</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p>${pPr}<a:r><a:rPr lang="es-MX" sz="${sz}"${bAttr} dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(text)}</a:t></a:r></a:p></a:txBody></a:tc>`;
   };
 
-  // ══════════════════════════════════════════
-  // SLIDE 1 — Actualizar fecha
-  // ══════════════════════════════════════════
+  // ── Helper: celda con gradiente para barra de avance ──
+  const xmlBarCell = (real, semStr, rowBg) => {
+    const hex = semHex[semStr] || '888888';
+    const pct = Math.min(parseFloat(real)||0, 100);
+    const stop = Math.round(pct * 1000);
+    const bgHex = 'E2E2E2';
+    let fillXml;
+    if(pct >= 100){
+      fillXml = `<a:solidFill><a:srgbClr val="${hex}"/></a:solidFill>`;
+    } else if(semStr === 'Stand By'){
+      fillXml = `<a:gradFill><a:gsLst><a:gs pos="0"><a:srgbClr val="111111"/></a:gs><a:gs pos="${stop}"><a:srgbClr val="111111"/></a:gs><a:gs pos="${Math.min(stop+500,100000)}"><a:srgbClr val="${bgHex}"/></a:gs><a:gs pos="100000"><a:srgbClr val="${bgHex}"/></a:gs></a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>`;
+    } else {
+      fillXml = `<a:gradFill><a:gsLst><a:gs pos="0"><a:srgbClr val="${hex}"/></a:gs><a:gs pos="${stop}"><a:srgbClr val="${hex}"/></a:gs><a:gs pos="${Math.min(stop+500,100000)}"><a:srgbClr val="${bgHex}"/></a:gs><a:gs pos="100000"><a:srgbClr val="${bgHex}"/></a:gs></a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>`;
+    }
+    const borders = `<a:lnL w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnL><a:lnR w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnR><a:lnT w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnT><a:lnB w="9525"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:lnB>`;
+    const pctTxt = pct+'%';
+    const txtColor = hex;
+    return `<a:tc><a:tcPr>${fillXml}${borders}</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="r"/><a:r><a:rPr lang="es-MX" sz="620" b="1" dirty="0"><a:solidFill><a:srgbClr val="${txtColor}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(pctTxt)}</a:t></a:r></a:p></a:txBody></a:tc>`;
+  };
+
+  // ══════════════════════ SLIDE 1 — fecha ══════════════════════
   let s1xml = await zip.file('ppt/slides/slide1.xml').async('string');
-  // Reemplazar cualquier texto de fecha existente
   s1xml = s1xml.replace(/Cierre semanal del [^<]+/g, `Cierre semanal del ${rangoTexto}`);
   zip.file('ppt/slides/slide1.xml', s1xml);
 
-  // ══════════════════════════════════════════
-  // SLIDE 2 — Reconstruir con tabla real
-  // ══════════════════════════════════════════
-  // Columnas en EMU: tipo, proyecto, inicio, fin, %real, %esp, barra, semaforo
-  const colW = [810000, 2560000, 720000, 720000, 550000, 550000, 2120000, 860000];
+  // ══════════════════════ SLIDE 2 — tabla + KPIs + barras ══════
+  const colW=[760000,2470000,668000,668000,530000,594000,2210000,840000];
   const totalW = colW.reduce((a,b)=>a+b,0);
-  const rowH = 230000; // altura fila datos
-  const hdrH = 250000;
+  const HDR_H=219456, ROW_H=206784;
+  const TBL_X=73152, TBL_Y=1244376;
+  const kpis=[['Total de proyectos',total],['Terminado',terminados],['A tiempo',atiempo],
+              ['En riesgo\nde atraso',riesgo],['Atrasados',atrasados],['Por cerrar',porcerrar],['Stand By',standby]];
+  const kpiW=1238760, kpiH=594360, kpiY=585216, kpiGap=50292, kpiX0=73152;
 
-  // Construir filas de tabla
-  let tblRows = '';
-  // Header
-  const hdrs = ['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESP','BARRA DE AVANCE','SEMÁFORO'];
-  const hdrAligns = ['ctr','ctr','ctr','ctr','ctr','ctr','ctr','ctr'];
-  tblRows += `<a:tr h="${hdrH}">${hdrs.map((h,i)=>xmlCell(h,true,WHITE,hdrAligns[i],650,NAVY)).join('')}</a:tr>`;
-
-  // Filas de datos
-  datos.forEach((p, ri) => {
-    const sc = semC(p);
-    const col = semColors[sc]||'888888';
-    const bg = ri%2===0 ? 'F5F7FA' : 'FFFFFF';
-    const real = Math.min(parseFloat(p.real)||0,100);
-    const barPct = Math.round(real);
-    const barText = barPct+'%';
-    const vals = [p.tipo||'', p.nombre||'', p.inicio||'', p.fin||'', (p.real||'0')+'%', (p.esp||'0')+'%', barText, sc];
-    const aligns = ['ctr','l','ctr','ctr','ctr','ctr','r','ctr'];
-    const colors = [NAVY, NAVY, GRAY, GRAY, NAVY, GRAY, col, col];
-    const bolds = [true,false,false,false,true,false,true,true];
-    tblRows += `<a:tr h="${rowH}">${vals.map((v,ci)=>xmlCell(v,bolds[ci],colors[ci],aligns[ci],650,bg)).join('')}</a:tr>`;
+  // Filas de tabla
+  const hdrs=['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESPERADO','BARRA DE AVANCE','SEMÁFORO'];
+  let tblRows=`<a:tr h="${HDR_H}">${hdrs.map(h=>xmlCell(h,640,true,WHITE,'ctr',NAVY)).join('')}</a:tr>`;
+  datos.forEach((p,ri)=>{
+    const sc=semC(p); const hex=semHex[sc]||'888888';
+    const txt=semTxt[sc]||sc;
+    const bg=ri%2===0?'F5F7FA':'FFFFFF';
+    const cells=[
+      xmlCell(p.tipo||'',620,true,NAVY,'ctr',bg),
+      xmlCell(p.nombre||'',620,false,NAVY,'l',bg),
+      xmlCell(p.inicio||'',620,false,GRAY,'ctr',bg),
+      xmlCell(p.fin||'',620,false,GRAY,'ctr',bg),
+      xmlCell((p.real||'0')+'%',620,true,NAVY,'ctr',bg),
+      xmlCell((p.esp||'0')+'%',620,false,GRAY,'ctr',bg),
+      xmlBarCell(p.real,sc,bg),
+      xmlCell(txt,620,true,hex,'ctr',bg),
+    ];
+    tblRows+=`<a:tr h="${ROW_H}">${cells.join('')}</a:tr>`;
   });
 
-  // Construir anchos de columna XML
-  const tblColsXml = colW.map(w=>`<a:gridCol w="${w}"/>`).join('');
-  const kpis = [['Total de proyectos',total],['Terminado',terminados],['A tiempo',atiempo],['En riesgo de atraso',riesgo],['Atrasados',atrasados],['Por cerrar',porcerrar],['Stand By',standby]];
-  const kpiW = 1240000; const kpiGap = 50000; const kpiX0 = 73000; const kpiY = 640000; const kpiH = 590000;
+  const tblColsXml=colW.map(w=>`<a:gridCol w="${w}"/>`).join('');
+  const tblXml=`<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="100" name="tbl-proy"/><p:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></p:cNvGraphicFramePr><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="${TBL_X}" y="${TBL_Y}"/><a:ext cx="${totalW}" cy="${HDR_H+datos.length*ROW_H}"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="0"/><a:tblGrid>${tblColsXml}</a:tblGrid>${tblRows}</a:tbl></a:graphicData></a:graphic></p:graphicFrame>`;
 
-  let kpiShapes = '';
-  kpis.forEach(([lbl,val],i) => {
-    const x = kpiX0 + i*(kpiW+kpiGap);
-    kpiShapes += `
-<p:sp><p:nvSpPr><p:cNvPr id="${20+i*3}" name="kpibox${i}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${x}" y="${kpiY}"/><a:ext cx="${kpiW}" cy="${kpiH}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="F8F8F8"/></a:solidFill><a:ln w="6350"><a:solidFill><a:srgbClr val="CCCCCC"/></a:solidFill></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>
-<p:sp><p:nvSpPr><p:cNvPr id="${21+i*3}" name="kpival${i}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${x}" y="${kpiY+20000}"/><a:ext cx="${kpiW}" cy="310000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="2000" b="1" dirty="0"><a:solidFill><a:srgbClr val="${NAVY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${val}</a:t></a:r></a:p></p:txBody></p:sp>
-<p:sp><p:nvSpPr><p:cNvPr id="${22+i*3}" name="kpilbl${i}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="${x}" y="${kpiY+340000}"/><a:ext cx="${kpiW}" cy="200000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="600" dirty="0"><a:solidFill><a:srgbClr val="${GRAY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(lbl)}</a:t></a:r></a:p></p:txBody></p:sp>`;
+  // KPI shapes
+  let kpiShapes='';
+  kpis.forEach(([lbl,val],i)=>{
+    const x=kpiX0+i*(kpiW+kpiGap);
+    kpiShapes+=`<p:sp><p:nvSpPr><p:cNvPr id="${20+i*3}" name="kpibox${i}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${kpiY}"/><a:ext cx="${kpiW}" cy="${kpiH}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="F8F8F8"/></a:solidFill><a:ln w="6350"><a:solidFill><a:srgbClr val="${LGRAY}"/></a:solidFill></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`;
+    kpiShapes+=`<p:sp><p:nvSpPr><p:cNvPr id="${21+i*3}" name="kpival${i}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${kpiY+18288}"/><a:ext cx="${kpiW}" cy="302336"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1900" b="1" dirty="0"><a:solidFill><a:srgbClr val="${NAVY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${val}</a:t></a:r></a:p></p:txBody></p:sp>`;
+    kpiShapes+=`<p:sp><p:nvSpPr><p:cNvPr id="${22+i*3}" name="kpilbl${i}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${kpiY+329184}"/><a:ext cx="${kpiW}" cy="237744"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="590" dirty="0"><a:solidFill><a:srgbClr val="${GRAY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(lbl)}</a:t></a:r></a:p></p:txBody></p:sp>`;
   });
 
-  const tblXml = `
-<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="100" name="tabla-proyectos"/><p:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></p:cNvGraphicFramePr><p:nvPr/></p:nvGraphicFramePr>
-<p:xfrm><a:off x="73000" y="1300000"/><a:ext cx="${totalW}" cy="${hdrH + datos.length*rowH}"/></p:xfrm>
-<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table">
-<a:tbl><a:tblPr firstRow="1" bandRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr>
-<a:tblGrid>${tblColsXml}</a:tblGrid>${tblRows}</a:tbl>
-</a:graphicData></a:graphic></p:graphicFrame>`;
+  const titleShape=`<p:sp><p:nvSpPr><p:cNvPr id="10" name="titulo"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1737360" y="36576"/><a:ext cx="5669280" cy="347472"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1560" b="1" dirty="0"><a:solidFill><a:srgbClr val="${NAVY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>ÁREA DE IMPLEMENTACIÓN</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="11" name="subtitulo"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="0" y="384048"/><a:ext cx="9144000" cy="182880"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="820" dirty="0"><a:solidFill><a:srgbClr val="${GRAY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>Cierre semanal del ${xe(rangoTexto)}</a:t></a:r></a:p></p:txBody></p:sp>`;
 
-  const titleShape = `
-<p:sp><p:nvSpPr><p:cNvPr id="10" name="titulo"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="0" y="45000"/><a:ext cx="9144000" cy="380000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="1800" b="1" dirty="0"><a:solidFill><a:srgbClr val="${NAVY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>ÁREA DE IMPLEMENTACIÓN</a:t></a:r></a:p></p:txBody></p:sp>
-<p:sp><p:nvSpPr><p:cNvPr id="11" name="subtitulo"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
-<p:spPr><a:xfrm><a:off x="0" y="430000"/><a:ext cx="9144000" cy="200000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
-<p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-MX" sz="900" dirty="0"><a:solidFill><a:srgbClr val="${GRAY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>Cierre semanal del ${xe(rangoTexto)}</a:t></a:r></a:p></p:txBody></p:sp>`;
-
-  const s2xml = `<?xml version="1.0" encoding="utf-8"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
-<p:cSld><p:spTree>
-<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
-<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-${titleShape}${kpiShapes}${tblXml}
-</p:spTree></p:cSld>
-<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>
-</p:sld>`;
+  const s2xml=`<?xml version="1.0" encoding="utf-8"?>\n<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${titleShape}${kpiShapes}${tblXml}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
 
   zip.file('ppt/slides/slide2.xml', s2xml);
-  // Quitar referencia a imagen en rels de slide2
   zip.file('ppt/slides/_rels/slide2.xml.rels',
     `<?xml version="1.0" encoding="utf-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout12.xml"/></Relationships>`);
 
-  // ══════════════════════════════════════════
-  // SLIDE 3 — Eventualidades
-  // ══════════════════════════════════════════
+  // ══════════════════════ SLIDE 3 — eventualidades ══════════════
   let s3xml = await zip.file('ppt/slides/slide3.xml').async('string');
-  // Actualizar fecha si hay
   s3xml = s3xml.replace(/Cierre semanal del [^<]+/g, `Cierre semanal del ${rangoTexto}`);
-
   if(conEvent.length > 0){
-    // Reemplazar filas de datos en la tabla (filas 1+)
-    // Encontrar la tabla y reconstruir solo las filas de contenido
-    const tblMatch = s3xml.match(/<a:tbl>[\s\S]*?<\/a:tbl>/);
-    if(tblMatch){
-      const evColW = [420000, 3300000, 5060000];
-      const evTotalW = evColW.reduce((a,b)=>a+b,0);
-      const evHdrH = 520000; const evRowH = 500000;
-      let evRows = `<a:tr h="${evHdrH}">${['No','Proyecto','Eventualidades'].map((h,ci)=>xmlCell(h,false,NAVY,'ctr',900,null)).join('')}</a:tr>`;
-      conEvent.forEach((p,i)=>{
-        evRows += `<a:tr h="${evRowH}">${[String(i+1),p.nombre,_eventualidades[p.nombre]||''].map((v,ci)=>xmlCell(v,false,NAVY,ci===0?'ctr':'l',900,null)).join('')}</a:tr>`;
-      });
-      const newTbl = `<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid>${evColW.map(w=>`<a:gridCol w="${w}"/>`).join('')}</a:tblGrid>${evRows}</a:tbl>`;
-      s3xml = s3xml.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/, newTbl);
-    }
+    const evColW=[418000,3240000,5060000];
+    const evTotalW=evColW.reduce((a,b)=>a+b,0);
+    const evHdrH=142560, evRowH=500000;
+    const xmlEvCell=(text,align='l',sz=900,bold=false)=>{
+      const pPr=`<a:pPr algn="${align}"/>`;
+      const bA=bold?' b="1"':'';
+      return `<a:tc><a:tcPr><a:noFill/><a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB></a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p>${pPr}<a:r><a:rPr lang="es-MX" sz="${sz}"${bA} dirty="0"><a:solidFill><a:srgbClr val="${NAVY}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xe(text)}</a:t></a:r></a:p></a:txBody></a:tc>`;
+    };
+    let evRows=`<a:tr h="${evHdrH}">${['No','Proyecto','Eventualidades'].map((h,ci)=>xmlEvCell(h,'ctr',1000,false)).join('')}</a:tr>`;
+    conEvent.forEach((p,i)=>{
+      evRows+=`<a:tr h="${evRowH}">${[String(i+1),p.nombre,_eventualidades[p.nombre]||''].map((v,ci)=>xmlEvCell(v,ci===0?'ctr':'l',900,false)).join('')}</a:tr>`;
+    });
+    const newTbl=`<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid>${evColW.map(w=>`<a:gridCol w="${w}"/>`).join('')}</a:tblGrid>${evRows}</a:tbl>`;
+    s3xml=s3xml.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
   }
-  zip.file('ppt/slides/slide3.xml', s3xml);
+  zip.file('ppt/slides/slide3.xml',s3xml);
 
-  // ── Generar y descargar ──
-  const blob = await zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `Cierre_Semanal_IMC_${hoyFmt}.pptx`; a.click();
+  // ── Descargar ──
+  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`Cierre_Semanal_IMC_${hoyFmt}.pptx`; a.click();
   URL.revokeObjectURL(url);
   showToast('✅ Reporte Semanal descargado', 'success');
 }
