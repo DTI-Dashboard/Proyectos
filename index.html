@@ -1214,7 +1214,7 @@ function buildRow(p,tab,ri){
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${_eventualidades[p.nombre]?"&nbsp;📋":""}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${_eventualidades[p.nombre]?" ■":""}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -2449,33 +2449,25 @@ async function exportCierreSemanal(){
   function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
-  // Slide 3: eventualidades - buscar en _eventualidades
-  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
   var evArr=[];
-  // Buscar eventualidades: comparar nombres normalizados
   var evKeys=Object.keys(_eventualidades);
-  for(var ei=0;ei<evKeys.length;ei++){
-    var evKey=evKeys[ei];
-    if(_eventualidades[evKey] && _eventualidades[evKey].trim()!==''){
-      evArr.push({n:evKey, t:_eventualidades[evKey]});
+  for(var ki=0;ki<evKeys.length;ki++){
+    if(_eventualidades[evKeys[ki]]&&_eventualidades[evKeys[ki]].trim()!=='')
+      evArr.push({n:evKeys[ki],t:_eventualidades[evKeys[ki]]});
+  }
+  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
+  if(true){
+    var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
+    function eCell(txt,al,sz){
+      return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
     }
-  }
-  // Construir tabla del slide 3 SIEMPRE
-  var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
-  function eCell(txt,al,sz){
-    return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
-  }
-  var eRows='<a:tr h="142560">'+eCell('No','ctr',1000)+eCell('Proyecto','ctr',1000)+eCell('Eventualidades','ctr',1000)+'</a:tr>';
-  if(evArr.length===0){
-    eRows+='<a:tr h="460000">'+eCell('','ctr',900)+eCell('Sin eventualidades documentadas','ctr',900)+eCell('','ctr',900)+'</a:tr>';
-  } else {
-    for(var evi=0;evi<evArr.length;evi++){
-      eRows+='<a:tr h="460000">'+eCell(String(evi+1),'ctr',900)+eCell(evArr[evi].n,'l',900)+eCell(evArr[evi].t,'l',900)+'</a:tr>';
+    var eRows='<a:tr h="142560">'+eCell('No','ctr',1000)+eCell('Proyecto','ctr',1000)+eCell('Eventualidades','ctr',1000)+'</a:tr>';
+    for(var ei=0;ei<evArr.length;ei++){
+      eRows+='<a:tr h="460000">'+eCell(String(ei+1),'ctr',900)+eCell(evArr[ei].n,'l',900)+eCell(evArr[ei].t,'l',900)+'</a:tr>';
     }
-  }
-  var newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>'+eRows+'</a:tbl>';
-  s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
-  zip.file('ppt/slides/slide3.xml',s3);
+    var newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>'+eRows+'</a:tbl>';
+    s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
+    zip.file('ppt/slides/slide3.xml',s3);
   }
 
   var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
