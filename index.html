@@ -520,7 +520,6 @@ body.light-mode .kpi-val.gold{color:var(--gold) !important;}
 
 /* Botones especiales */
 body.light-mode .btn-sync{color:var(--gold) !important;}
-.ev-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-left:5px;vertical-align:middle;}
 /* ── Modal Eventualidad ── */
 #ev-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;}
 #ev-modal-bg.active{display:flex;}
@@ -1215,7 +1214,7 @@ function buildRow(p,tab,ri){
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${_eventualidades[p.nombre]?"<span class=\"ev-dot\"></span>":""}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -2451,11 +2450,8 @@ async function exportCierreSemanal(){
 
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
   var evArr=[];
-  var _evKs=Object.keys(_eventualidades);
-  for(var _ki=0;_ki<_evKs.length;_ki++){
-    var _evK=_evKs[_ki];
-    if(_eventualidades[_evK]&&_eventualidades[_evK].trim()!="")
-      evArr.push({n:_evK,t:_eventualidades[_evK]});
+  for(var i=0;i<D.length;i++){
+    if(_eventualidades[D[i].nombre]) evArr.push({n:D[i].nombre,t:_eventualidades[D[i].nombre]});
   }
 
   if(evArr.length>0){
