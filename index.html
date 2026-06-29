@@ -519,7 +519,7 @@ body.light-mode .kpi-val.y{color:var(--yellow) !important;}
 body.light-mode .kpi-val.gold{color:var(--gold) !important;}
 
 /* Botones especiales */
-body.light-mode .btn-sync{color:var(--gold) !important;}
+body.light-mode .btn-sync{color:var(--gold) !important;}.p-name.has-ev::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#C9A84C;margin-left:6px;vertical-align:middle;}
 /* ── Modal Eventualidad ── */
 #ev-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;}
 #ev-modal-bg.active{display:flex;}
@@ -1563,7 +1563,7 @@ function renderTab(tab){
   }[tab];
   const p=getFiltered(tab);
   allProjects[tab]=p;
-  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');
+  document.getElementById(cfg.tbody).innerHTML=p.map((pr,ri)=>buildRow(pr,tab,ri)).join('');document.getElementById(cfg.tbody).querySelectorAll('.p-name').forEach(function(el){if(_eventualidades[el.textContent.trim()])el.classList.add('has-ev');});
   document.getElementById(cfg.count).textContent=p.length+' proyectos';
   buildKPIsDom(p,cfg.kpfx);
   buildDonut(p,cfg.donut);
