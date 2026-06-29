@@ -2447,7 +2447,7 @@ async function exportCierreSemanal(){
   // ── Descargar template del repo ──
   let templateBytes;
   try {
-    const resp = await fetch('https://dti-dashboard.github.io/Proyectos/template_cierre.pptx?v='+Date.now());
+    const resp = await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/template_cierre.pptx?v='+Date.now());
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     templateBytes = await resp.arrayBuffer();
   } catch(e){
@@ -2498,7 +2498,7 @@ async function exportCierreSemanal(){
   // ══════════════════════════════════════════
   // SLIDE 1 — Actualizar fecha
   // ══════════════════════════════════════════
-  let s1xml = zip.file('ppt/slides/slide1.xml').async('string');
+  let s1xml = await zip.file('ppt/slides/slide1.xml').async('string');
   // Reemplazar cualquier texto de fecha existente
   s1xml = s1xml.replace(/Cierre semanal del [^<]+/g, `Cierre semanal del ${rangoTexto}`);
   zip.file('ppt/slides/slide1.xml', s1xml);
@@ -2587,7 +2587,7 @@ ${titleShape}${kpiShapes}${tblXml}
   // ══════════════════════════════════════════
   // SLIDE 3 — Eventualidades
   // ══════════════════════════════════════════
-  let s3xml = zip.file('ppt/slides/slide3.xml').async('string');
+  let s3xml = await zip.file('ppt/slides/slide3.xml').async('string');
   // Actualizar fecha si hay
   s3xml = s3xml.replace(/Cierre semanal del [^<]+/g, `Cierre semanal del ${rangoTexto}`);
 
