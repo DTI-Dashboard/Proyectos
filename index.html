@@ -88,7 +88,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .tbl tr:last-child td{border-bottom:none;}
 .tbl tbody tr:hover td{background:rgba(255,255,255,.03);}
-.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:rgba(255,255,255,0.6);text-underline-offset:4px;text-decoration-thickness:4px;cursor:pointer;}
+.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:#ffffff;text-underline-offset:3px;text-decoration-thickness:3px;cursor:pointer;}
 .p-area{font-size:11px;color:#fff;margin-top:2px;}
 .p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--blue);}
 .p-tipo.t1{background:rgba(59,130,246,.18);color:#60a5fa;}
@@ -321,7 +321,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .tbl tr:last-child td{border-bottom:none;}
 .tbl tbody tr:hover td{background:rgba(255,255,255,.03);}
-.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:rgba(255,255,255,0.6);text-underline-offset:4px;text-decoration-thickness:4px;cursor:pointer;}
+.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:#ffffff;text-underline-offset:3px;text-decoration-thickness:3px;cursor:pointer;}
 .p-area{font-size:11px;color:#fff;margin-top:2px;}
 .p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--blue);}
 .p-tipo.t1{background:rgba(59,130,246,.18);color:#60a5fa;}
@@ -1180,7 +1180,7 @@ function buildRow(p,tab,ri){
   const pData=encodeURIComponent(JSON.stringify(p));
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(201,168,76,0.4);text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:3px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
