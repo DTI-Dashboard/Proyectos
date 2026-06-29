@@ -1024,22 +1024,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
   </div>
 </div>
 
-
-
-<!-- ── Modal Eventualidad ── -->
-<div id="ev-modal-bg" onclick="if(event.target===this)closeEvModal()">
-  <div id="ev-modal-box">
-    <div class="ev-modal-title">⚠ Documentar Eventualidad</div>
-    <div class="ev-modal-nombre" id="ev-nombre"></div>
-    <textarea id="ev-textarea" placeholder="Describe la eventualidad o bloqueo de este proyecto..." maxlength="500" oninput="document.getElementById('ev-char-count').textContent=this.value.length+'/500'"></textarea>
-    <div id="ev-char-count">0/500</div>
-    <div class="ev-modal-actions">
-      <button class="ev-btn-delete" id="ev-btn-delete" onclick="deleteEventualidad()" style="display:none">🗑 Eliminar</button>
-      <button class="ev-btn-cancel" onclick="closeEvModal()">Cancelar</button>
-      <button class="ev-btn-save" onclick="saveEventualidad()">Guardar</button>
-    </div>
-  </div>
-</div>
+</main>
 <div class="modal-overlay" id="proj-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <div class="modal-header">
@@ -1097,7 +1082,22 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
   </div>
 </div>
-</main>
+
+
+<!-- ── Modal Eventualidad ── -->
+<div id="ev-modal-bg" onclick="if(event.target===this)closeEvModal()">
+  <div id="ev-modal-box">
+    <div class="ev-modal-title">⚠ Documentar Eventualidad</div>
+    <div class="ev-modal-nombre" id="ev-nombre"></div>
+    <textarea id="ev-textarea" placeholder="Describe la eventualidad o bloqueo de este proyecto..." maxlength="500" oninput="document.getElementById('ev-char-count').textContent=this.value.length+'/500'"></textarea>
+    <div id="ev-char-count">0/500</div>
+    <div class="ev-modal-actions">
+      <button class="ev-btn-delete" id="ev-btn-delete" onclick="deleteEventualidad()" style="display:none">🗑 Eliminar</button>
+      <button class="ev-btn-cancel" onclick="closeEvModal()">Cancelar</button>
+      <button class="ev-btn-save" onclick="saveEventualidad()">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 
