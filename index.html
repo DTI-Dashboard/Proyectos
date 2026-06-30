@@ -2457,6 +2457,9 @@ async function exportCierreSemanal(){
     var _nm=(D[i].nombre||'').trim();
     if(_eventualidades[_nm]&&_eventualidades[_nm].trim()!=='') evArr.push({n:_nm,t:_eventualidades[_nm].trim()});
   }
+  console.log('[CierreSemanal] _eventualidades guardadas:', JSON.stringify(_eventualidades));
+  console.log('[CierreSemanal] Proyectos IMC (D.length):', D.length);
+  console.log('[CierreSemanal] evArr construido:', JSON.stringify(evArr));
 
   var s3=await zip.file('ppt/slides/slide3.xml').async('string');
   var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
@@ -2479,7 +2482,7 @@ async function exportCierreSemanal(){
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyF+'.pptx'; a.click();
   URL.revokeObjectURL(url);
-  showToast('✅ Reporte Semanal descargado','success');
+  showToast('✅ Descargado ('+evArr.length+' eventualidades incluidas)','success');
 }
 
 // ── Control de acceso Carga de Datos ─────────────────────────
