@@ -2454,23 +2454,26 @@ async function exportCierreSemanal(){
   var D=(state.imc&&state.imc.data)?state.imc.data:[];
   var evArr=[];
   for(var i=0;i<D.length;i++){
-    if(_eventualidades[D[i].nombre]) evArr.push({n:D[i].nombre,t:_eventualidades[D[i].nombre]});
+    var _nm=(D[i].nombre||'').trim();
+    if(_eventualidades[_nm]&&_eventualidades[_nm].trim()!=='') evArr.push({n:_nm,t:_eventualidades[_nm].trim()});
   }
 
-  if(evArr.length>0){
-    var s3=await zip.file('ppt/slides/slide3.xml').async('string');
-    var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
-    function eCell(txt,al,sz){
-      return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
-    }
-    var eRows='<a:tr h="142560">'+eCell('No','ctr',1000)+eCell('Proyecto','ctr',1000)+eCell('Eventualidades','ctr',1000)+'</a:tr>';
+  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
+  var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
+  function eCell(txt,al,sz){
+    return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
+  }
+  var eRows='<a:tr h="142560">'+eCell('No','ctr',1000)+eCell('Proyecto','ctr',1000)+eCell('Eventualidades','ctr',1000)+'</a:tr>';
+  if(evArr.length===0){
+    eRows+='<a:tr h="460000">'+eCell('','ctr',900)+eCell('Sin eventualidades documentadas esta semana','ctr',900)+eCell('','ctr',900)+'</a:tr>';
+  } else {
     for(var ei=0;ei<evArr.length;ei++){
       eRows+='<a:tr h="460000">'+eCell(String(ei+1),'ctr',900)+eCell(evArr[ei].n,'l',900)+eCell(evArr[ei].t,'l',900)+'</a:tr>';
     }
-    var newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>'+eRows+'</a:tbl>';
-    s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
-    zip.file('ppt/slides/slide3.xml',s3);
   }
+  var newTbl='<a:tbl><a:tblPr firstRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>'+eRows+'</a:tbl>';
+  s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
+  zip.file('ppt/slides/slide3.xml',s3);
 
   var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
   var url=URL.createObjectURL(blob);
