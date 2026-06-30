@@ -1153,6 +1153,15 @@ const ACT_DATA = [
   {id:"ex6",nombre:"Miguel Benítez",actividad:"Configuración de campos BUK Personalizado Fase 22",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-06-27T16:15:01.894Z"}
 ]; // INYECTADO POR SYNC.PY
 
+// ─── Eventualidades IMC (declarado temprano: buildRow lo usa desde el primer render) ───
+let _eventualidades = {};
+let _evProyectoActual = '';
+function _loadEventualidades(){
+  try{ const r=localStorage.getItem('dti_eventualidades'); _eventualidades=r?JSON.parse(r):{}; }
+  catch(e){ _eventualidades={}; }
+}
+_loadEventualidades();
+
 const state={
   imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:'',tipo:''},
   dev:{data:[...DEV_DATA],filter:'todos',search:'',resp:'',tipo:''},
@@ -1212,9 +1221,10 @@ function calcKPIs(projects){
 function buildRow(p,tab,ri){
   const sc=semClass(p.sem),bc=barColor(p.real,p.esp,p.sem);
   const pData=encodeURIComponent(JSON.stringify(p));
+  const evDot=_eventualidades[p.nombre]?' <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#C9A84C;vertical-align:middle;"></span>':'';
   return `<tr>
     <td><span class="p-tipo ${tipoClass(p.tipo)}">${p.tipo}</span></td>
-    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;text-decoration-thickness:4px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}</div></td>
+    <td><div class="p-name" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#ffffff;text-decoration-thickness:1px;" onclick="openModal(JSON.parse(decodeURIComponent('${pData}')))">${p.nombre}${evDot}</div></td>
     <td><div class="p-area">${p.area}</div></td>
     <td><div class="date-cell">${p.inicio}</div></td>
     <td><div class="date-cell">${p.fin}</div></td>
@@ -2356,16 +2366,7 @@ function openModal(p){
   document.body.style.overflow='hidden';
 }
 
-// ─── Eventualidades IMC ──────────────────────────────────────────────────────
-let _eventualidades = {};
-let _evProyectoActual = '';
-
-function _loadEventualidades(){
-  try{ const r=localStorage.getItem('dti_eventualidades'); _eventualidades=r?JSON.parse(r):{}; }
-  catch(e){ _eventualidades={}; }
-}
-_loadEventualidades();
-
+// ─── Eventualidades IMC: funciones de guardado/UI (declaración ya está al inicio del script) ───
 function _saveEventualidades(){
   localStorage.setItem('dti_eventualidades', JSON.stringify(_eventualidades));
   const lines=['proyecto,eventualidad'];
@@ -2401,6 +2402,7 @@ function saveEventualidad(){
   _saveEventualidades();
   _updateEvBtn();
   closeEvModal();
+  if(typeof renderTab==='function') renderTab('imc');
 }
 
 function deleteEventualidad(){
@@ -2408,6 +2410,7 @@ function deleteEventualidad(){
   _saveEventualidades();
   _updateEvBtn();
   closeEvModal();
+  if(typeof renderTab==='function') renderTab('imc');
 }
 
 function _updateEvBtn(){
