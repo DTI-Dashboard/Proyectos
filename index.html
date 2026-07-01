@@ -1056,7 +1056,12 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
     <div style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:8px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label><input id="act-inp-nombre" class="act-inp" placeholder="Ej: Ivan Franco"></div>
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label>
+        <select id="act-inp-nombre-sel" class="act-inp" onchange="onColabSelect(this.value)">
+          <option value="">-- Selecciona un colaborador --</option>
+        </select>
+        <input type="hidden" id="act-inp-nombre" value="">
+      </div>
       
       <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
       <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp" onchange="validarFechaLaboral(this)"></div>
@@ -1069,13 +1074,9 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </select>
       </div>
       <div style="grid-column:span 2">
-        <label class="act-inp-lbl">&#128231; ENVIAR A (opcional)</label>
-        <div style="display:flex;gap:8px">
-          <select id="act-inp-dest" class="act-inp" style="flex:1" onchange="onDestSelect(this.value)">
-            <option value="">-- Sin envio --</option>
-          </select>
-          <input id="act-inp-email" class="act-inp" placeholder="o escribe un correo" style="flex:1">
-        </div>
+        <label class="act-inp-lbl">&#128231; CORREO DEL DESTINATARIO</label>
+        <input id="act-inp-email" class="act-inp" placeholder="Se llena automaticamente al seleccionar colaborador" readonly style="color:var(--muted)">
+        <input type="hidden" id="act-inp-dest" value="">
       </div>
     </div>
     <input type="hidden" id="act-inp-id">
@@ -1225,6 +1226,7 @@ function _loadEventualidades(){
   try{ const r=localStorage.getItem('dti_eventualidades'); _eventualidades=r?JSON.parse(r):{}; }
   catch(e){ _eventualidades={}; }
 }
+var _directorio=[];
 _loadEventualidades();
 _loadDirectorio();
 renderDirectorio();
@@ -2450,7 +2452,6 @@ function _saveEventualidades(){
 }
 
 // ── Directorio de colaboradores ────────────────────────────────────────────
-var _directorio = [];
 function switchCargaTab(tab){
   document.getElementById('cpanel-layout').style.display=tab==='layout'?'block':'none';
   document.getElementById('cpanel-directorio').style.display=tab==='directorio'?'block':'none';
@@ -2500,16 +2501,32 @@ function renderDirectorio(){
   populateDestSelect();
 }
 function populateDestSelect(){
-  var sel=document.getElementById('act-inp-dest');
-  if(!sel) return;
-  var cur=sel.value;
-  sel.innerHTML='<option value="">-- Sin envio --</option>';
+  // Llenar el select de nombre de colaborador
+  var selNombre=document.getElementById('act-inp-nombre-sel');
+  if(!selNombre) return;
+  var curNombre=document.getElementById('act-inp-nombre')?document.getElementById('act-inp-nombre').value:'';
+  selNombre.innerHTML='<option value="">-- Selecciona un colaborador --</option>';
   _directorio.forEach(function(d){
     var opt=document.createElement('option');
-    opt.value=d.email; opt.textContent=d.nombre+' ('+d.email+')';
-    sel.appendChild(opt);
+    opt.value=d.nombre;
+    opt.dataset.nombre=d.nombre;
+    opt.dataset.email=d.email;
+    opt.textContent=d.nombre;
+    if(d.nombre===curNombre) opt.selected=true;
+    selNombre.appendChild(opt);
   });
-  sel.value=cur;
+}
+function onColabSelect(val){
+  // val = "nombre|||email" o solo nombre
+  var sel=document.getElementById('act-inp-nombre-sel');
+  var opt=sel.options[sel.selectedIndex];
+  var nombre=opt?opt.dataset.nombre||val:'';
+  var email=opt?opt.dataset.email||'':'';
+  document.getElementById('act-inp-nombre').value=nombre;
+  document.getElementById('act-inp-email').value=email;
+  document.getElementById('act-inp-dest').value=email;
+  var btn=document.getElementById('act-btn-send-modal');
+  if(btn) btn.style.display=email?'inline-block':'none';
 }
 function onDestSelect(val){
   document.getElementById('act-inp-email').value=val||'';
@@ -2911,11 +2928,15 @@ function openActModal(id){
     fechaInp.min=a.fechaFin && a.fechaFin < hoyStr ? a.fechaFin : hoyStr;
     fechaInp.value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
-    // Llenar campos de correo al editar
+    // Llenar campos al editar
+    populateDestSelect();
+    var selNom=document.getElementById('act-inp-nombre-sel');
+    if(selNom){ selNom.value=a.nombre||''; }
+    var nomHid=document.getElementById('act-inp-nombre');
+    if(nomHid) nomHid.value=a.nombre||'';
     var emailInp=document.getElementById('act-inp-email');
-    var destSel=document.getElementById('act-inp-dest');
     if(emailInp) emailInp.value=a.emailDest||'';
-    if(destSel){ populateDestSelect(); destSel.value=a.emailDest||''; }
+    document.getElementById('act-inp-dest').value=a.emailDest||'';
     var sendBtn=document.getElementById('act-btn-send-modal');
     if(sendBtn) sendBtn.style.display=(a.emailDest)?'inline-block':'none';
     // estatus removido del modal
@@ -2939,7 +2960,10 @@ function openActModal(id){
 function closeActModal(){ document.getElementById('act-modal-bg').style.display='none'; }
 
 function saveActividad(){
-  const nombre=(document.getElementById('act-inp-nombre').value||'').trim();
+  var _selNom=document.getElementById('act-inp-nombre-sel');
+  var _nomHid=document.getElementById('act-inp-nombre');
+  const nombre=(_nomHid&&_nomHid.value?_nomHid.value:(_selNom&&_selNom.options[_selNom.selectedIndex]&&_selNom.selectedIndex>0?_selNom.options[_selNom.selectedIndex].dataset.nombre:''))||'';
+  if(_selNom&&_selNom.selectedIndex>0){ _nomHid.value=nombre; }
   const actividad=(document.getElementById('act-inp-actividad').value||'').trim();
   const fecha=document.getElementById('act-inp-fecha').value;
   if(!nombre||!actividad||!fecha){ showToast('⚠️ Nombre, Actividad y Fecha son requeridos','error'); return; }
