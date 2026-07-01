@@ -418,6 +418,15 @@ try:
             d=z_in_s2.read(item.filename)
             if item.filename=='ppt/slides/_rels/slide2.xml.rels':
                 d=d.replace(b'slideLayouts/slideLayout12.xml',b'slideLayouts/slideLayout17.xml')
+            elif item.filename=='ppt/slides/slide2.xml':
+                import re as _re_s2
+                s2_str=d.decode('utf-8')
+                shapes=_re_s2.findall(r'<p:sp>[\s\S]*?</p:sp>',s2_str)
+                for sh in shapes:
+                    if 'ctrTitle' in sh:
+                        s2_str=s2_str.replace(sh,'',1)
+                        break
+                d=s2_str.encode('utf-8')
             z_out_s2.writestr(item,d)
         z_out_s2.close()
         pptx_bytes=buf_s2.getvalue()
