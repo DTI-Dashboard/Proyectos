@@ -406,9 +406,21 @@ try:
                 if ci2==6: bar_fill(cell,p['real'],s)
                 else: cell.fill.solid(); cell.fill.fore_color.rgb=bg
 
-        # Guardar PPTX
+        # Guardar PPTX con slide2 usando slideLayout17 (mismo fondo que slide3)
         buf=io.BytesIO(); prs.save(buf); buf.seek(0)
-        pptx_bytes=buf.read()
+        pptx_bytes_raw=buf.read()
+        # Cambiar el layout del slide 2: slideLayout12 → slideLayout17
+        import zipfile as _zf_s2, io as _io_s2
+        z_in_s2=_zf_s2.ZipFile(_io_s2.BytesIO(pptx_bytes_raw))
+        buf_s2=_io_s2.BytesIO()
+        z_out_s2=_zf_s2.ZipFile(buf_s2,'w',_zf_s2.ZIP_DEFLATED)
+        for item in z_in_s2.infolist():
+            d=z_in_s2.read(item.filename)
+            if item.filename=='ppt/slides/_rels/slide2.xml.rels':
+                d=d.replace(b'slideLayouts/slideLayout12.xml',b'slideLayouts/slideLayout17.xml')
+            z_out_s2.writestr(item,d)
+        z_out_s2.close()
+        pptx_bytes=buf_s2.getvalue()
 
         # ── Modificar slide 3 con eventualidades del CSV ─────────────────────
         try:
@@ -470,6 +482,8 @@ try:
                                 +ev_cell(text,'l',1000)
                                 +'</a:tr>')
 
+                # Cambiar título "retraso" → "atraso" en el XML
+                s3_xml=s3_xml.replace('con retraso','con atraso')
                 new_tbl=f'<a:tbl>{orig_hdr}{hdr_row}{data_rows}</a:tbl>'
                 s3_new=_re2.sub(r'<a:tbl>[\s\S]*?</a:tbl>', new_tbl, s3_xml)
 
