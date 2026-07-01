@@ -1697,6 +1697,7 @@ function switchTab(id,el){
   document.getElementById('mod-'+id).classList.add('active');
   sessionStorage.setItem('activeTab', id);
   if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
+  if(id==='carga'){ try{ renderDirectorio(); }catch(e){} }
 }
 
 // ─── EXPORT PPTX (PptxGenJS v4) ───
@@ -3285,7 +3286,7 @@ function renderActividades(){
       <td style="font-size:12px;${vencida}">${fechaStr}</td>
       <td><span style="display:inline-flex;align-items:center;gap:5px;color:${ec};background:${ec}18;border:1px solid ${ec}55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">${a.estatus==='En proceso'?'🔵':''}${a.estatus==='Concluido'?'🟢':''}${a.estatus==='Atrasado'?'🔴':''} ${a.estatus}</span></td>
       <td style="white-space:nowrap">
-        <button class="act-btn-nota" data-actid="${a.id}" style="background:rgba(99,179,237,.15);border:1px solid rgba(99,179,237,.3);color:#63b3ed;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="${a.nota?'Ver/Editar nota':'Agregar nota'}">${a.nota?'📝':'📋'}</button>
+        <button class="act-btn-nota" data-actid="${a.id}" style="background:${a.nota?'rgba(201,168,76,.25)':'rgba(99,179,237,.1)'};border:1px solid ${a.nota?'rgba(201,168,76,.6)':'rgba(99,179,237,.2)'};color:${a.nota?'var(--gold)':'#63b3ed'};border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px;font-weight:${a.nota?'700':'400'}" title="${a.nota?'Ver nota documentada':'Agregar nota'}">${a.nota?'&#128203; Nota':'&#128196;'}</button>
         <button class="act-btn-edit" data-actid="${a.id}" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
         <button class="act-btn-send" data-actid="${a.id}" style="background:rgba(99,179,237,.12);border:1px solid rgba(99,179,237,.3);color:#63b3ed;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="${a.emailEnviado?'Correo enviado':'Enviar por correo'}">${a.emailEnviado?'\u2705':'\ud83d\udce7'}</button>
         ${a.estatus!=='Concluido'?`<button class="act-btn-ok" data-actid="${a.id}" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Marcar como Concluido">✓</button>`:''}
@@ -3359,15 +3360,15 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
-<div id="nota-modal-bg" onclick="if(event.target===this)closeNotaModal()">
-  <div id="nota-modal">
-    <h3>&#128203; Notas de actividad</h3>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-style:italic" id="nota-act-label"></div>
-    <textarea id="nota-textarea" placeholder="Escribe tus notas aqui..."></textarea>
-    <div class="nota-modal-btns">
-      <button class="nota-btn-del" id="nota-btn-del" onclick="deleteNota()" style="display:none">&#128465; Eliminar</button>
-      <button class="nota-btn-cancel" onclick="closeNotaModal()">Cancelar</button>
-      <button class="nota-btn-save" onclick="saveNota()">&#10004; Guardar</button>
+<div id="nota-modal-bg" onclick="if(event.target===this)closeNotaModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">NOTAS DE ACTIVIDAD</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;font-style:italic" id="nota-act-label"></div>
+    <textarea id="nota-textarea" placeholder="Escribe tus notas aqui..." style="width:100%;min-height:120px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;outline:none"></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button id="nota-btn-del" onclick="deleteNota()" style="display:none;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+      <button onclick="closeNotaModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveNota()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 22px;font-weight:700;font-size:13px;cursor:pointer">&#10004; Guardar nota</button>
     </div>
   </div>
 </div>
