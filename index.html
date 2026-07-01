@@ -536,6 +536,16 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 .ev-btn-delete{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;transition:.2s;margin-right:auto;}
 .ev-btn-delete:hover{background:rgba(239,68,68,0.22);}
 #ev-char-count{font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;text-align:right;}
+#nota-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;}
+#nota-modal-bg.active{display:flex;}
+#nota-modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:440px;max-width:95vw;}
+#nota-modal h3{margin:0 0 12px;color:var(--gold);font-size:15px;}
+#nota-textarea{width:100%;min-height:120px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;}
+.nota-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.nota-modal-btns button{border:none;border-radius:6px;padding:7px 18px;cursor:pointer;font-size:13px;font-weight:600;}
+.nota-btn-save{background:var(--gold);color:#1A2340;}
+.nota-btn-del{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)!important;}
+.nota-btn-cancel{background:rgba(255,255,255,.08);color:var(--text);}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
@@ -2383,6 +2393,39 @@ function _saveEventualidades(){
   }).catch(()=>{});
 }
 
+var _notaActIdG=null;
+function openNotaModal(id){
+  var a=_actividades.find(function(x){return x.id===id;});
+  if(!a) return;
+  _notaActIdG=id;
+  document.getElementById('nota-act-label').textContent=(a.nombre||'')+' - '+(a.actividad||'');
+  document.getElementById('nota-textarea').value=a.nota||'';
+  document.getElementById('nota-btn-del').style.display=a.nota?'inline-flex':'none';
+  document.getElementById('nota-modal-bg').classList.add('active');
+  document.getElementById('nota-textarea').focus();
+}
+function closeNotaModal(){
+  document.getElementById('nota-modal-bg').classList.remove('active');
+  _notaActIdG=null;
+}
+function saveNota(){
+  if(!_notaActIdG) return;
+  var txt=document.getElementById('nota-textarea').value.trim();
+  var a=_actividades.find(function(x){return x.id===_notaActIdG;});
+  if(!a) return;
+  if(txt) a.nota=txt; else delete a.nota;
+  _saveActividades();
+  renderActividades();
+  closeNotaModal();
+  showToast(txt?'Nota guardada':'Nota eliminada','success');
+}
+function deleteNota(){
+  if(!_notaActIdG) return;
+  var a=_actividades.find(function(x){return x.id===_notaActIdG;});
+  if(a){ delete a.nota; _saveActividades(); renderActividades(); }
+  closeNotaModal();
+  showToast('Nota eliminada','success');
+}
 function openEvModal(){
   _evProyectoActual = document.getElementById('m-nombre').textContent.trim();
   document.getElementById('ev-nombre').textContent = _evProyectoActual;
@@ -2826,6 +2869,7 @@ function actNavSemanaHoy(){
 }
 
 // ── Actividades: multi-select filtros, sorting, validación fecha ──
+var _notaActId=null;
 let _actFiltroEst=[], _actFiltroNom=[], _actSortCol='fechaFin', _actSortDir=1;
 
 function validarFechaLaboral(inp){
@@ -3071,6 +3115,7 @@ function renderActividades(){
       const id = btn.dataset.actid;
       if(!id) return;
       if(btn.classList.contains('act-btn-edit')) openActModal(id);
+      else if(btn.classList.contains('act-btn-nota')) openNotaModal(id);
       else if(btn.classList.contains('act-btn-ok')) confirmarConcluir(id);
       else if(btn.classList.contains('act-btn-del')) deleteActividad(id);
     });
@@ -3124,5 +3169,18 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
 <!-- Librerías de exportación (cargadas después del código principal) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+<div id="nota-modal-bg" onclick="if(event.target===this)closeNotaModal()">
+  <div id="nota-modal">
+    <h3>&#128203; Notas de actividad</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-style:italic" id="nota-act-label"></div>
+    <textarea id="nota-textarea" placeholder="Escribe tus notas aqui..."></textarea>
+    <div class="nota-modal-btns">
+      <button class="nota-btn-del" id="nota-btn-del" onclick="deleteNota()" style="display:none">&#128465; Eliminar</button>
+      <button class="nota-btn-cancel" onclick="closeNotaModal()">Cancelar</button>
+      <button class="nota-btn-save" onclick="saveNota()">&#10004; Guardar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
