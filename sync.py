@@ -410,6 +410,87 @@ try:
         buf=io.BytesIO(); prs.save(buf); buf.seek(0)
         pptx_bytes=buf.read()
 
+        # ── Modificar slide 3 con eventualidades del CSV ─────────────────────
+        try:
+            import zipfile as _zf, csv as _csv, io as _io2
+
+            # Leer eventualidades_imc.csv del repo
+            ev_url='https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/eventualidades_imc.csv?t='+str(int(__import__('time').time()))
+            try:
+                with _ur.urlopen(ev_url) as _re2:
+                    ev_content=_re2.read().decode('utf-8')
+            except:
+                ev_content=''
+
+            ev_list=[]
+            if ev_content.strip():
+                reader=_csv.DictReader(_io2.StringIO(ev_content))
+                for row in reader:
+                    proy=(row.get('proyecto') or '').strip()
+                    text=(row.get('eventualidad') or '').strip()
+                    if proy and text:
+                        ev_list.append((proy, text))
+
+            if ev_list:
+                # Leer el PPTX que acabamos de generar
+                zip_in=_zf.ZipFile(_io2.BytesIO(pptx_bytes))
+                s3_xml=zip_in.read('ppt/slides/slide3.xml').decode('utf-8')
+
+                # Construir la tabla con la estructura exacta del template (compatible WPS)
+                BORDER=('<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL>'
+                        '<a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR>'
+                        '<a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT>'
+                        '<a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>')
+
+                def ev_cell(txt, align, sz, bold=False):
+                    b=' b="1"' if bold else ''
+                    safe=txt.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;').replace('"','&quot;')
+                    return (f'<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p>'
+                            f'<a:pPr marL="0" algn="{align}" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr>'
+                            f'<a:r><a:rPr lang="es-MX" sz="{sz}"{b} u="none" strike="noStrike" kern="1200">'
+                            f'<a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/>'
+                            f'<a:latin typeface="Aptos (cuerpo)"/></a:rPr>'
+                            f'<a:t>{safe}</a:t></a:r></a:p></a:txBody>'
+                            f'<a:tcPr marL="6244" marR="6244" marT="6244" marB="0" anchor="ctr">{BORDER}<a:noFill/></a:tcPr></a:tc>')
+
+                import re as _re2
+                tbl_hdr_m=_re2.search(r'<a:tbl>([\s\S]*?)<a:tr', s3_xml)
+                orig_hdr=tbl_hdr_m.group(1) if tbl_hdr_m else '<a:tblPr/><a:tblGrid/>'
+
+                hdr_row=('<a:tr h="520138">'
+                         +ev_cell('No','ctr',1100,True)
+                         +ev_cell('Proyecto','ctr',1100,True)
+                         +ev_cell('Eventualidades','ctr',1100,True)
+                         +'</a:tr>')
+                data_rows=''
+                for idx_ev,(proy,text) in enumerate(ev_list):
+                    data_rows+=(f'<a:tr h="420000">'
+                                +ev_cell(str(idx_ev+1),'ctr',1000)
+                                +ev_cell(proy,'l',1000)
+                                +ev_cell(text,'l',1000)
+                                +'</a:tr>')
+
+                new_tbl=f'<a:tbl>{orig_hdr}{hdr_row}{data_rows}</a:tbl>'
+                s3_new=_re2.sub(r'<a:tbl>[\s\S]*?</a:tbl>', new_tbl, s3_xml)
+
+                # Reempaquetar el PPTX
+                buf2=_io2.BytesIO()
+                zip_out=_zf.ZipFile(buf2,'w',_zf.ZIP_DEFLATED)
+                for item in zip_in.infolist():
+                    d=zip_in.read(item.filename)
+                    if item.filename=='ppt/slides/slide3.xml':
+                        d=s3_new.encode('utf-8')
+                    zip_out.writestr(item,d)
+                zip_out.close()
+                pptx_bytes=buf2.getvalue()
+                print(f"✅ Slide 3 con {len(ev_list)} eventualidades incluidas")
+            else:
+                print("ℹ️  Sin eventualidades en CSV — slide 3 sin modificar")
+        except Exception as _es3:
+            import traceback
+            print(f"⚠️  Error en slide 3: {_es3}")
+            print(traceback.format_exc())
+
         # Subir al repo via API
         api_url='https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/cierre_base.pptx'
         gh_token=os.environ.get('GH_TOKEN','')
