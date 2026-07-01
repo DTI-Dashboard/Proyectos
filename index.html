@@ -2369,9 +2369,11 @@ function openModal(p){
 // ─── Eventualidades IMC: funciones de guardado/UI (declaración ya está al inicio del script) ───
 function _saveEventualidades(){
   localStorage.setItem('dti_eventualidades', JSON.stringify(_eventualidades));
+  // Solo guardar en el CSV las eventualidades de proyectos IMC
+  const imcNombres=new Set((state.imc&&state.imc.data?state.imc.data:[]).map(p=>p.nombre));
   const lines=['proyecto,eventualidad'];
   Object.entries(_eventualidades).forEach(([p,e])=>{
-    lines.push('"'+p.replace(/"/g,'""')+'","'+e.replace(/"/g,'""')+'"');
+    if(imcNombres.has(p)) lines.push('"'+p.replace(/"/g,'""')+'","'+e.replace(/"/g,'""')+'"');
   });
   fetch('https://dti-dashboard-trigger.josuemontoya.workers.dev/',{
     method:'POST', headers:{'Content-Type':'application/json'},
