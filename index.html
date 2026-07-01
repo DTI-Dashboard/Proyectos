@@ -2463,28 +2463,29 @@ async function exportCierreSemanal(){
   console.log('[CierreSemanal] evArr construido:', JSON.stringify(evArr));
 
   var s3=await zip.file('ppt/slides/slide3.xml').async('string');
-  var eBR='<a:lnL w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnL><a:lnR w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnR><a:lnT w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnT><a:lnB w="12700"><a:solidFill><a:srgbClr val="AAAAAA"/></a:solidFill></a:lnB>';
-  function eCell(txt,al,sz){
-    return '<a:tc><a:tcPr><a:noFill/>'+eBR+'</a:tcPr><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="'+al+'"/><a:r><a:rPr lang="es-MX" sz="'+sz+'" dirty="0"><a:solidFill><a:srgbClr val="1A2340"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody></a:tc>';
+
+  // Estructura de celda identica al template original (compatible WPS Office)
+  var eBORDER='<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL><a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR><a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT><a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>';
+  function eCell(txt,al,sz,bold){
+    var b=bold?' b="1"':'';
+    return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="6244" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
   }
-  var eRows='<a:tr h="142560">'+eCell('No','ctr',1000)+eCell('Proyecto','ctr',1000)+eCell('Eventualidades','ctr',1000)+'</a:tr>';
+
+  // Extraer cabecera original de la tabla (tblPr + tblGrid) para mantener estilos
+  var tblHdrMatch=s3.match(/<a:tbl>([\s\S]*?)<a:tr/);
+  var origTblHdr=tblHdrMatch?tblHdrMatch[1]:'<a:tblPr><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>';
+
+  var eRows='<a:tr h="520138">'+eCell('No','ctr',1100,true)+eCell('Proyecto','ctr',1100,true)+eCell('Eventualidades','ctr',1100,true)+'</a:tr>';
   if(evArr.length===0){
-    eRows+='<a:tr h="460000">'+eCell('','ctr',900)+eCell('Sin eventualidades documentadas esta semana','ctr',900)+eCell('','ctr',900)+'</a:tr>';
+    eRows+='<a:tr h="420000">'+eCell('','ctr',1000,false)+eCell('Sin eventualidades documentadas esta semana','ctr',1000,false)+eCell('','ctr',1000,false)+'</a:tr>';
   } else {
     for(var ei=0;ei<evArr.length;ei++){
-      eRows+='<a:tr h="460000">'+eCell(String(ei+1),'ctr',900)+eCell(evArr[ei].n,'l',900)+eCell(evArr[ei].t,'l',900)+'</a:tr>';
+      eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false)+'</a:tr>';
     }
   }
-  var newTbl='<a:tbl><a:tblPr firstRow="1" bandRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>'+eRows+'</a:tbl>';
-  var s3Before = s3;
+  var newTbl='<a:tbl>'+origTblHdr+eRows+'</a:tbl>';
   s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
-  console.log('[CierreSemanal] s3 cambio aplicado:', s3Before !== s3, '| longitud antes:', s3Before.length, '| longitud despues:', s3.length);
-  if(evArr.length>0){
-    console.log('[CierreSemanal] s3 contiene primer texto de eventualidad:', s3.indexOf(evArr[0].t.substring(0,10)) !== -1);
-  }
   zip.file('ppt/slides/slide3.xml',s3);
-  var verifyS3 = await zip.file('ppt/slides/slide3.xml').async('string');
-  console.log('[CierreSemanal] Verificacion final del ZIP - slide3 actualizado:', verifyS3 === s3);
 
   var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
   var url=URL.createObjectURL(blob);
