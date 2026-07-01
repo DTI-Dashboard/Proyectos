@@ -1000,9 +1000,42 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       </div>
       <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Módulo</th><th>Tipo</th><th>Proyecto</th><th>Área</th><th>Responsable</th><th>Solicitante</th><th>Descripción</th><th>URL Plan</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
     </div>
+
+    <!-- Directorio de colaboradores -->
+    <div style="margin-top:28px;padding:20px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--gold)">&#128231; Directorio de colaboradores</div>
+        <button onclick="openDirModal()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer">+ Agregar</button>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:6px 8px">Nombre</th>
+          <th style="text-align:left;padding:6px 8px">Correo</th>
+          <th style="text-align:left;padding:6px 8px;width:80px">Acciones</th>
+        </tr></thead>
+        <tbody id="dir-tbody"></tbody>
+      </table>
+      <div id="dir-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:20px;display:none">Sin colaboradores en el directorio</div>
+    </div>
   </div>
 </section>
 
+
+<!-- Modal Directorio -->
+<div id="dir-modal-bg" onclick="if(event.target===this)closeDirModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">&#128231; Agregar colaborador</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="dir-inp-nombre" class="act-inp" placeholder="Ej: Omar Aguilar" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="dir-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="dir-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntry()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Actividad -->
 <div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
@@ -1023,13 +1056,21 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
         </select>
       </div>
-<!-- estatus removido del modal - siempre En proceso al crear -->
-<!-- notas removido del modal -->
+      <div style="grid-column:span 2">
+        <label class="act-inp-lbl">&#128231; ENVIAR A (opcional)</label>
+        <div style="display:flex;gap:8px">
+          <select id="act-inp-dest" class="act-inp" style="flex:1" onchange="onDestSelect(this.value)">
+            <option value="">-- Sin envio --</option>
+          </select>
+          <input id="act-inp-email" class="act-inp" placeholder="o escribe un correo" style="flex:1">
+        </div>
+      </div>
     </div>
     <input type="hidden" id="act-inp-id">
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
       <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
-      <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">💾 Guardar actividad</button>
+      <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo()" style="background:rgba(99,179,237,.2);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;display:none">&#128231; Guardar y enviar</button>
     </div>
   </div>
 </div>
@@ -1173,6 +1214,8 @@ function _loadEventualidades(){
   catch(e){ _eventualidades={}; }
 }
 _loadEventualidades();
+_loadDirectorio();
+renderDirectorio();
 
 const state={
   imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:'',tipo:''},
@@ -2393,6 +2436,135 @@ function _saveEventualidades(){
   }).catch(()=>{});
 }
 
+// ── Directorio de colaboradores ────────────────────────────────────────────
+var _directorio = [];
+function _loadDirectorio(){
+  try{ _directorio=JSON.parse(localStorage.getItem('dti_directorio')||'[]'); }catch(e){ _directorio=[]; }
+}
+function _saveDirectorio(){
+  localStorage.setItem('dti_directorio',JSON.stringify(_directorio));
+  renderDirectorio();
+}
+function renderDirectorio(){
+  var tbody=document.getElementById('dir-tbody');
+  var empty=document.getElementById('dir-empty');
+  if(!tbody) return;
+  // Asegurar listener una sola vez
+  if(!tbody._dirListener){
+    tbody._dirListener=true;
+    tbody.addEventListener('click',function(ev){
+      var btn=ev.target.closest('button');
+      if(!btn) return;
+      var did=btn.dataset.dirid;
+      if(!did) return;
+      if(btn.classList.contains('dir-btn-edit')) openDirModal(did);
+      else if(btn.classList.contains('dir-btn-del')) deleteDirEntry(did);
+    });
+  }
+  if(!_directorio.length){ tbody.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  tbody.innerHTML=_directorio.map(function(d){
+    return '<tr style="border-top:1px solid var(--border)">'
+      +'<td style="padding:7px 8px;font-weight:600">'+d.nombre+'</td>'
+      +'<td style="padding:7px 8px;color:var(--muted)">'+d.email+'</td>'
+      +'<td style="padding:7px 8px;white-space:nowrap">'
+      +'<button data-dirid="'+d.id+'" class="dir-btn-edit" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px;margin-right:3px">&#9998;</button>'
+      +'<button data-dirid="'+d.id+'" class="dir-btn-del" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px">&#128465;</button>'
+      +'</td></tr>';
+  }).join('');
+  // Actualizar select en modal de actividad
+  populateDestSelect();
+}
+function populateDestSelect(){
+  var sel=document.getElementById('act-inp-dest');
+  if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">-- Sin envio --</option>';
+  _directorio.forEach(function(d){
+    var opt=document.createElement('option');
+    opt.value=d.email; opt.textContent=d.nombre+' ('+d.email+')';
+    sel.appendChild(opt);
+  });
+  sel.value=cur;
+}
+function onDestSelect(val){
+  document.getElementById('act-inp-email').value=val||'';
+  var btn=document.getElementById('act-btn-send-modal');
+  if(btn) btn.style.display=val?'inline-block':'none';
+}
+function openDirModal(id){
+  document.getElementById('dir-inp-nombre').value='';
+  document.getElementById('dir-inp-email').value='';
+  document.getElementById('dir-inp-id').value='';
+  if(id){
+    var d=_directorio.find(function(x){return x.id===id;});
+    if(d){ document.getElementById('dir-inp-nombre').value=d.nombre; document.getElementById('dir-inp-email').value=d.email; document.getElementById('dir-inp-id').value=d.id; }
+  }
+  document.getElementById('dir-modal-bg').style.display='flex';
+  document.getElementById('dir-inp-nombre').focus();
+}
+function closeDirModal(){ document.getElementById('dir-modal-bg').style.display='none'; }
+function saveDirEntry(){
+  var nombre=document.getElementById('dir-inp-nombre').value.trim();
+  var email=document.getElementById('dir-inp-email').value.trim();
+  var id=document.getElementById('dir-inp-id').value;
+  if(!nombre||!email){ showToast('Completa nombre y correo','error'); return; }
+  if(id){
+    var d=_directorio.find(function(x){return x.id===id;});
+    if(d){ d.nombre=nombre; d.email=email; }
+  } else {
+    _directorio.push({id:'d'+Date.now(),nombre:nombre,email:email});
+  }
+  _saveDirectorio();
+  closeDirModal();
+  showToast('Colaborador guardado','success');
+}
+function editDirEntry(id){ openDirModal(id); }
+function deleteDirEntry(id){
+  _directorio=_directorio.filter(function(d){return d.id!==id;});
+  _saveDirectorio();
+  showToast('Colaborador eliminado','success');
+}
+
+// ── Envío de correo por actividad ─────────────────────────────────────────
+function enviarActividadCorreo(id){
+  var actId=id||document.getElementById('act-inp-id').value||null;
+  var email='';
+  var actData=null;
+  if(actId){
+    // Envío desde botón de la fila
+    actData=_actividades.find(function(x){return x.id===actId;});
+    if(!actData){ showToast('Actividad no encontrada','error'); return; }
+    email=actData.emailDest||'';
+    if(!email){ showToast('Esta actividad no tiene correo asignado. Edita la actividad y asigna un destinatario.','error'); return; }
+  } else {
+    // Envío desde modal (antes de guardar)
+    email=document.getElementById('act-inp-email').value.trim();
+    if(!email){ showToast('Escribe o selecciona un correo destinatario','error'); return; }
+  }
+  // Construir cuerpo del correo
+  var nombre=actId?actData.nombre:document.getElementById('act-inp-nombre').value;
+  var actividad=actId?actData.actividad:document.getElementById('act-inp-actividad').value;
+  var fecha=actId?actData.fechaFin:document.getElementById('act-inp-fecha').value;
+  var prioridad=actId?actData.prioridad:document.getElementById('act-inp-prioridad').value;
+  var subject='Actividad asignada: '+actividad;
+  var body='Hola '+nombre+',\n\nSe te ha asignado la siguiente actividad:\n\n'
+    +'Actividad: '+actividad+'\nFecha limite: '+fecha+'\nPrioridad: '+prioridad+'\n\nSaludos,\nEquipo DTI - Grupo INCEPADEM';
+  var mailto='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  window.open(mailto,'_blank');
+  // Marcar como enviado si es desde la fila
+  if(actId){
+    actData.emailEnviado=true;
+    _saveAct();
+    renderActividades();
+    showToast('Correo listo en tu cliente de correo','success');
+  } else {
+    // Si es desde el modal, guardar la actividad y marcarla
+    saveActividad();
+    showToast('Actividad guardada. Abriendo correo...','success');
+  }
+}
+
 var _notaActIdG=null;
 function openNotaModal(id){
   var a=_actividades.find(function(x){return x.id===id;});
@@ -2414,7 +2586,7 @@ function saveNota(){
   var a=_actividades.find(function(x){return x.id===_notaActIdG;});
   if(!a) return;
   if(txt) a.nota=txt; else delete a.nota;
-  _saveActividades();
+  _saveAct();
   renderActividades();
   closeNotaModal();
   showToast(txt?'Nota guardada':'Nota eliminada','success');
@@ -2422,7 +2594,7 @@ function saveNota(){
 function deleteNota(){
   if(!_notaActIdG) return;
   var a=_actividades.find(function(x){return x.id===_notaActIdG;});
-  if(a){ delete a.nota; _saveActividades(); renderActividades(); }
+  if(a){ delete a.nota; _saveAct(); renderActividades(); }
   closeNotaModal();
   showToast('Nota eliminada','success');
 }
@@ -2715,6 +2887,13 @@ function openActModal(id){
     fechaInp.min=a.fechaFin && a.fechaFin < hoyStr ? a.fechaFin : hoyStr;
     fechaInp.value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
+    // Llenar campos de correo al editar
+    var emailInp=document.getElementById('act-inp-email');
+    var destSel=document.getElementById('act-inp-dest');
+    if(emailInp) emailInp.value=a.emailDest||'';
+    if(destSel){ populateDestSelect(); destSel.value=a.emailDest||''; }
+    var sendBtn=document.getElementById('act-btn-send-modal');
+    if(sendBtn) sendBtn.style.display=(a.emailDest)?'inline-block':'none';
     // estatus removido del modal
     // semana removida del modal
     // notas removido del modal
@@ -2723,6 +2902,10 @@ function openActModal(id){
     // titulo secundario eliminado
     ['act-inp-id','act-inp-nombre','act-inp-actividad'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('act-inp-fecha').min=new Date().toISOString().split('T')[0];
+    // Inicializar campos de correo
+    var ei=document.getElementById('act-inp-email'); if(ei) ei.value='';
+    var ds=document.getElementById('act-inp-dest'); if(ds){ populateDestSelect(); ds.value=''; }
+    var sb=document.getElementById('act-btn-send-modal'); if(sb) sb.style.display='none';
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
     // estatus y notas removidos del modal
@@ -2748,6 +2931,9 @@ function saveActividad(){
     semana: semana,
     estatus: id ? (existing.estatus||'En proceso') : 'En proceso',
     notas: id ? (existing.notas||'') : '',
+    emailDest: (document.getElementById('act-inp-email').value||'').trim() || (existing.emailDest||''),
+    emailEnviado: existing.emailEnviado||false,
+    nota: existing.nota||'',
     updatedAt: now
   };
   if(id){
@@ -3101,6 +3287,7 @@ function renderActividades(){
       <td style="white-space:nowrap">
         <button class="act-btn-nota" data-actid="${a.id}" style="background:rgba(99,179,237,.15);border:1px solid rgba(99,179,237,.3);color:#63b3ed;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="${a.nota?'Ver/Editar nota':'Agregar nota'}">${a.nota?'📝':'📋'}</button>
         <button class="act-btn-edit" data-actid="${a.id}" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Editar">✏️</button>
+        <button class="act-btn-send" data-actid="${a.id}" style="background:rgba(99,179,237,.12);border:1px solid rgba(99,179,237,.3);color:#63b3ed;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="${a.emailEnviado?'Correo enviado':'Enviar por correo'}">${a.emailEnviado?'\u2705':'\ud83d\udce7'}</button>
         ${a.estatus!=='Concluido'?`<button class="act-btn-ok" data-actid="${a.id}" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Marcar como Concluido">✓</button>`:''}
         <button class="act-btn-del" data-actid="${a.id}" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:12px" title="Eliminar">🗑️</button>
       </td>
@@ -3117,6 +3304,7 @@ function renderActividades(){
       if(!id) return;
       if(btn.classList.contains('act-btn-edit')) openActModal(id);
       else if(btn.classList.contains('act-btn-nota')) openNotaModal(id);
+      else if(btn.classList.contains('act-btn-send')) enviarActividadCorreo(id);
       else if(btn.classList.contains('act-btn-ok')) confirmarConcluir(id);
       else if(btn.classList.contains('act-btn-del')) deleteActividad(id);
     });
