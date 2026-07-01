@@ -2597,11 +2597,11 @@ function openNotaModal(id){
   document.getElementById('nota-act-label').textContent=(a.nombre||'')+' - '+(a.actividad||'');
   document.getElementById('nota-textarea').value=a.nota||'';
   document.getElementById('nota-btn-del').style.display=a.nota?'inline-flex':'none';
-  document.getElementById('nota-modal-bg').classList.add('active');
+  document.getElementById('nota-modal-bg').style.display='flex';
   document.getElementById('nota-textarea').focus();
 }
 function closeNotaModal(){
-  document.getElementById('nota-modal-bg').classList.remove('active');
+  document.getElementById('nota-modal-bg').style.display='none';
   _notaActIdG=null;
 }
 function saveNota(){
