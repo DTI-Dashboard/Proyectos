@@ -2435,63 +2435,17 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 async function exportCierreSemanal(){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
-
   showToast('⏳ Generando reporte...','info',8000);
-
-  // Descargar el PPTX base (generado en Python con datos reales)
-  var pptxBytes;
   try{
-    var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/cierre_base.pptx?t='+Date.now(), {cache:'no-store'});
+    var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/cierre_base.pptx?t='+Date.now(),{cache:'no-store'});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
-    pptxBytes=await resp.arrayBuffer();
-    console.log('[CierreSemanal] PPTX descargado, bytes:', pptxBytes.byteLength);
-  }catch(e){showToast('❌ Error: '+e.message,'error');return;}
-  if(typeof JSZip==='undefined'){showToast('❌ JSZip no disponible','error');return;}
-  var zip=await JSZip.loadAsync(pptxBytes);
-
-  // Solo modificar slide 3 con eventualidades del localStorage
-  function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-  var D=(state.imc&&state.imc.data)?state.imc.data:[];
-  var evArr=[];
-  for(var i=0;i<D.length;i++){
-    var _nm=(D[i].nombre||'').trim();
-    if(_eventualidades[_nm]&&_eventualidades[_nm].trim()!=='') evArr.push({n:_nm,t:_eventualidades[_nm].trim()});
-  }
-  console.log('[CierreSemanal] _eventualidades guardadas:', JSON.stringify(_eventualidades));
-  console.log('[CierreSemanal] Proyectos IMC (D.length):', D.length);
-  console.log('[CierreSemanal] evArr construido:', JSON.stringify(evArr));
-
-  var s3=await zip.file('ppt/slides/slide3.xml').async('string');
-
-  // Estructura de celda identica al template original (compatible WPS Office)
-  var eBORDER='<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL><a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR><a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT><a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>';
-  function eCell(txt,al,sz,bold){
-    var b=bold?' b="1"':'';
-    return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="6244" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
-  }
-
-  // Extraer cabecera original de la tabla (tblPr + tblGrid) para mantener estilos
-  var tblHdrMatch=s3.match(/<a:tbl>([\s\S]*?)<a:tr/);
-  var origTblHdr=tblHdrMatch?tblHdrMatch[1]:'<a:tblPr><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr><a:tblGrid><a:gridCol w="418000"/><a:gridCol w="3240000"/><a:gridCol w="5060000"/></a:tblGrid>';
-
-  var eRows='<a:tr h="520138">'+eCell('No','ctr',1100,true)+eCell('Proyecto','ctr',1100,true)+eCell('Eventualidades','ctr',1100,true)+'</a:tr>';
-  if(evArr.length===0){
-    eRows+='<a:tr h="420000">'+eCell('','ctr',1000,false)+eCell('Sin eventualidades documentadas esta semana','ctr',1000,false)+eCell('','ctr',1000,false)+'</a:tr>';
-  } else {
-    for(var ei=0;ei<evArr.length;ei++){
-      eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false)+'</a:tr>';
-    }
-  }
-  var newTbl='<a:tbl>'+origTblHdr+eRows+'</a:tbl>';
-  s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
-  zip.file('ppt/slides/slide3.xml',s3);
-
-  var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyF+'.pptx'; a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ Descargado ('+evArr.length+' eventualidades incluidas)','success');
+    var bytes=await resp.arrayBuffer();
+    var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyF+'.pptx'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ Reporte Semanal descargado','success');
+  }catch(e){showToast('❌ Error: '+e.message,'error');}
 }
 
 // ── Control de acceso Carga de Datos ─────────────────────────
