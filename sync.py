@@ -443,14 +443,41 @@ try:
             except:
                 ev_content=''
 
+            # Nombres reales de proyectos IMC (fuente de verdad)
+            imc_nombres={p['nombre'].strip() for p in datos}
+
             ev_list=[]
             if ev_content.strip():
                 reader=_csv.DictReader(_io2.StringIO(ev_content))
                 for row in reader:
                     proy=(row.get('proyecto') or '').strip()
                     text=(row.get('eventualidad') or '').strip()
-                    if proy and text:
+                    # Solo incluir si el proyecto pertenece a IMC
+                    if proy and text and proy in imc_nombres:
                         ev_list.append((proy, text))
+
+            # Limpiar el CSV: sobrescribir con solo los proyectos IMC válidos
+            if ev_content.strip():
+                csv_lines=['proyecto,eventualidad']
+                for proy,text in ev_list:
+                    csv_lines.append('"'+proy.replace('"','""')+'","'+text.replace('"','""')+'"')
+                clean_csv='\n'.join(csv_lines)
+                if clean_csv!=ev_content.strip():
+                    gh_token=os.environ.get('GH_TOKEN','')
+                    try:
+                        req_csv_get=_ur.Request(
+                            'https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/eventualidades_imc.csv',
+                            headers={'Authorization':f'token {gh_token}'})
+                        with _ur.urlopen(req_csv_get) as rc: csv_sha=json.loads(rc.read())['sha']
+                        req_csv_put=_ur.Request(
+                            'https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/eventualidades_imc.csv',
+                            data=json.dumps({'message':'sync: limpiar CSV - solo proyectos IMC',
+                                'content':base64.b64encode(clean_csv.encode()).decode(),'sha':csv_sha}).encode(),
+                            method='PUT',headers={'Authorization':f'token {gh_token}','Content-Type':'application/json'})
+                        with _ur.urlopen(req_csv_put): pass
+                        print(f'✅ CSV limpiado: {len(ev_list)} eventualidades IMC válidas')
+                    except Exception as _ecsv:
+                        print(f'⚠️ No se pudo limpiar CSV: {_ecsv}')
 
             if ev_list:
                 # Leer el PPTX que acabamos de generar
