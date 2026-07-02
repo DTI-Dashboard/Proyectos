@@ -2681,12 +2681,14 @@ function closeActDetail(){
   _actDetailId=null;
 }
 function editActFromDetail(){
+  var _id=_actDetailId;
   closeActDetail();
-  openActModal(_actDetailId);
+  openActModal(_id);
 }
 function deleteActFromDetail(){
+  var _id=_actDetailId;
   closeActDetail();
-  deleteActividad(_actDetailId);
+  deleteActividad(_id);
 }
 var _notaActIdG=null;
 function openNotaModal(id){
