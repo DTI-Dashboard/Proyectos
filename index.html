@@ -2292,6 +2292,8 @@ try{(function(){
   // Leer tab desde URL param (para links externos)
   var urlTab=new URLSearchParams(window.location.search).get('tab');
   if(urlTab) sessionStorage.setItem('activeTab',urlTab);
+  var _urlTab=new URLSearchParams(window.location.search).get('tab');
+  if(_urlTab) sessionStorage.setItem('activeTab',_urlTab);
   const savedTab = sessionStorage.getItem('activeTab');
   if(savedTab && savedTab !== 'imc'){
     const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
@@ -2598,17 +2600,16 @@ function enviarActividadCorreo(id){
   var fechaFmt=String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+fechaObj.getFullYear();
   // Fecha límite formateada para el cuerpo
   var fechaLimFmt=fecha?String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+fechaObj.getFullYear():'Sin fecha';
-  // Link directo al dashboard con filtro por actividad
+  // Link directo a Actividades Semanales
   var link=window.location.origin+window.location.pathname+'?tab=actividades';
-  var subject='DTI || Nueva actividad asignada || (Fecha: '+fechaFmt+')';
+  var subject='DTI || Actividad Semanal Asignada || Fecha Limite: '+String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+String(fechaObj.getFullYear()).slice(2);
   var body='Hola '+nombre+',\n\n'
     +'Se te ha asignado la siguiente actividad:\n'
     +actividad+'\n\n'
     +'Fecha limite: '+fechaLimFmt+'\n'
     +'Prioridad: '+prioridad+'\n\n'
     +'Enlace de consulta: '+link+'\n\n'
-    +'Saludos\n'
-    +'Equipo DTI - Grupo INCEPADEM';
+    +'Saludos';
   var mailto='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   window.open(mailto,'_blank');
   // Marcar como enviado si es desde la fila
