@@ -1084,7 +1084,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
       <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
       <button onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
-      <button id="act-btn-send-modal" onclick="enviarActividadCorreo()" style="background:rgba(99,179,237,.2);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;display:none">&#128231; Guardar y enviar</button>
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo()" style="background:rgba(99,179,237,.2);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;display:none">&#128231; Guardar y enviar correo</button>
     </div>
   </div>
 </div>
@@ -2584,14 +2584,28 @@ function enviarActividadCorreo(id){
     email=document.getElementById('act-inp-email').value.trim();
     if(!email){ showToast('Escribe o selecciona un correo destinatario','error'); return; }
   }
-  // Construir cuerpo del correo
+  // Construir asunto y cuerpo del correo
   var nombre=actId?actData.nombre:document.getElementById('act-inp-nombre').value;
   var actividad=actId?actData.actividad:document.getElementById('act-inp-actividad').value;
   var fecha=actId?actData.fechaFin:document.getElementById('act-inp-fecha').value;
   var prioridad=actId?actData.prioridad:document.getElementById('act-inp-prioridad').value;
-  var subject='Actividad asignada: '+actividad;
-  var body='Hola '+nombre+',\n\nSe te ha asignado la siguiente actividad:\n\n'
-    +'Actividad: '+actividad+'\nFecha limite: '+fecha+'\nPrioridad: '+prioridad+'\n\nSaludos,\nEquipo DTI - Grupo INCEPADEM';
+  // Formatear fecha para el asunto: DD/MMM/YYYY
+  var fechaObj=fecha?new Date(fecha+'T12:00:00'):new Date();
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var fechaFmt=String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+fechaObj.getFullYear();
+  // Fecha límite formateada para el cuerpo
+  var fechaLimFmt=fecha?String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+fechaObj.getFullYear():'Sin fecha';
+  // Link directo al dashboard con filtro por actividad
+  var link=window.location.origin+window.location.pathname+'?tab=actividades';
+  var subject='DTI || Nueva actividad asignada || (Fecha: '+fechaFmt+')';
+  var body='Hola '+nombre+',\n\n'
+    +'Se te ha asignado la siguiente actividad:\n'
+    +actividad+'\n\n'
+    +'Fecha limite: '+fechaLimFmt+'\n'
+    +'Prioridad: '+prioridad+'\n\n'
+    +'Enlace de consulta: '+link+'\n\n'
+    +'Saludos\n'
+    +'Equipo DTI - Grupo INCEPADEM';
   var mailto='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   window.open(mailto,'_blank');
   // Marcar como enviado si es desde la fila
