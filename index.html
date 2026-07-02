@@ -1860,19 +1860,18 @@ function renderResumen(){
   var saludPct=total?Math.round((term+atiempo)/total*100):0;
 
   var kpis=[
-    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo',icon:'&#128202;'},
-    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total',icon:'&#10003;'},
-    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado',icon:'&#128994;'},
-    {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear',icon:'&#9888;'},
-    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata',icon:'&#128308;'},
-    {l:'Por Cerrar',v:porCerrar,c:'#a78bfa',sub:'Avance >90%',icon:'&#127919;'},
-    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa',icon:'&#9208;'},
-    {l:'Avance Prom.',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos',icon:'&#128200;'},
-    {l:'Salud General',v:saludPct+'%',c:saludPct>=70?'#22c55e':saludPct>=50?'#f59e0b':'#ef4444',sub:saludPct>=70?'Portafolio saludable':'Requiere atención',icon:'&#128138;'}
+    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo'},
+    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total'},
+    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado'},
+    {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear'},
+    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata'},
+    {l:'Por Cerrar',v:porCerrar,c:'#a78bfa',sub:'Avance >90%'},
+    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa'},
+    {l:'Avance Prom.',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos'},
+    {l:'Salud General',v:saludPct+'%',c:saludPct>=70?'#22c55e':saludPct>=50?'#f59e0b':'#ef4444',sub:saludPct>=70?'Portafolio saludable':'Requiere atención'}
   ];
   document.getElementById('res-kpis').innerHTML=kpis.map(function(k){
     return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:default;min-height:100px">'
-      +'<div style="font-size:20px;margin-bottom:4px">'+k.icon+'</div>'
       +'<div class="kpi-val" style="color:'+k.c+';font-size:26px;font-weight:800;line-height:1">'+k.v+'</div>'
       +'<div class="kpi-label" style="font-size:10px;font-weight:700;letter-spacing:.05em;margin-top:5px;text-align:center">'+k.l+'</div>'
       +'<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:center">'+k.sub+'</div>'
@@ -1897,11 +1896,11 @@ function renderResumen(){
       var pct=Math.min(p.real||0,100); var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
       var mc=modBg[p._modulo]||'rgba(255,255,255,.1)'; var mt=modTx[p._modulo]||'#fff';
       var gap=((p.real||0)-(p.esp||0));var gapStr=(gap>=0?'+':'')+gap+'%';var gapC=gap>=0?'#22c55e':'#ef4444';
-      return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">'
-        +'<td style="padding:9px 8px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
-        +'<td style="padding:9px 8px;font-size:11px;color:var(--muted)">'+(p.tipo||'—')+'</td>'
-        +'<td style="padding:9px 8px;font-weight:600;color:#fff;max-width:240px"><span class="res-proj-link" data-idx="'+i+'" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.5);transition:color .15s">'+p.nombre+'</span></td>'
-        +'<td style="padding:9px 8px;font-size:12px;color:var(--muted)">'+(p.area||'—')+'</td>'
+      return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.06);height:52px">'
+        +'<td style="padding:11px 10px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
+        +'<td style="padding:11px 10px;font-size:12px;color:var(--muted)">'+(p.tipo||'—')+'</td>'
+        +'<td style="padding:11px 10px;font-weight:600;color:#fff;max-width:260px"><span class="res-proj-link" data-idx="'+i+'" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.5);transition:color .15s">'+p.nombre+'</span></td>'
+        +'<td style="padding:11px 10px;font-size:12px;color:var(--muted)">'+(p.area||'—')+'</td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.inicio||'—')+'</td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.fin||'—')+'</td>'
         +'<td style="padding:9px 8px;min-width:160px">'
@@ -2770,6 +2769,8 @@ try{(function(){
       document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
       tabs[idx].classList.add('active');
       document.getElementById('mod-'+savedTab) && document.getElementById('mod-'+savedTab).classList.add('active');
+      if(savedTab==='resumen') try{ renderResumen(); }catch(e){}
+      if(savedTab==='actividades') try{ renderActividades(); }catch(e){}
     }
   }
   // Mostrar dashboard sin parpadeo
