@@ -1784,7 +1784,15 @@ function sortTab(tab, col, th){
 // ════════════════════════════════════════════════
 // MÓDULO RESUMEN GENERAL
 // ════════════════════════════════════════════════
+var _resFilteredProjects=[];
 var _resChartMod=null,_resChartSem=null,_resChartArea=null,_resChartAvance=null,_resChartRiesgo=null,_resChartGantt=null,_resChartScatter=null,_resChartResp=null,_resChartTipo=null;
+
+function openResumenModal(idx){
+  var p=_resFilteredProjects[idx];
+  if(!p) return;
+  // Reutilizar el modal de IMC (proj-modal) con los datos del proyecto
+  openModal(p);
+}
 
 function _getAllProyectos(){
   var all=[];
@@ -1883,6 +1891,7 @@ function renderResumen(){
   var badge=document.getElementById('res-tbl-badge');
   if(badge) badge.textContent=filtered.length+' proyectos';
   document.getElementById('res-count').textContent=filtered.length+' de '+todos.length;
+  _resFilteredProjects=filtered;
   document.getElementById('res-tbody').innerHTML=!filtered.length
     ?'<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">Sin proyectos con los filtros aplicados</td></tr>'
     :filtered.map(function(p,i){
@@ -1894,14 +1903,11 @@ function renderResumen(){
       return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">'
         +'<td style="padding:9px 8px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted)">'+(p.tipo||'—')+'</td>'
-        +'<td style="padding:9px 8px;font-weight:600;color:#fff;max-width:240px">'+(p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#fff;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.3)">'+p.nombre+'</a>':p.nombre)+'</td>'
+        +'<td style="padding:9px 8px;font-weight:600;color:#fff;max-width:240px"><span class="res-proj-link" data-idx="'+i+'" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.5);transition:color .15s">'+p.nombre+'</span></td>'
         +'<td style="padding:9px 8px;font-size:12px;color:var(--muted)">'+(p.area||'—')+'</td>'
-        +'<td style="padding:9px 8px;font-size:12px">'+(p.responsable||'—')+'</td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.inicio||'—')+'</td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.fin||'—')+'</td>'
-        +'<td style="padding:9px 8px;text-align:center;font-weight:700;color:'+bc+'">'+p.real+'%</td>'
-        +'<td style="padding:9px 8px;text-align:center;font-size:12px;color:var(--muted)">'+p.esp+'%</td>'
-        +'<td style="padding:9px 8px;min-width:140px">'
+        +'<td style="padding:9px 8px;min-width:160px">'
         +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:20px"></div></div>'
         +'<div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px"><span style="color:var(--muted)">'+p.real+'% real</span><span style="color:'+gapC+';font-weight:700">'+gapStr+'</span></div>'
         +'</td>'
@@ -2167,7 +2173,17 @@ function switchTab(id,el){
   el.classList.add('active');
   document.getElementById('mod-'+id).classList.add('active');
   sessionStorage.setItem('activeTab', id);
-  if(id==='resumen'){ try{ renderResumen(); }catch(e){ console.error('renderResumen error:',e); } }
+  if(id==='resumen'){
+    try{ renderResumen(); }catch(e){ console.error('renderResumen error:',e); }
+    var resTbody=document.getElementById('res-tbody');
+    if(resTbody&&!resTbody._delegated){
+      resTbody._delegated=true;
+      resTbody.addEventListener('click',function(e){
+        var link=e.target.closest('.res-proj-link');
+        if(link){ openResumenModal(parseInt(link.dataset.idx)); }
+      });
+    }
+  }
   if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
   if(id==='carga'){ try{ renderDirectorio(); }catch(e){} }
 }
