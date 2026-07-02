@@ -1,3 +1,47 @@
+<!-- Modal Detalle Actividad -->
+<div id="act-detail-bg" onclick="if(event.target===this)closeActDetail()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div id="adet-tipo" style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;margin-bottom:4px"></div>
+        <div class="modal-nombre" id="adet-actividad"></div>
+      </div>
+      <button class="modal-close" onclick="closeActDetail()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="adet-nombre">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="adet-prioridad">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha límite</div>
+          <div class="modal-field-value" id="adet-fecha">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="adet-estatus">—</div>
+        </div>
+      </div>
+      <div id="adet-nota-wrap" style="display:none">
+        <div class="modal-section-label">Nota</div>
+        <div class="modal-desc" id="adet-nota"></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+        <button onclick="deleteActFromDetail()" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <div style="display:flex;gap:8px">
+          <button id="adet-btn-email" onclick="enviarActividadCorreo(_actDetailId)" style="border-radius:8px;padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid rgba(99,179,237,.4);background:rgba(99,179,237,.12);color:#63b3ed">&#128231; Enviar correo</button>
+          <button onclick="editActFromDetail()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
