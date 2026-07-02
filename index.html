@@ -3401,6 +3401,9 @@ function renderActividades(){
   if(actTbody && !actTbody._delegated){
     actTbody._delegated = true;
     actTbody.addEventListener('click', function(e){
+      // Click en nombre de actividad (span clickeable)
+      var link=e.target.closest('.act-act-link');
+      if(link){ openActDetail(link.dataset.actid); return; }
       const btn = e.target.closest('button');
       if(!btn) return;
       const id = btn.dataset.actid;
