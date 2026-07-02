@@ -589,86 +589,89 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 
 <!-- ═══ RESUMEN ═══ -->
 <section class="module" id="mod-resumen">
+
+  <!-- ENCABEZADO + BOTONES -->
   <div class="mod-header">
     <div class="mod-header-left">
       <div class="mod-title">&#128202; <span>Resumen</span> General</div>
-      <div class="mod-sub" id="res-subtitle">Consolidado de todos los módulos DTI</div>
+      <div class="mod-sub" id="res-subtitle">Consolidado de todos los m&#243;dulos DTI</div>
     </div>
     <div class="export-btns">
-      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#22c55e">&#128196; Exportar Excel</button>
+      <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
+      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Descargar Excel</button>
     </div>
   </div>
 
-  <!-- KPIs Globales -->
-  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px"></div>
+  <!-- 1. KPIs GLOBALES -->
+  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px"></div>
 
-  <!-- Fila 1: Gráfica dona por módulo + Gráfica dona por semáforo -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px">
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#127970; Proyectos por Módulo</div>
-      <canvas id="res-chart-modulo" height="200"></canvas>
-    </div>
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#128680; Estado General</div>
-      <canvas id="res-chart-semaforo" height="200"></canvas>
-    </div>
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#127959; Proyectos por Área</div>
-      <canvas id="res-chart-area" height="200"></canvas>
-    </div>
-  </div>
-
-  <!-- Fila 2: Barras de avance promedio por módulo -->
-  <div class="card" style="padding:20px;margin-bottom:24px">
-    <div class="card-title" style="margin-bottom:16px">&#128200; Avance Promedio por Módulo</div>
-    <div id="res-avance-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"></div>
-  </div>
-
-  <!-- Filtros -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
-    <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
-      <option value="">Todos los módulos</option>
+  <!-- 2. FILTROS -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px">
+    <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los m&#243;dulos</option>
       <option value="IMC">IMC</option>
       <option value="Desarrollo">Desarrollo</option>
       <option value="Soporte">Soporte</option>
       <option value="IA">IA</option>
     </select>
-    <select id="res-fil-sem" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
-      <option value="">Todos los estados</option>
+    <select id="res-fil-sem" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los estatus</option>
       <option value="terminado">Terminado</option>
       <option value="tiempo">A tiempo</option>
       <option value="riesgo">Riesgo de atraso</option>
       <option value="atrasado">Atrasado</option>
       <option value="stand">Stand By</option>
     </select>
-    <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
-      <option value="">Todas las áreas</option>
+    <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todas las &#225;reas</option>
     </select>
-    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto..." style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:200px">
-    <span id="res-count" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
+    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto o responsable..." style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:220px;outline:none">
+    <span id="res-count" style="font-size:12px;color:var(--muted);white-space:nowrap;margin-left:auto"></span>
   </div>
 
-  <!-- Tabla consolidada -->
-  <div style="overflow-x:auto">
-    <table class="tbl" id="res-table">
-      <thead><tr>
-        <th style="min-width:90px">Módulo</th>
-        <th style="min-width:80px">Tipo</th>
-        <th style="min-width:220px">Proyecto</th>
-        <th style="min-width:100px">Área</th>
-        <th style="min-width:110px">Responsable</th>
-        <th style="min-width:80px">Inicio</th>
-        <th style="min-width:80px">Fin</th>
-        <th style="min-width:60px;text-align:center">% Real</th>
-        <th style="min-width:60px;text-align:center">% Esp</th>
-        <th style="min-width:180px">Avance</th>
-        <th style="min-width:120px">Semáforo</th>
-      </tr></thead>
-      <tbody id="res-tbody"></tbody>
-    </table>
+  <!-- 3. TABLA CONSOLIDADA -->
+  <div class="card" style="margin-bottom:28px;overflow:hidden">
+    <div style="overflow-x:auto">
+      <table class="tbl" id="res-table">
+        <thead><tr>
+          <th style="min-width:90px">M&#243;dulo</th>
+          <th style="min-width:80px">Tipo</th>
+          <th style="min-width:220px">Proyecto</th>
+          <th style="min-width:100px">&#193;rea</th>
+          <th style="min-width:120px">Responsable</th>
+          <th style="min-width:80px">Inicio</th>
+          <th style="min-width:80px">Fin</th>
+          <th style="min-width:60px;text-align:center">% Real</th>
+          <th style="min-width:60px;text-align:center">% Esp</th>
+          <th style="min-width:160px">Barra de Avance</th>
+          <th style="min-width:130px">Sem&#225;foro</th>
+        </tr></thead>
+        <tbody id="res-tbody"></tbody>
+      </table>
+    </div>
   </div>
+
+  <!-- 4. GRAFICAS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#127970; Proyectos por M&#243;dulo</div>
+      <canvas id="res-chart-modulo" height="210"></canvas>
+    </div>
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#128680; Estado General</div>
+      <canvas id="res-chart-semaforo" height="210"></canvas>
+    </div>
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#127959; Proyectos por &#193;rea</div>
+      <canvas id="res-chart-area" height="210"></canvas>
+    </div>
+  </div>
+  <div class="card" style="padding:22px">
+    <div class="card-title" style="margin-bottom:18px">&#128200; Avance Promedio por M&#243;dulo</div>
+    <div id="res-avance-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:20px"></div>
+  </div>
+
 </section>
-
 <!-- ═══ IMC ═══ -->
 <section class="module active" id="mod-imc">
   <div class="mod-header">
@@ -1953,6 +1956,13 @@ function renderResumen(){
   if(subEl && lastSync) subEl.textContent='Última actualización: '+lastSync.textContent;
 }
 
+function exportResumenPPTX(){
+  // Temporalmente activar mod-resumen para capturar
+  showToast('\u23f3 Generando PPTX del Resumen...','info',5000);
+  setTimeout(function(){
+    exportDashboardPPTX();
+  },300);
+}
 function exportResumenExcel(){
   var todos=_getAllProyectos();
   if(!todos.length){ showToast('Sin datos para exportar','error'); return; }
