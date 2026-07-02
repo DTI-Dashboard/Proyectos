@@ -3427,11 +3427,21 @@ function renderActividades(){
       <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
       <td style="font-size:13px;font-weight:500;${vencida}"><div style="line-height:1.2">${fechaDia}</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">${fechaAnio}</div></td>
       <td><span style="display:inline-flex;align-items:center;gap:5px;color:${ec};background:${ec}18;border:1px solid ${ec}55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">${a.estatus==='En proceso'?'🔵':''}${a.estatus==='Concluido'?'🟢':''}${a.estatus==='Atrasado'?'🔴':''} ${a.estatus}</span></td>
-      <td style="white-space:nowrap">
-          <button class="act-btn-nota" data-actid="${a.id}" style="background:${notaHasTxt?'rgba(201,168,76,.25)':'rgba(99,179,237,.1)'};border:1px solid ${notaHasTxt?'rgba(201,168,76,.6)':'rgba(99,179,237,.2)'};color:${notaHasTxt?'#C9A84C':'#63b3ed'};border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px;font-weight:${notaHasTxt?700:400}" title="${notaHasTxt?'Ver/editar nota':'Agregar nota'}">${notaHasTxt?'&#128203;&nbsp;Nota':'&#128196;'}</button>
-        <button class="act-btn-send" data-actid="${a.id}" style="background:rgba(99,179,237,.12);border:1px solid rgba(99,179,237,.3);color:#63b3ed;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="${a.emailEnviado?'Correo enviado':'Enviar por correo'}">${a.emailEnviado?'\u2705':'\ud83d\udce7'}</button>
-        ${a.estatus!=='Concluido'?`<button class="act-btn-ok" data-actid="${a.id}" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px" title="Marcar como Concluido">✓</button>`:''}
-        
+      <td style="white-space:nowrap;padding:6px 8px">
+        <div style="display:flex;gap:6px;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <button class="act-btn-nota" data-actid="${a.id}" style="background:${notaHasTxt?'rgba(201,168,76,.25)':'rgba(99,179,237,.1)'};border:1px solid ${notaHasTxt?'rgba(201,168,76,.6)':'rgba(99,179,237,.2)'};color:${notaHasTxt?'#C9A84C':'#63b3ed'};border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:${notaHasTxt?700:400}" title="${notaHasTxt?'Ver/editar nota':'Agregar nota'}">${notaHasTxt?'&#128203;':'&#128196;'}</button>
+            <span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">NOTA</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <button class="act-btn-send" data-actid="${a.id}" style="background:${a.emailEnviado?'rgba(34,197,94,.12)':'rgba(99,179,237,.12)'};border:1px solid ${a.emailEnviado?'rgba(34,197,94,.3)':'rgba(99,179,237,.3)'};color:${a.emailEnviado?'#22c55e':'#63b3ed'};border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="${a.emailEnviado?'Correo enviado':'Enviar por correo'}">${a.emailEnviado?'\u2705':'\ud83d\udce7'}</button>
+            <span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">CORREO</span>
+          </div>
+          ${a.estatus!=='Concluido'?`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <button class="act-btn-ok" data-actid="${a.id}" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Marcar como Concluido">&#10003;</button>
+            <span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">LISTO</span>
+          </div>`:''}
+        </div>
       </td>
     </tr>`;
   }).join('');
