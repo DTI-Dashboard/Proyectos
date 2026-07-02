@@ -2633,17 +2633,26 @@ function openActDetail(id){
   if(!a) return;
   _actDetailId=id;
   var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  var fechaFmt='';
+  var fechaFmt='Sin fecha';
   if(a.fechaFin){var fd=new Date(a.fechaFin+'T12:00:00');fechaFmt=String(fd.getDate()).padStart(2,'0')+'/'+meses[fd.getMonth()]+'/'+fd.getFullYear();}
   var pCols={Alta:'#ef4444',Media:'#f59e0b',Baja:'#22c55e'};
   var eCols={'En proceso':'#63b3ed','Concluido':'#22c55e','Atrasado':'#ef4444'};
-  document.getElementById('adet-actividad').textContent=a.actividad||'';
-  document.getElementById('adet-nombre').textContent=a.nombre||'';
-  document.getElementById('adet-prioridad').textContent=a.prioridad||'Media';
-  document.getElementById('adet-prioridad').style.color=pCols[a.prioridad]||'#f59e0b';
-  document.getElementById('adet-fecha').textContent=fechaFmt||'Sin fecha';
-  document.getElementById('adet-estatus').textContent=a.estatus||'En proceso';
-  document.getElementById('adet-estatus').style.color=eCols[a.estatus]||'#63b3ed';
+  // Cabecera
+  var tipoEl=document.getElementById('adet-tipo');
+  if(tipoEl){ tipoEl.textContent='ACTIVIDAD \u00b7 '+(a.prioridad||'Media').toUpperCase(); tipoEl.style.color='var(--gold)'; tipoEl.style.fontSize='11px'; tipoEl.style.fontWeight='700'; tipoEl.style.letterSpacing='.07em'; }
+  document.getElementById('adet-actividad').textContent=a.actividad||'Sin descripcion';
+  // Campos
+  document.getElementById('adet-nombre').textContent=a.nombre||'—';
+  var priEl=document.getElementById('adet-prioridad');
+  priEl.textContent=a.prioridad||'Media';
+  priEl.style.color=pCols[a.prioridad]||'#f59e0b';
+  priEl.style.fontWeight='700';
+  document.getElementById('adet-fecha').textContent=fechaFmt;
+  var estEl=document.getElementById('adet-estatus');
+  estEl.textContent=a.estatus||'En proceso';
+  estEl.style.color=eCols[a.estatus]||'#63b3ed';
+  estEl.style.fontWeight='700';
+  // Nota
   var notaWrap=document.getElementById('adet-nota-wrap');
   if(a.nota&&a.nota.trim()){notaWrap.style.display='block';document.getElementById('adet-nota').textContent=a.nota;}
   else{notaWrap.style.display='none';}
@@ -2654,12 +2663,15 @@ function closeActDetail(){
   _actDetailId=null;
 }
 function editActFromDetail(){
+  var id=_actDetailId;
   closeActDetail();
-  openActModal(_actDetailId);
+  // openActModal ya pre-llena todos los campos cuando recibe el id
+  openActModal(id);
 }
 function deleteActFromDetail(){
+  var id=_actDetailId;
   closeActDetail();
-  deleteActividad(_actDetailId);
+  deleteActividad(id);
 }
 var _notaActIdG=null;
 function openNotaModal(id){
@@ -3483,42 +3495,44 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
 
 <!-- Modal Detalle Actividad -->
 <div id="act-detail-bg" onclick="if(event.target===this)closeActDetail()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
-    <button onclick="closeActDetail()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer">&#x2715;</button>
-    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">DETALLE DE ACTIVIDAD</div>
-    <div style="border-bottom:1px solid var(--border);margin-bottom:18px;padding-bottom:8px"></div>
-    <div style="display:grid;gap:12px">
+  <div class="modal-box">
+    <div class="modal-header">
       <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">ACTIVIDAD</div>
-        <div id="adet-actividad" style="font-size:15px;font-weight:600;color:#fff;line-height:1.4"></div>
+        <div class="modal-tipo" id="adet-tipo" style="margin-bottom:4px"></div>
+        <div class="modal-nombre" id="adet-actividad"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">COLABORADOR</div>
-          <div id="adet-nombre" style="font-size:13px;color:#fff;font-weight:500"></div>
+      <button class="modal-close" onclick="closeActDetail()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="adet-nombre">—</div>
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">PRIORIDAD</div>
-          <div id="adet-prioridad" style="font-size:13px;font-weight:700"></div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="adet-prioridad">—</div>
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">FECHA LIMITE</div>
-          <div id="adet-fecha" style="font-size:13px;color:#fff"></div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha límite</div>
+          <div class="modal-field-value" id="adet-fecha">—</div>
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">ESTATUS</div>
-          <div id="adet-estatus" style="font-size:13px;font-weight:700"></div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="adet-estatus">—</div>
         </div>
       </div>
       <div id="adet-nota-wrap" style="display:none">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">NOTA</div>
-        <div id="adet-nota" style="font-size:13px;color:rgba(255,255,255,.8);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:10px;line-height:1.5"></div>
+        <div class="modal-section-label">Nota</div>
+        <div class="modal-desc" id="adet-nota" style="min-height:40px"></div>
       </div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:22px;border-top:1px solid var(--border);padding-top:16px">
-      <button onclick="deleteActFromDetail()" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
-      <button onclick="editActFromDetail()" style="background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:600">&#9998; Editar</button>
-      <button onclick="closeActDetail()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 22px;cursor:pointer;font-size:13px;font-weight:700">Cerrar</button>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:4px">
+        <button onclick="deleteActFromDetail()" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <div style="display:flex;gap:8px">
+          <button onclick="closeActDetail()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 18px;cursor:pointer;font-size:13px">Cerrar</button>
+          <button onclick="editActFromDetail()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
