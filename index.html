@@ -590,25 +590,25 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 <!-- ═══ RESUMEN ═══ -->
 <section class="module" id="mod-resumen">
 
-  <!-- ENCABEZADO + BOTONES -->
+  <!-- ENCABEZADO -->
   <div class="mod-header">
     <div class="mod-header-left">
-      <div class="mod-title">&#128202; <span>Resumen</span> General</div>
-      <div class="mod-sub" id="res-subtitle">Consolidado de todos los m&#243;dulos DTI</div>
+      <div class="mod-title">&#128202; <span>Resumen</span> Ejecutivo</div>
+      <div class="mod-sub" id="res-subtitle">Consolidado estratégico de todos los módulos DTI — Dirección General</div>
     </div>
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
-      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Descargar Excel</button>
+      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Exportar Excel</button>
     </div>
   </div>
 
-  <!-- 1. KPIs GLOBALES -->
-  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px"></div>
+  <!-- KPIs GLOBALES -->
+  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px"></div>
 
-  <!-- 2. FILTROS -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px">
+  <!-- FILTROS -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:24px">
     <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
-      <option value="">Todos los m&#243;dulos</option>
+      <option value="">Todos los módulos</option>
       <option value="IMC">IMC</option>
       <option value="Desarrollo">Desarrollo</option>
       <option value="Soporte">Soporte</option>
@@ -623,52 +623,106 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <option value="stand">Stand By</option>
     </select>
     <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
-      <option value="">Todas las &#225;reas</option>
+      <option value="">Todas las áreas</option>
     </select>
-    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto o responsable..." style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:220px;outline:none">
-    <span id="res-count" style="font-size:12px;color:var(--muted);white-space:nowrap;margin-left:auto"></span>
+    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto o responsable..." style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:200px;outline:none">
+    <span id="res-count" style="font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap"></span>
   </div>
 
-  <!-- 3. TABLA CONSOLIDADA -->
+  <!-- TABLA CONSOLIDADA -->
   <div class="card" style="margin-bottom:28px;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <div class="card-title" style="margin:0">&#128203; Portafolio Completo de Proyectos</div>
+      <span id="res-tbl-badge" style="background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(201,168,76,.3)"></span>
+    </div>
     <div style="overflow-x:auto">
-      <table class="tbl" id="res-table">
+      <table class="tbl">
         <thead><tr>
-          <th style="min-width:90px">M&#243;dulo</th>
+          <th style="min-width:90px">Módulo</th>
           <th style="min-width:80px">Tipo</th>
           <th style="min-width:220px">Proyecto</th>
-          <th style="min-width:100px">&#193;rea</th>
-          <th style="min-width:120px">Responsable</th>
-          <th style="min-width:80px">Inicio</th>
-          <th style="min-width:80px">Fin</th>
-          <th style="min-width:60px;text-align:center">% Real</th>
-          <th style="min-width:60px;text-align:center">% Esp</th>
+          <th style="min-width:110px">Área</th>
+          <th style="min-width:130px">Responsable</th>
+          <th style="min-width:82px">Inicio</th>
+          <th style="min-width:82px">Fin</th>
+          <th style="min-width:58px;text-align:center">% Real</th>
+          <th style="min-width:58px;text-align:center">% Esp</th>
           <th style="min-width:160px">Barra de Avance</th>
-          <th style="min-width:130px">Sem&#225;foro</th>
+          <th style="min-width:130px">Semáforo</th>
         </tr></thead>
         <tbody id="res-tbody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- 4. GRAFICAS -->
+  <!-- FILA 1: 3 DONAS -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#127970; Proyectos por M&#243;dulo</div>
-      <canvas id="res-chart-modulo" height="210"></canvas>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127970; Por Módulo</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución del portafolio</div>
+      <canvas id="res-chart-modulo" height="200"></canvas>
     </div>
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#128680; Estado General</div>
-      <canvas id="res-chart-semaforo" height="210"></canvas>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128680; Estado General</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Semáforo consolidado</div>
+      <canvas id="res-chart-semaforo" height="200"></canvas>
     </div>
-    <div class="card" style="padding:20px">
-      <div class="card-title" style="margin-bottom:14px">&#127959; Proyectos por &#193;rea</div>
-      <canvas id="res-chart-area" height="210"></canvas>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127959; Por Área</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Top áreas por volumen</div>
+      <canvas id="res-chart-area" height="200"></canvas>
     </div>
   </div>
-  <div class="card" style="padding:22px">
-    <div class="card-title" style="margin-bottom:18px">&#128200; Avance Promedio por M&#243;dulo</div>
-    <div id="res-avance-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:20px"></div>
+
+  <!-- FILA 2: AVANCE POR MÓDULO + RIESGO POR ÁREA -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128200; Avance Real vs Esperado</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Comparativo por módulo</div>
+      <canvas id="res-chart-avance" height="180"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#9888;&#65039; Proyectos en Riesgo / Atrasados</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Por área — requieren atención</div>
+      <canvas id="res-chart-riesgo" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 3: GANTT GLOBAL + SCATTER AVANCE -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128197; Línea de Tiempo — Gantt Global</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Todos los proyectos activos con fechas de inicio y fin</div>
+      <div style="overflow-x:auto"><canvas id="res-chart-gantt" height="320"></canvas></div>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127919; % Real vs % Esperado</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Dispersión — arriba de la línea = adelantado</div>
+      <canvas id="res-chart-scatter" height="320"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 4: TOP RESPONSABLES + TIPOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128100; Carga por Responsable</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Proyectos asignados por persona</div>
+      <canvas id="res-chart-resp" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127775; Tipos de Proyecto</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución por categoría</div>
+      <canvas id="res-chart-tipo" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- PROYECTOS CRITICOS -->
+  <div class="card" style="padding:22px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="card-title" style="margin:0">&#128680; Proyectos Críticos — Acción Inmediata</div>
+      <span style="background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.3)">ATRASADOS + RIESGO</span>
+    </div>
+    <div id="res-criticos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
   </div>
 
 </section>
@@ -1731,21 +1785,13 @@ function sortTab(tab, col, th){
 // ════════════════════════════════════════════════
 // MÓDULO RESUMEN GENERAL
 // ════════════════════════════════════════════════
-var _resChartMod=null, _resChartSem=null, _resChartArea=null;
+var _resChartMod=null,_resChartSem=null,_resChartArea=null,_resChartAvance=null,_resChartRiesgo=null,_resChartGantt=null,_resChartScatter=null,_resChartResp=null,_resChartTipo=null;
 
 function _getAllProyectos(){
   var all=[];
-  var mods=[
-    {key:'imc',label:'IMC'},
-    {key:'dev',label:'Desarrollo'},
-    {key:'inf',label:'Soporte'},
-    {key:'ia',label:'IA'}
-  ];
-  mods.forEach(function(m){
+  [{key:'imc',label:'IMC'},{key:'dev',label:'Desarrollo'},{key:'inf',label:'Soporte'},{key:'ia',label:'IA'}].forEach(function(m){
     var data=(state[m.key]&&state[m.key].data)?state[m.key].data:[];
-    data.forEach(function(p){
-      all.push(Object.assign({},p,{_modulo:m.label}));
-    });
+    data.forEach(function(p){ all.push(Object.assign({},p,{_modulo:m.label})); });
   });
   return all;
 }
@@ -1759,201 +1805,266 @@ function _resSem(p){
   return 'atrasado';
 }
 
+function _destroyRes(charts){
+  charts.forEach(function(ref){
+    if(ref&&ref.destroy) ref.destroy();
+  });
+}
+
 function renderResumen(){
   var todos=_getAllProyectos();
+  var isDark=!document.body.classList.contains('light-mode');
+  var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  var tickColor=isDark?'rgba(255,255,255,.5)':'rgba(0,0,0,.5)';
+  var borderBg=isDark?'#1A2340':'#f0f4fa';
+
   if(!todos.length){
-    document.getElementById('res-tbody').innerHTML='<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Sin datos disponibles. Actualiza los datos desde Smartsheet.</td></tr>';
+    document.getElementById('res-tbody').innerHTML='<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Sin datos. Actualiza desde Smartsheet.</td></tr>';
     return;
   }
 
   // Filtros
-  var filMod=(document.getElementById('res-fil-modulo')||{}).value||'';
-  var filSem=(document.getElementById('res-fil-sem')||{}).value||'';
-  var filArea=(document.getElementById('res-fil-area')||{}).value||'';
-  var search=((document.getElementById('res-search')||{}).value||'').toLowerCase().trim();
+  var filMod=document.getElementById('res-fil-modulo').value||'';
+  var filSem=document.getElementById('res-fil-sem').value||'';
+  var filArea=document.getElementById('res-fil-area').value||'';
+  var search=(document.getElementById('res-search').value||'').toLowerCase().trim();
 
-  // Llenar select de áreas dinámicamente
-  var areas=[...new Set(todos.map(function(p){return p.area||'Sin área';}))].sort();
+  // Poblar select áreas
   var selArea=document.getElementById('res-fil-area');
-  if(selArea&&selArea.options.length<=1){
-    areas.forEach(function(a){
-      var o=document.createElement('option'); o.value=a; o.textContent=a;
-      selArea.appendChild(o);
-    });
+  if(selArea.options.length<=1){
+    var areas=[...new Set(todos.map(function(p){return p.area||'Sin área';}))].sort();
+    areas.forEach(function(a){var o=document.createElement('option');o.value=a;o.textContent=a;selArea.appendChild(o);});
   }
 
   var filtered=todos.filter(function(p){
     if(filMod && p._modulo!==filMod) return false;
     if(filSem && _resSem(p)!==filSem) return false;
     if(filArea && (p.area||'Sin área')!==filArea) return false;
-    if(search && !(p.nombre||'').toLowerCase().includes(search) &&
-                 !(p.responsable||'').toLowerCase().includes(search) &&
-                 !(p.area||'').toLowerCase().includes(search)) return false;
+    if(search && !(p.nombre||'').toLowerCase().includes(search) && !(p.responsable||'').toLowerCase().includes(search) && !(p.area||'').toLowerCase().includes(search)) return false;
     return true;
   });
 
-  // ── KPIs Globales ──────────────────────────────────────────────────────
+  // ── KPIs ──────────────────────────────────────────────────────────────
   var total=filtered.length;
   var term=filtered.filter(function(p){return _resSem(p)==='terminado';}).length;
   var atiempo=filtered.filter(function(p){return _resSem(p)==='tiempo';}).length;
   var riesgo=filtered.filter(function(p){return _resSem(p)==='riesgo';}).length;
   var atras=filtered.filter(function(p){return _resSem(p)==='atrasado';}).length;
   var stand=filtered.filter(function(p){return _resSem(p)==='stand';}).length;
-  var pct_cerrar=filtered.filter(function(p){return p.real>=90&&_resSem(p)!=='terminado';}).length;
+  var porCerrar=filtered.filter(function(p){return p.real>=90&&_resSem(p)!=='terminado';}).length;
   var avgReal=total?Math.round(filtered.reduce(function(s,p){return s+(p.real||0);},0)/total):0;
+  var saludPct=total?Math.round((term+atiempo)/total*100):0;
 
-  var kpiEl=document.getElementById('res-kpis');
   var kpis=[
-    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo'},
-    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% completado'},
-    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado'},
-    {l:'En Riesgo',v:riesgo,c:'#f59e0b',sub:'Requieren atención'},
-    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Escalados'},
-    {l:'Por Cerrar',v:pct_cerrar,c:'#a78bfa',sub:'Avance >90%'},
-    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa'},
-    {l:'Avance Promedio',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos'}
+    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo',icon:'&#128202;'},
+    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total',icon:'&#10003;'},
+    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado',icon:'&#128994;'},
+    {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear',icon:'&#9888;'},
+    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata',icon:'&#128308;'},
+    {l:'Por Cerrar',v:porCerrar,c:'#a78bfa',sub:'Avance >90%',icon:'&#127919;'},
+    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa',icon:'&#9208;'},
+    {l:'Avance Prom.',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos',icon:'&#128200;'},
+    {l:'Salud General',v:saludPct+'%',c:saludPct>=70?'#22c55e':saludPct>=50?'#f59e0b':'#ef4444',sub:saludPct>=70?'Portafolio saludable':'Requiere atención',icon:'&#128138;'}
   ];
-  kpiEl.innerHTML=kpis.map(function(k){
-    return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:default">'
-      +'<div class="kpi-val" style="color:'+k.c+';font-size:28px;font-weight:800">'+k.v+'</div>'
-      +'<div class="kpi-label" style="font-size:11px;font-weight:700;letter-spacing:.05em;margin-top:4px">'+k.l+'</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+k.sub+'</div>'
+  document.getElementById('res-kpis').innerHTML=kpis.map(function(k){
+    return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:default;min-height:100px">'
+      +'<div style="font-size:20px;margin-bottom:4px">'+k.icon+'</div>'
+      +'<div class="kpi-val" style="color:'+k.c+';font-size:26px;font-weight:800;line-height:1">'+k.v+'</div>'
+      +'<div class="kpi-label" style="font-size:10px;font-weight:700;letter-spacing:.05em;margin-top:5px;text-align:center">'+k.l+'</div>'
+      +'<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:center">'+k.sub+'</div>'
       +'</div>';
   }).join('');
 
-  // ── Gráfica por módulo ─────────────────────────────────────────────────
+  // ── TABLA ─────────────────────────────────────────────────────────────
+  var semC={terminado:'#22c55e',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#6b7280'};
+  var semL={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
+  var semI={terminado:'&#9679;',tiempo:'&#9679;',riesgo:'&#9651;',atrasado:'&#9679;',stand:'&#9632;'};
+  var modBg={IMC:'rgba(201,168,76,.18)',Desarrollo:'rgba(99,179,237,.18)',Soporte:'rgba(34,197,94,.18)',IA:'rgba(167,139,250,.18)'};
+  var modTx={IMC:'#C9A84C',Desarrollo:'#63b3ed',Soporte:'#22c55e',IA:'#a78bfa'};
+  var badge=document.getElementById('res-tbl-badge');
+  if(badge) badge.textContent=filtered.length+' proyectos';
+  document.getElementById('res-count').textContent=filtered.length+' de '+todos.length;
+  document.getElementById('res-tbody').innerHTML=!filtered.length
+    ?'<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">Sin proyectos con los filtros aplicados</td></tr>'
+    :filtered.map(function(p,i){
+      var s=_resSem(p);var sc=semC[s]||'#888';var sl=semL[s]||p.sem;var si=semI[s]||'&#9679;';
+      var bc=s==='terminado'||s==='tiempo'?'#22c55e':s==='riesgo'?'#f59e0b':s==='atrasado'?'#ef4444':'#6b7280';
+      var pct=Math.min(p.real||0,100); var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
+      var mc=modBg[p._modulo]||'rgba(255,255,255,.1)'; var mt=modTx[p._modulo]||'#fff';
+      var gap=((p.real||0)-(p.esp||0));var gapStr=(gap>=0?'+':'')+gap+'%';var gapC=gap>=0?'#22c55e':'#ef4444';
+      return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">'
+        +'<td style="padding:9px 8px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
+        +'<td style="padding:9px 8px;font-size:11px;color:var(--muted)">'+(p.tipo||'—')+'</td>'
+        +'<td style="padding:9px 8px;font-weight:600;color:#fff;max-width:240px">'+(p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#fff;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.3)">'+p.nombre+'</a>':p.nombre)+'</td>'
+        +'<td style="padding:9px 8px;font-size:12px;color:var(--muted)">'+(p.area||'—')+'</td>'
+        +'<td style="padding:9px 8px;font-size:12px">'+(p.responsable||'—')+'</td>'
+        +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.inicio||'—')+'</td>'
+        +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.fin||'—')+'</td>'
+        +'<td style="padding:9px 8px;text-align:center;font-weight:700;color:'+bc+'">'+p.real+'%</td>'
+        +'<td style="padding:9px 8px;text-align:center;font-size:12px;color:var(--muted)">'+p.esp+'%</td>'
+        +'<td style="padding:9px 8px;min-width:140px">'
+        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:20px"></div></div>'
+        +'<div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px"><span style="color:var(--muted)">'+p.real+'% real</span><span style="color:'+gapC+';font-weight:700">'+gapStr+'</span></div>'
+        +'</td>'
+        +'<td style="padding:9px 8px"><span style="color:'+sc+';background:'+sc+'22;border:1px solid '+sc+'44;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap">'+si+' '+sl+'</span></td>'
+        +'</tr>';
+    }).join('');
+
+  // ── PROYECTOS CRÍTICOS ────────────────────────────────────────────────
+  var criticos=todos.filter(function(p){return _resSem(p)==='atrasado'||_resSem(p)==='riesgo';})
+    .sort(function(a,b){return (a.real||0)-(b.real||0)}).slice(0,8);
+  var crEl=document.getElementById('res-criticos');
+  if(crEl){
+    crEl.innerHTML=!criticos.length
+      ?'<div style="color:var(--muted);font-size:13px;padding:20px;grid-column:span 2;text-align:center">&#9989; Sin proyectos críticos actualmente</div>'
+      :criticos.map(function(p){
+        var s=_resSem(p); var sc=s==='atrasado'?'#ef4444':'#f59e0b';
+        var gap=(p.real||0)-(p.esp||0);
+        var mt=modTx[p._modulo]||'#fff'; var mc=modBg[p._modulo]||'rgba(255,255,255,.1)';
+        return '<div style="background:rgba(239,68,68,.05);border:1px solid '+sc+'33;border-radius:10px;padding:14px;position:relative;overflow:hidden">'
+          +'<div style="position:absolute;top:0;left:0;width:3px;height:100%;background:'+sc+'"></div>'
+          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;padding-left:6px">'
+          +'<div style="font-size:12px;font-weight:600;color:#fff;line-height:1.3;flex:1;margin-right:8px">'+p.nombre+'</div>'
+          +'<span style="background:'+mc+';color:'+mt+';font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span>'
+          +'</div>'
+          +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-left:6px;margin-bottom:8px">'
+          +'<div style="font-size:10px;color:var(--muted)">Área<br><span style="color:#fff;font-weight:600">'+(p.area||'—')+'</span></div>'
+          +'<div style="font-size:10px;color:var(--muted)">Responsable<br><span style="color:#fff;font-weight:600">'+(p.responsable||'—')+'</span></div>'
+          +'<div style="font-size:10px;color:var(--muted)">Fin<br><span style="color:'+sc+';font-weight:700">'+(p.fin||'—')+'</span></div>'
+          +'</div>'
+          +'<div style="padding-left:6px">'
+          +'<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:10px"><span style="color:var(--muted)">Avance</span><span style="color:'+sc+';font-weight:700">'+p.real+'% real / '+p.esp+'% esp ('+( gap>=0?'+':'')+gap+'%)</span></div>'
+          +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:6px;overflow:hidden"><div style="width:'+Math.min(p.real,100)+'%;height:100%;background:'+sc+';border-radius:20px"></div></div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+  }
+
+  // Destruir charts anteriores
+  [_resChartMod,_resChartSem,_resChartArea,_resChartAvance,_resChartRiesgo,_resChartGantt,_resChartScatter,_resChartResp,_resChartTipo].forEach(function(c){if(c)c.destroy();});
+
+  // ── DONA: por módulo ─────────────────────────────────────────────────
   var modCounts={};
-  filtered.forEach(function(p){ modCounts[p._modulo]=(modCounts[p._modulo]||0)+1; });
-  var modLabels=Object.keys(modCounts);
-  var modData=modLabels.map(function(k){return modCounts[k];});
-  var modColors=['#C9A84C','#63b3ed','#22c55e','#a78bfa'];
-  var ctxMod=document.getElementById('res-chart-modulo');
-  if(ctxMod){
-    if(_resChartMod) _resChartMod.destroy();
-    _resChartMod=new Chart(ctxMod,{
-      type:'doughnut',
-      data:{labels:modLabels,datasets:[{data:modData,backgroundColor:modColors,borderWidth:2,borderColor:'#1A2340',hoverOffset:8}]},
-      options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.7)',font:{size:11},padding:10}}}}
-    });
-  }
+  filtered.forEach(function(p){modCounts[p._modulo]=(modCounts[p._modulo]||0)+1;});
+  var modL=Object.keys(modCounts), modD=modL.map(function(k){return modCounts[k];});
+  _resChartMod=new Chart(document.getElementById('res-chart-modulo'),{
+    type:'doughnut',
+    data:{labels:modL,datasets:[{data:modD,backgroundColor:['#C9A84C','#63b3ed','#22c55e','#a78bfa'],borderWidth:2,borderColor:borderBg,hoverOffset:8}]},
+    options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:tickColor,font:{size:11},padding:10}},tooltip:{callbacks:{label:function(c){return c.label+': '+c.raw+' ('+Math.round(c.raw/filtered.length*100)+'%)';}}}}}}
+  );
 
-  // ── Gráfica semáforo ───────────────────────────────────────────────────
-  var semLabels=['Terminado','A Tiempo','Riesgo','Atrasado','Stand By'];
-  var semData=[term,atiempo,riesgo,atras,stand];
-  var semColors=['#22c55e','#22c55e','#f59e0b','#ef4444','#6b7280'];
-  var ctxSem=document.getElementById('res-chart-semaforo');
-  if(ctxSem){
-    if(_resChartSem) _resChartSem.destroy();
-    _resChartSem=new Chart(ctxSem,{
-      type:'doughnut',
-      data:{labels:semLabels,datasets:[{data:semData,backgroundColor:semColors,borderWidth:2,borderColor:'#1A2340',hoverOffset:8}]},
-      options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.7)',font:{size:11},padding:8}}}}
-    });
-  }
+  // ── DONA: semáforo ───────────────────────────────────────────────────
+  _resChartSem=new Chart(document.getElementById('res-chart-semaforo'),{
+    type:'doughnut',
+    data:{labels:['Terminado','A Tiempo','Riesgo','Atrasado','Stand By'],datasets:[{data:[term,atiempo,riesgo,atras,stand],backgroundColor:['#22c55e','#4ade80','#f59e0b','#ef4444','#6b7280'],borderWidth:2,borderColor:borderBg,hoverOffset:8}]},
+    options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:tickColor,font:{size:11},padding:8}}}}}
+  );
 
-  // ── Gráfica por área (top 6) ───────────────────────────────────────────
-  var areaCounts={};
-  filtered.forEach(function(p){ var a=p.area||'Sin área'; areaCounts[a]=(areaCounts[a]||0)+1; });
-  var areaSorted=Object.entries(areaCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
-  var areaLabels=areaSorted.map(function(x){return x[0];});
-  var areaData=areaSorted.map(function(x){return x[1];});
-  var areaColors=['#C9A84C','#63b3ed','#22c55e','#a78bfa','#f59e0b','#ef4444','#14b8a6'];
-  var ctxArea=document.getElementById('res-chart-area');
-  if(ctxArea){
-    if(_resChartArea) _resChartArea.destroy();
-    _resChartArea=new Chart(ctxArea,{
+  // ── BARRAS HORIZONTALES: por área ────────────────────────────────────
+  var areaCts={};
+  filtered.forEach(function(p){var a=p.area||'Sin área';areaCts[a]=(areaCts[a]||0)+1;});
+  var aSorted=Object.entries(areaCts).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  _resChartArea=new Chart(document.getElementById('res-chart-area'),{
+    type:'bar',
+    data:{labels:aSorted.map(function(x){return x[0];}),datasets:[{label:'Proyectos',data:aSorted.map(function(x){return x[1];}),backgroundColor:['#C9A84C','#63b3ed','#22c55e','#a78bfa','#f59e0b','#ef4444','#14b8a6','#f97316'],borderRadius:6,borderWidth:0}]},
+    options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}},y:{ticks:{color:tickColor,font:{size:10}},grid:{display:false}}}}}
+  );
+
+  // ── BARRAS AGRUPADAS: Avance Real vs Esperado por módulo ─────────────
+  var modAvgR={},modAvgE={},modCnt={};
+  todos.forEach(function(p){
+    if(!modAvgR[p._modulo]){modAvgR[p._modulo]=0;modAvgE[p._modulo]=0;modCnt[p._modulo]=0;}
+    modAvgR[p._modulo]+=(p.real||0); modAvgE[p._modulo]+=(p.esp||0); modCnt[p._modulo]++;
+  });
+  var modKeys=Object.keys(modAvgR);
+  _resChartAvance=new Chart(document.getElementById('res-chart-avance'),{
+    type:'bar',
+    data:{labels:modKeys,datasets:[
+      {label:'% Real',data:modKeys.map(function(k){return Math.round(modAvgR[k]/modCnt[k]);}),backgroundColor:'rgba(201,168,76,.8)',borderRadius:6,borderWidth:0},
+      {label:'% Esperado',data:modKeys.map(function(k){return Math.round(modAvgE[k]/modCnt[k]);}),backgroundColor:'rgba(99,179,237,.4)',borderRadius:6,borderWidth:0}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:tickColor,font:{size:11}}}},scales:{x:{ticks:{color:tickColor},grid:{display:false}},y:{max:100,ticks:{color:tickColor,callback:function(v){return v+'%';}},grid:{color:gridColor}}}}}
+  );
+
+  // ── BARRAS: proyectos en riesgo/atrasados por área ────────────────────
+  var areaRisk={};
+  todos.filter(function(p){return _resSem(p)==='atrasado'||_resSem(p)==='riesgo';}).forEach(function(p){
+    var a=p.area||'Sin área'; if(!areaRisk[a]) areaRisk[a]={atrasado:0,riesgo:0};
+    if(_resSem(p)==='atrasado') areaRisk[a].atrasado++; else areaRisk[a].riesgo++;
+  });
+  var riskKeys=Object.keys(areaRisk).sort(function(a,b){return (areaRisk[b].atrasado+areaRisk[b].riesgo)-(areaRisk[a].atrasado+areaRisk[a].riesgo);}).slice(0,7);
+  _resChartRiesgo=new Chart(document.getElementById('res-chart-riesgo'),{
+    type:'bar',
+    data:{labels:riskKeys,datasets:[
+      {label:'Atrasado',data:riskKeys.map(function(k){return areaRisk[k].atrasado;}),backgroundColor:'rgba(239,68,68,.75)',borderRadius:4,borderWidth:0},
+      {label:'Riesgo',data:riskKeys.map(function(k){return areaRisk[k].riesgo;}),backgroundColor:'rgba(245,158,11,.65)',borderRadius:4,borderWidth:0}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:tickColor,font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:tickColor,font:{size:10}},grid:{display:false}},y:{stacked:true,ticks:{color:tickColor,precision:0},grid:{color:gridColor}}}}}
+  );
+
+  // ── GANTT GLOBAL ─────────────────────────────────────────────────────
+  var ganttProjs=filtered.filter(function(p){return p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—';}).slice(0,20);
+  var semColorsGantt={terminado:'rgba(34,197,94,.8)',tiempo:'rgba(34,197,94,.8)',riesgo:'rgba(245,158,11,.8)',atrasado:'rgba(239,68,68,.8)',stand:'rgba(107,114,128,.8)'};
+  if(ganttProjs.length){
+    var parseFecha=function(s){var p=s.split('/');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(s);};
+    var allDates=ganttProjs.reduce(function(acc,p){acc.push(parseFecha(p.inicio),parseFecha(p.fin));return acc;},[]);
+    var minD=new Date(Math.min.apply(null,allDates)); var maxD=new Date(Math.max.apply(null,allDates));
+    var totalDays=(maxD-minD)/86400000||1;
+    var labels=ganttProjs.map(function(p){return p.nombre.length>28?p.nombre.slice(0,26)+'…':p.nombre;});
+    var starts=ganttProjs.map(function(p){return (parseFecha(p.inicio)-minD)/86400000;});
+    var durations=ganttProjs.map(function(p){return Math.max(1,(parseFecha(p.fin)-parseFecha(p.inicio))/86400000);});
+    var colors=ganttProjs.map(function(p){return semColorsGantt[_resSem(p)]||'rgba(201,168,76,.7)';});
+    _resChartGantt=new Chart(document.getElementById('res-chart-gantt'),{
       type:'bar',
-      data:{labels:areaLabels,datasets:[{data:areaData,backgroundColor:areaColors,borderRadius:6,borderWidth:0}]},
-      options:{
-        responsive:true,indexAxis:'y',
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{ticks:{color:'rgba(255,255,255,.5)',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
-          y:{ticks:{color:'rgba(255,255,255,.7)',font:{size:10}},grid:{display:false}}
-        }
+      data:{labels:labels,datasets:[
+        {data:starts,backgroundColor:'transparent',borderWidth:0},
+        {label:'Duración',data:durations,backgroundColor:colors,borderRadius:4,borderWidth:0,borderSkipped:false}
+      ]},
+      options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false},tooltip:{filter:function(i){return i.datasetIndex===1;},callbacks:{label:function(c){var p=ganttProjs[c.dataIndex];return p.inicio+' → '+p.fin+' | '+p.real+'% real';}}}},
+        scales:{x:{stacked:true,min:0,max:totalDays,ticks:{color:tickColor,font:{size:9},callback:function(v){var d=new Date(minD.getTime()+v*86400000);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});}},grid:{color:gridColor}},
+          y:{stacked:true,ticks:{color:tickColor,font:{size:9}},grid:{display:false}}}
       }
     });
   }
 
-  // ── Barras de avance promedio por módulo ───────────────────────────────
-  var modAvg={};
-  todos.forEach(function(p){
-    if(!modAvg[p._modulo]) modAvg[p._modulo]={sum:0,cnt:0};
-    modAvg[p._modulo].sum+=(p.real||0); modAvg[p._modulo].cnt++;
+  // ── SCATTER: Real vs Esperado ─────────────────────────────────────────
+  var scatterData=filtered.map(function(p){return {x:p.esp||0,y:p.real||0,nombre:p.nombre,modulo:p._modulo};});
+  var scColors=filtered.map(function(p){return semC[_resSem(p)]||'#888';});
+  _resChartScatter=new Chart(document.getElementById('res-chart-scatter'),{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Proyectos',data:scatterData,backgroundColor:scColors,pointRadius:6,pointHoverRadius:9},
+      {label:'Línea ideal',data:[{x:0,y:0},{x:100,y:100}],type:'line',borderColor:'rgba(255,255,255,.2)',borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){var d=c.raw;return (d.nombre||'').slice(0,30)+' | Real: '+d.y+'% Esp: '+d.x+'%';}}}},
+      scales:{x:{min:0,max:100,title:{display:true,text:'% Esperado',color:tickColor,font:{size:10}},ticks:{color:tickColor,callback:function(v){return v+'%';}},grid:{color:gridColor}},
+        y:{min:0,max:100,title:{display:true,text:'% Real',color:tickColor,font:{size:10}},ticks:{color:tickColor,callback:function(v){return v+'%';}},grid:{color:gridColor}}}
+    }
   });
-  var avanceEl=document.getElementById('res-avance-modulos');
-  if(avanceEl){
-    avanceEl.innerHTML=Object.entries(modAvg).map(function(entry){
-      var mod=entry[0], vals=entry[1];
-      var avg=Math.round(vals.sum/vals.cnt);
-      var c=avg>=80?'#22c55e':avg>=50?'#f59e0b':'#ef4444';
-      return '<div>'
-        +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
-        +'<span style="font-size:13px;font-weight:600">'+mod+'</span>'
-        +'<span style="font-size:13px;font-weight:700;color:'+c+'">'+avg+'%</span>'
-        +'</div>'
-        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">'
-        +'<div style="width:'+avg+'%;height:100%;background:'+c+';border-radius:20px;transition:width .6s ease"></div>'
-        +'</div>'
-        +'<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted)">'
-        +'<span>'+vals.cnt+' proyectos</span>'
-        +'<span>'+(vals.cnt - Math.round(vals.cnt*(avg/100)))+' pendientes</span>'
-        +'</div>'
-        +'</div>';
-    }).join('');
-  }
 
-  // ── Tabla consolidada ─────────────────────────────────────────────────
-  var semColors2={terminado:'#22c55e',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#6b7280'};
-  var semLabels2={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
-  var modBadgeColors={IMC:'rgba(201,168,76,.2)',Desarrollo:'rgba(99,179,237,.2)',Soporte:'rgba(34,197,94,.2)',IA:'rgba(167,139,250,.2)'};
-  var modTextColors={IMC:'#C9A84C',Desarrollo:'#63b3ed',Soporte:'#22c55e',IA:'#a78bfa'};
+  // ── BARRAS: por responsable (top 10) ──────────────────────────────────
+  var respCts={};
+  filtered.forEach(function(p){var r=p.responsable||'Sin asignar';respCts[r]=(respCts[r]||0)+1;});
+  var respSorted=Object.entries(respCts).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
+  _resChartResp=new Chart(document.getElementById('res-chart-resp'),{
+    type:'bar',
+    data:{labels:respSorted.map(function(x){return x[0].split(' ').slice(0,2).join(' ');}),datasets:[{label:'Proyectos',data:respSorted.map(function(x){return x[1];}),backgroundColor:'rgba(99,179,237,.75)',borderRadius:6,borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tickColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:tickColor,precision:0},grid:{color:gridColor}}}}}
+  );
 
-  var tbody=document.getElementById('res-tbody');
-  if(!filtered.length){
-    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Sin proyectos con los filtros aplicados</td></tr>';
-  } else {
-    tbody.innerHTML=filtered.map(function(p,i){
-      var s=_resSem(p);
-      var sc=semColors2[s]||'#888';
-      var sl=semLabels2[s]||p.sem;
-      var bc=s==='terminado'?'#22c55e':s==='tiempo'?'#22c55e':s==='riesgo'?'#f59e0b':s==='atrasado'?'#ef4444':'#6b7280';
-      var pct=Math.min(p.real||0,100);
-      var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
-      var mc=modBadgeColors[p._modulo]||'rgba(255,255,255,.1)';
-      var mt=modTextColors[p._modulo]||'#fff';
-      return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">'
-        +'<td style="padding:10px 8px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
-        +'<td style="padding:10px 8px;font-size:11px;color:var(--muted)">'+( p.tipo||'—')+'</td>'
-        +'<td style="padding:10px 8px;font-weight:600;color:#fff;max-width:240px">'
-        +(p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#fff;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.3)">'+p.nombre+'</a>':p.nombre)
-        +'</td>'
-        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted)">'+( p.area||'—')+'</td>'
-        +'<td style="padding:10px 8px;font-size:12px;color:rgba(255,255,255,.8)">'+( p.responsable||'—')+'</td>'
-        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted);white-space:nowrap">'+( p.inicio||'—')+'</td>'
-        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted);white-space:nowrap">'+( p.fin||'—')+'</td>'
-        +'<td style="padding:10px 8px;text-align:center;font-weight:700;color:'+bc+'">'+p.real+'%</td>'
-        +'<td style="padding:10px 8px;text-align:center;font-size:12px;color:var(--muted)">'+p.esp+'%</td>'
-        +'<td style="padding:10px 8px;min-width:140px">'
-        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden">'
-        +'<div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:20px"></div>'
-        +'</div>'
-        +'<div style="font-size:10px;color:var(--muted);margin-top:3px;text-align:right">'+p.real+'% / '+p.esp+'% esp</div>'
-        +'</td>'
-        +'<td style="padding:10px 8px"><span style="color:'+sc+';background:'+sc+'22;border:1px solid '+sc+'55;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">'
-        +( s==='atrasado'?'&#9679; ':s==='tiempo'||s==='terminado'?'&#10003; ':s==='riesgo'?'&#9651; ':'&#9679; ')
-        +sl+'</span></td>'
-        +'</tr>';
-    }).join('');
-  }
+  // ── DONA: por tipo ─────────────────────────────────────────────────
+  var tipoCts={};
+  filtered.forEach(function(p){var t=p.tipo||'Sin tipo';tipoCts[t]=(tipoCts[t]||0)+1;});
+  var tipoL=Object.keys(tipoCts);
+  _resChartTipo=new Chart(document.getElementById('res-chart-tipo'),{
+    type:'pie',
+    data:{labels:tipoL,datasets:[{data:tipoL.map(function(k){return tipoCts[k];}),backgroundColor:['#C9A84C','#63b3ed','#22c55e','#a78bfa','#f59e0b','#ef4444'],borderWidth:2,borderColor:borderBg,hoverOffset:8}]},
+    options:{responsive:true,plugins:{legend:{position:'right',labels:{color:tickColor,font:{size:11},padding:12}}}}}
+  );
 
-  var countEl=document.getElementById('res-count');
-  if(countEl) countEl.textContent=filtered.length+' de '+todos.length+' proyectos';
-
-  // Actualizar subtitle con fecha del último sync
-  var lastSync=document.getElementById('last-sync-time');
+  // Subtitle
   var subEl=document.getElementById('res-subtitle');
-  if(subEl && lastSync) subEl.textContent='Última actualización: '+lastSync.textContent;
+  if(subEl) subEl.textContent='Consolidado estratégico — '+todos.length+' proyectos en '+Object.keys(modCounts||{IMC:1}).length+' módulos';
 }
 
 function exportResumenPPTX(){
