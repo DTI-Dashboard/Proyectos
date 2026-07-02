@@ -1087,7 +1087,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
       <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
       <button id="act-save-btn" onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
-      
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo(null)" style="display:none;background:rgba(99,179,237,.15);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-weight:600;font-size:13px;cursor:pointer">&#128231; Guardar y enviar correo</button>
     </div>
   </div>
 </div>
@@ -3029,8 +3029,9 @@ function openActModal(id){
     var emailInp=document.getElementById('act-inp-email');
     if(emailInp) emailInp.value=a.emailDest||'';
     document.getElementById('act-inp-dest').value=a.emailDest||'';
+    // En edición, ocultar siempre el botón de guardar y enviar
     var sendBtn=document.getElementById('act-btn-send-modal');
-    if(sendBtn) sendBtn.style.display=(a.emailDest)?'inline-block':'none';
+    if(sendBtn) sendBtn.style.display='none';
   } else {
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
     document.getElementById('act-save-btn').textContent='\uD83D\uDCBE Guardar actividad';
@@ -3038,7 +3039,7 @@ function openActModal(id){
     document.getElementById('act-inp-fecha').min=new Date().toISOString().split('T')[0];
     var ei=document.getElementById('act-inp-email'); if(ei) ei.value='';
     var ds=document.getElementById('act-inp-dest'); if(ds){ populateDestSelect(); ds.value=''; }
-    var sb=document.getElementById('act-btn-send-modal'); if(sb) sb.style.display='none';
+    var sb=document.getElementById('act-btn-send-modal'); if(sb) sb.style.display='none'; // se muestra al seleccionar colaborador con correo
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
   }
