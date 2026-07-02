@@ -576,6 +576,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 </header>
 
 <nav class="tabs">
+  <div class="tab" onclick="switchTab('resumen',this)">📊 Resumen</div>
   <div class="tab active" onclick="switchTab('imc',this)">🗂️ IMC</div>
   <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
   <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
@@ -585,6 +586,88 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 </nav>
 
 <main class="main">
+
+<!-- ═══ RESUMEN ═══ -->
+<section class="module" id="mod-resumen">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">&#128202; <span>Resumen</span> General</div>
+      <div class="mod-sub" id="res-subtitle">Consolidado de todos los módulos DTI</div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#22c55e">&#128196; Exportar Excel</button>
+    </div>
+  </div>
+
+  <!-- KPIs Globales -->
+  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px"></div>
+
+  <!-- Fila 1: Gráfica dona por módulo + Gráfica dona por semáforo -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px">
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#127970; Proyectos por Módulo</div>
+      <canvas id="res-chart-modulo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#128680; Estado General</div>
+      <canvas id="res-chart-semaforo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px">&#127959; Proyectos por Área</div>
+      <canvas id="res-chart-area" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Fila 2: Barras de avance promedio por módulo -->
+  <div class="card" style="padding:20px;margin-bottom:24px">
+    <div class="card-title" style="margin-bottom:16px">&#128200; Avance Promedio por Módulo</div>
+    <div id="res-avance-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"></div>
+  </div>
+
+  <!-- Filtros -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+    <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los módulos</option>
+      <option value="IMC">IMC</option>
+      <option value="Desarrollo">Desarrollo</option>
+      <option value="Soporte">Soporte</option>
+      <option value="IA">IA</option>
+    </select>
+    <select id="res-fil-sem" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los estados</option>
+      <option value="terminado">Terminado</option>
+      <option value="tiempo">A tiempo</option>
+      <option value="riesgo">Riesgo de atraso</option>
+      <option value="atrasado">Atrasado</option>
+      <option value="stand">Stand By</option>
+    </select>
+    <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todas las áreas</option>
+    </select>
+    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto..." style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:200px">
+    <span id="res-count" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
+  </div>
+
+  <!-- Tabla consolidada -->
+  <div style="overflow-x:auto">
+    <table class="tbl" id="res-table">
+      <thead><tr>
+        <th style="min-width:90px">Módulo</th>
+        <th style="min-width:80px">Tipo</th>
+        <th style="min-width:220px">Proyecto</th>
+        <th style="min-width:100px">Área</th>
+        <th style="min-width:110px">Responsable</th>
+        <th style="min-width:80px">Inicio</th>
+        <th style="min-width:80px">Fin</th>
+        <th style="min-width:60px;text-align:center">% Real</th>
+        <th style="min-width:60px;text-align:center">% Esp</th>
+        <th style="min-width:180px">Avance</th>
+        <th style="min-width:120px">Semáforo</th>
+      </tr></thead>
+      <tbody id="res-tbody"></tbody>
+    </table>
+  </div>
+</section>
 
 <!-- ═══ IMC ═══ -->
 <section class="module active" id="mod-imc">
@@ -1641,6 +1724,252 @@ function sortTab(tab, col, th){
     allProjects[tab].map((p,ri)=>buildRow(p,tab,ri)).join('');
 }
 
+
+// ════════════════════════════════════════════════
+// MÓDULO RESUMEN GENERAL
+// ════════════════════════════════════════════════
+var _resChartMod=null, _resChartSem=null, _resChartArea=null;
+
+function _getAllProyectos(){
+  var all=[];
+  var mods=[
+    {key:'imc',label:'IMC'},
+    {key:'dev',label:'Desarrollo'},
+    {key:'inf',label:'Soporte'},
+    {key:'ia',label:'IA'}
+  ];
+  mods.forEach(function(m){
+    var data=(state[m.key]&&state[m.key].data)?state[m.key].data:[];
+    data.forEach(function(p){
+      all.push(Object.assign({},p,{_modulo:m.label}));
+    });
+  });
+  return all;
+}
+
+function _resSem(p){
+  var s=(p.sem||'').toLowerCase();
+  if(s.includes('terminado')) return 'terminado';
+  if(s.includes('riesgo'))    return 'riesgo';
+  if(s.includes('stand'))     return 'stand';
+  if(s.includes('tiempo'))    return 'tiempo';
+  return 'atrasado';
+}
+
+function renderResumen(){
+  var todos=_getAllProyectos();
+  if(!todos.length){
+    document.getElementById('res-tbody').innerHTML='<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Sin datos disponibles. Actualiza los datos desde Smartsheet.</td></tr>';
+    return;
+  }
+
+  // Filtros
+  var filMod=(document.getElementById('res-fil-modulo')||{}).value||'';
+  var filSem=(document.getElementById('res-fil-sem')||{}).value||'';
+  var filArea=(document.getElementById('res-fil-area')||{}).value||'';
+  var search=((document.getElementById('res-search')||{}).value||'').toLowerCase().trim();
+
+  // Llenar select de áreas dinámicamente
+  var areas=[...new Set(todos.map(function(p){return p.area||'Sin área';}))].sort();
+  var selArea=document.getElementById('res-fil-area');
+  if(selArea&&selArea.options.length<=1){
+    areas.forEach(function(a){
+      var o=document.createElement('option'); o.value=a; o.textContent=a;
+      selArea.appendChild(o);
+    });
+  }
+
+  var filtered=todos.filter(function(p){
+    if(filMod && p._modulo!==filMod) return false;
+    if(filSem && _resSem(p)!==filSem) return false;
+    if(filArea && (p.area||'Sin área')!==filArea) return false;
+    if(search && !(p.nombre||'').toLowerCase().includes(search) &&
+                 !(p.responsable||'').toLowerCase().includes(search) &&
+                 !(p.area||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // ── KPIs Globales ──────────────────────────────────────────────────────
+  var total=filtered.length;
+  var term=filtered.filter(function(p){return _resSem(p)==='terminado';}).length;
+  var atiempo=filtered.filter(function(p){return _resSem(p)==='tiempo';}).length;
+  var riesgo=filtered.filter(function(p){return _resSem(p)==='riesgo';}).length;
+  var atras=filtered.filter(function(p){return _resSem(p)==='atrasado';}).length;
+  var stand=filtered.filter(function(p){return _resSem(p)==='stand';}).length;
+  var pct_cerrar=filtered.filter(function(p){return p.real>=90&&_resSem(p)!=='terminado';}).length;
+  var avgReal=total?Math.round(filtered.reduce(function(s,p){return s+(p.real||0);},0)/total):0;
+
+  var kpiEl=document.getElementById('res-kpis');
+  var kpis=[
+    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo'},
+    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% completado'},
+    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado'},
+    {l:'En Riesgo',v:riesgo,c:'#f59e0b',sub:'Requieren atención'},
+    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Escalados'},
+    {l:'Por Cerrar',v:pct_cerrar,c:'#a78bfa',sub:'Avance >90%'},
+    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa'},
+    {l:'Avance Promedio',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos'}
+  ];
+  kpiEl.innerHTML=kpis.map(function(k){
+    return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:default">'
+      +'<div class="kpi-val" style="color:'+k.c+';font-size:28px;font-weight:800">'+k.v+'</div>'
+      +'<div class="kpi-label" style="font-size:11px;font-weight:700;letter-spacing:.05em;margin-top:4px">'+k.l+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+k.sub+'</div>'
+      +'</div>';
+  }).join('');
+
+  // ── Gráfica por módulo ─────────────────────────────────────────────────
+  var modCounts={};
+  filtered.forEach(function(p){ modCounts[p._modulo]=(modCounts[p._modulo]||0)+1; });
+  var modLabels=Object.keys(modCounts);
+  var modData=modLabels.map(function(k){return modCounts[k];});
+  var modColors=['#C9A84C','#63b3ed','#22c55e','#a78bfa'];
+  var ctxMod=document.getElementById('res-chart-modulo');
+  if(ctxMod){
+    if(_resChartMod) _resChartMod.destroy();
+    _resChartMod=new Chart(ctxMod,{
+      type:'doughnut',
+      data:{labels:modLabels,datasets:[{data:modData,backgroundColor:modColors,borderWidth:2,borderColor:'#1A2340',hoverOffset:8}]},
+      options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.7)',font:{size:11},padding:10}}}}
+    });
+  }
+
+  // ── Gráfica semáforo ───────────────────────────────────────────────────
+  var semLabels=['Terminado','A Tiempo','Riesgo','Atrasado','Stand By'];
+  var semData=[term,atiempo,riesgo,atras,stand];
+  var semColors=['#22c55e','#22c55e','#f59e0b','#ef4444','#6b7280'];
+  var ctxSem=document.getElementById('res-chart-semaforo');
+  if(ctxSem){
+    if(_resChartSem) _resChartSem.destroy();
+    _resChartSem=new Chart(ctxSem,{
+      type:'doughnut',
+      data:{labels:semLabels,datasets:[{data:semData,backgroundColor:semColors,borderWidth:2,borderColor:'#1A2340',hoverOffset:8}]},
+      options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.7)',font:{size:11},padding:8}}}}
+    });
+  }
+
+  // ── Gráfica por área (top 6) ───────────────────────────────────────────
+  var areaCounts={};
+  filtered.forEach(function(p){ var a=p.area||'Sin área'; areaCounts[a]=(areaCounts[a]||0)+1; });
+  var areaSorted=Object.entries(areaCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+  var areaLabels=areaSorted.map(function(x){return x[0];});
+  var areaData=areaSorted.map(function(x){return x[1];});
+  var areaColors=['#C9A84C','#63b3ed','#22c55e','#a78bfa','#f59e0b','#ef4444','#14b8a6'];
+  var ctxArea=document.getElementById('res-chart-area');
+  if(ctxArea){
+    if(_resChartArea) _resChartArea.destroy();
+    _resChartArea=new Chart(ctxArea,{
+      type:'bar',
+      data:{labels:areaLabels,datasets:[{data:areaData,backgroundColor:areaColors,borderRadius:6,borderWidth:0}]},
+      options:{
+        responsive:true,indexAxis:'y',
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:'rgba(255,255,255,.5)',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{ticks:{color:'rgba(255,255,255,.7)',font:{size:10}},grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  // ── Barras de avance promedio por módulo ───────────────────────────────
+  var modAvg={};
+  todos.forEach(function(p){
+    if(!modAvg[p._modulo]) modAvg[p._modulo]={sum:0,cnt:0};
+    modAvg[p._modulo].sum+=(p.real||0); modAvg[p._modulo].cnt++;
+  });
+  var avanceEl=document.getElementById('res-avance-modulos');
+  if(avanceEl){
+    avanceEl.innerHTML=Object.entries(modAvg).map(function(entry){
+      var mod=entry[0], vals=entry[1];
+      var avg=Math.round(vals.sum/vals.cnt);
+      var c=avg>=80?'#22c55e':avg>=50?'#f59e0b':'#ef4444';
+      return '<div>'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
+        +'<span style="font-size:13px;font-weight:600">'+mod+'</span>'
+        +'<span style="font-size:13px;font-weight:700;color:'+c+'">'+avg+'%</span>'
+        +'</div>'
+        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">'
+        +'<div style="width:'+avg+'%;height:100%;background:'+c+';border-radius:20px;transition:width .6s ease"></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted)">'
+        +'<span>'+vals.cnt+' proyectos</span>'
+        +'<span>'+(vals.cnt - Math.round(vals.cnt*(avg/100)))+' pendientes</span>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // ── Tabla consolidada ─────────────────────────────────────────────────
+  var semColors2={terminado:'#22c55e',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#6b7280'};
+  var semLabels2={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
+  var modBadgeColors={IMC:'rgba(201,168,76,.2)',Desarrollo:'rgba(99,179,237,.2)',Soporte:'rgba(34,197,94,.2)',IA:'rgba(167,139,250,.2)'};
+  var modTextColors={IMC:'#C9A84C',Desarrollo:'#63b3ed',Soporte:'#22c55e',IA:'#a78bfa'};
+
+  var tbody=document.getElementById('res-tbody');
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Sin proyectos con los filtros aplicados</td></tr>';
+  } else {
+    tbody.innerHTML=filtered.map(function(p,i){
+      var s=_resSem(p);
+      var sc=semColors2[s]||'#888';
+      var sl=semLabels2[s]||p.sem;
+      var bc=s==='terminado'?'#22c55e':s==='tiempo'?'#22c55e':s==='riesgo'?'#f59e0b':s==='atrasado'?'#ef4444':'#6b7280';
+      var pct=Math.min(p.real||0,100);
+      var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
+      var mc=modBadgeColors[p._modulo]||'rgba(255,255,255,.1)';
+      var mt=modTextColors[p._modulo]||'#fff';
+      return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">'
+        +'<td style="padding:10px 8px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
+        +'<td style="padding:10px 8px;font-size:11px;color:var(--muted)">'+( p.tipo||'—')+'</td>'
+        +'<td style="padding:10px 8px;font-weight:600;color:#fff;max-width:240px">'
+        +(p.url_plan?'<a href="'+p.url_plan+'" target="_blank" style="color:#fff;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.3)">'+p.nombre+'</a>':p.nombre)
+        +'</td>'
+        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted)">'+( p.area||'—')+'</td>'
+        +'<td style="padding:10px 8px;font-size:12px;color:rgba(255,255,255,.8)">'+( p.responsable||'—')+'</td>'
+        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted);white-space:nowrap">'+( p.inicio||'—')+'</td>'
+        +'<td style="padding:10px 8px;font-size:12px;color:var(--muted);white-space:nowrap">'+( p.fin||'—')+'</td>'
+        +'<td style="padding:10px 8px;text-align:center;font-weight:700;color:'+bc+'">'+p.real+'%</td>'
+        +'<td style="padding:10px 8px;text-align:center;font-size:12px;color:var(--muted)">'+p.esp+'%</td>'
+        +'<td style="padding:10px 8px;min-width:140px">'
+        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden">'
+        +'<div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:20px"></div>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:3px;text-align:right">'+p.real+'% / '+p.esp+'% esp</div>'
+        +'</td>'
+        +'<td style="padding:10px 8px"><span style="color:'+sc+';background:'+sc+'22;border:1px solid '+sc+'55;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">'
+        +( s==='atrasado'?'&#9679; ':s==='tiempo'||s==='terminado'?'&#10003; ':s==='riesgo'?'&#9651; ':'&#9679; ')
+        +sl+'</span></td>'
+        +'</tr>';
+    }).join('');
+  }
+
+  var countEl=document.getElementById('res-count');
+  if(countEl) countEl.textContent=filtered.length+' de '+todos.length+' proyectos';
+
+  // Actualizar subtitle con fecha del último sync
+  var lastSync=document.getElementById('last-sync-time');
+  var subEl=document.getElementById('res-subtitle');
+  if(subEl && lastSync) subEl.textContent='Última actualización: '+lastSync.textContent;
+}
+
+function exportResumenExcel(){
+  var todos=_getAllProyectos();
+  if(!todos.length){ showToast('Sin datos para exportar','error'); return; }
+  var wb=XLSX.utils.book_new();
+  var rows=[['Módulo','Tipo','Proyecto','Área','Responsable','Solicitante','Inicio','Fin','% Real','% Esperado','Semáforo']];
+  todos.forEach(function(p){
+    var s=_resSem(p);
+    var sl={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
+    rows.push([p._modulo,p.tipo||'',p.nombre,p.area||'',p.responsable||'',p.solicitante||'',p.inicio||'',p.fin||'',p.real,p.esp,sl[s]||p.sem]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:10},{wch:40},{wch:18},{wch:20},{wch:20},{wch:12},{wch:12},{wch:8},{wch:10},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,ws,'Resumen DTI');
+  XLSX.writeFile(wb,'Resumen_DTI_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('\u2705 Excel exportado','success');
+}
+
 function renderTab(tab){
   const cfg={
     imc:{tbody:'imc-tbody',count:'imc-count',kpfx:'k',donut:'imc-donut',gantt:'imc-gantt',treemap:'imc-treemap'},
@@ -1718,6 +2047,7 @@ function switchTab(id,el){
   el.classList.add('active');
   document.getElementById('mod-'+id).classList.add('active');
   sessionStorage.setItem('activeTab', id);
+  if(id==='resumen'){ try{ renderResumen(); }catch(e){ console.error('renderResumen error:',e); } }
   if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
   if(id==='carga'){ try{ renderDirectorio(); }catch(e){} }
 }
