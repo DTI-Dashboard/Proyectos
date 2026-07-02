@@ -2289,6 +2289,9 @@ try{(function(){
 
 // Restaurar tab activo tras recargar (debe ir después de todos los renderTab)
 (function(){
+  // Leer tab desde URL param (para links externos)
+  var urlTab=new URLSearchParams(window.location.search).get('tab');
+  if(urlTab) sessionStorage.setItem('activeTab',urlTab);
   const savedTab = sessionStorage.getItem('activeTab');
   if(savedTab && savedTab !== 'imc'){
     const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
