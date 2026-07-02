@@ -934,8 +934,8 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <thead><tr>
         <th class="act-sort-th" style="width:180px;min-width:180px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
         <th>Actividad</th>
-        <th class="act-sort-th" style="width:90px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
-        <th class="act-sort-th" style="width:100px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:120px;min-width:120px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:80px;min-width:80px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
         <th class="act-sort-th" style="width:130px" onclick="sortAct('estatus',this)">Estatus <span class="sort-icon">⇅</span></th>
         <th style="width:80px">Acciones</th>
       </tr></thead>
@@ -3398,7 +3398,10 @@ function renderActividades(){
   tbody.innerHTML=filtered.map(a=>{
     const ec=eCols[a.estatus]||'#8b5cf6';
     const pc=pCols[a.prioridad]||'#f59e0b';
-    const fechaStr=a.fechaFin?new Date(a.fechaFin+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    var _fd2=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
+    const fechaDia=_fd2?_fd2.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—';
+    const fechaAnio=_fd2?String(_fd2.getFullYear()):'';
+    const fechaStr=fechaDia;
     const semanaN=a.semana?'S'+a.semana.split('-W')[1]:'—';
     const notaIcon='';
     const notaHasTxt=!!(a.nota&&a.nota.trim());const vencida=a.fechaFin&&new Date(a.fechaFin+'T23:59:59')<new Date()&&a.estatus!=='Concluido'?'color:#ef4444;':'';
@@ -3406,7 +3409,7 @@ function renderActividades(){
       <td style="font-weight:600;min-width:180px;max-width:180px;word-break:break-word;white-space:normal"><div style="max-width:180px;overflow-wrap:break-word">${a.nombre}</div></td>
       <td><span title="${a.actividad}" class="act-act-link" data-actid="${a.id}" style="cursor:pointer;color:#fff;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.7)">${a.actividad}</span></td>
       <td><span style="color:${pc};font-weight:700;font-size:11px">${a.prioridad||'Media'}</span></td>
-      <td style="font-size:12px;${vencida}">${fechaStr}</td>
+      <td style="font-size:13px;font-weight:500;${vencida}"><div style="line-height:1.2">${fechaDia}</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">${fechaAnio}</div></td>
       <td><span style="display:inline-flex;align-items:center;gap:5px;color:${ec};background:${ec}18;border:1px solid ${ec}55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">${a.estatus==='En proceso'?'🔵':''}${a.estatus==='Concluido'?'🟢':''}${a.estatus==='Atrasado'?'🔴':''} ${a.estatus}</span></td>
       <td style="white-space:nowrap">
           <button class="act-btn-nota" data-actid="${a.id}" style="background:${notaHasTxt?'rgba(201,168,76,.25)':'rgba(99,179,237,.1)'};border:1px solid ${notaHasTxt?'rgba(201,168,76,.6)':'rgba(99,179,237,.2)'};color:${notaHasTxt?'#C9A84C':'#63b3ed'};border-radius:5px;padding:3px 9px;cursor:pointer;margin-right:3px;font-size:12px;font-weight:${notaHasTxt?700:400}" title="${notaHasTxt?'Ver/editar nota':'Agregar nota'}">${notaHasTxt?'&#128203;&nbsp;Nota':'&#128196;'}</button>
