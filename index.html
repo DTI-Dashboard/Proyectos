@@ -642,12 +642,9 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <th style="min-width:80px">Tipo</th>
           <th style="min-width:220px">Proyecto</th>
           <th style="min-width:110px">Área</th>
-          <th style="min-width:130px">Responsable</th>
           <th style="min-width:82px">Inicio</th>
           <th style="min-width:82px">Fin</th>
-          <th style="min-width:58px;text-align:center">% Real</th>
-          <th style="min-width:58px;text-align:center">% Esp</th>
-          <th style="min-width:160px">Barra de Avance</th>
+          <th style="min-width:200px">Avance</th>
           <th style="min-width:130px">Semáforo</th>
         </tr></thead>
         <tbody id="res-tbody"></tbody>
@@ -2073,11 +2070,7 @@ function renderResumen(){
 }
 
 function exportResumenPPTX(){
-  // Temporalmente activar mod-resumen para capturar
-  showToast('\u23f3 Generando PPTX del Resumen...','info',5000);
-  setTimeout(function(){
-    exportDashboardPPTX();
-  },300);
+  exportPPTX('resumen');
 }
 function exportResumenExcel(){
   var todos=_getAllProyectos();
@@ -2769,7 +2762,7 @@ try{(function(){
   if(_urlTab) sessionStorage.setItem('activeTab',_urlTab);
   const savedTab = sessionStorage.getItem('activeTab');
   if(savedTab && savedTab !== 'imc'){
-    const tabMap = {imc:0, desarrollo:1, infraestructura:2, ia:3, actividades:4, carga:5};
+    const tabMap = {resumen:0, imc:1, desarrollo:2, infraestructura:3, ia:4, actividades:5, carga:6};
     const idx = tabMap[savedTab];
     const tabs = document.querySelectorAll('.tab');
     if(idx !== undefined && tabs[idx]){
