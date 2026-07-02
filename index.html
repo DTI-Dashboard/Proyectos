@@ -2603,13 +2603,15 @@ function enviarActividadCorreo(id){
   // Link directo a Actividades Semanales
   var link=window.location.origin+window.location.pathname+'?tab=actividades';
   var subject='DTI || Actividad Semanal Asignada || Fecha Limite: '+String(fechaObj.getDate()).padStart(2,'0')+'/'+meses[fechaObj.getMonth()]+'/'+String(fechaObj.getFullYear()).slice(2);
-  var body='Hola '+nombre+',\n\n'
-    +'Se te ha asignado la siguiente actividad:\n'
+  var body='Hola, '+nombre+'.\n'
+    +'\uD83D\uDCCC Se te ha asignado una nueva actividad:\n\n'
     +actividad+'\n\n'
-    +'Fecha limite: '+fechaLimFmt+'\n'
-    +'Prioridad: '+prioridad+'\n\n'
-    +'Enlace de consulta: '+link+'\n\n'
-    +'Saludos';
+    +'\uD83D\uDCC5 Fecha limite: '+fechaLimFmt+'\n'
+    +'\u26A1 Prioridad: '+prioridad+'\n\n'
+    +'Puedes consultar los detalles de la actividad en el siguiente enlace:\n'
+    +link+'\n\n'
+    +'Revisar la informacion con anticipacion para cumplir con la fecha establecida.\n\n'
+    +'Saludos,';
   var mailto='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   window.open(mailto,'_blank');
   // Marcar como enviado si es desde la fila
