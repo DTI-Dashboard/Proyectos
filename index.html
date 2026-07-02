@@ -1084,7 +1084,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
       <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
       <button id="act-save-btn" onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
-      
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo(null)" style="display:none;background:rgba(99,179,237,.15);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-weight:600;font-size:13px;cursor:pointer">&#128231; Guardar y enviar correo</button>
     </div>
   </div>
 </div>
@@ -2613,14 +2613,25 @@ function enviarActividadCorreo(id){
     +'Saludos,';
   var mailto='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   window.open(mailto,'_blank');
-  // Marcar como enviado si es desde la fila
+  // Marcar como enviado si es desde la fila o desde el modal de detalle
   if(actId){
     actData.emailEnviado=true;
     _saveAct();
     renderActividades();
-    showToast('Correo listo en tu cliente de correo','success');
+    // Si viene del modal de detalle, actualizar botón y cerrar
+    if(typeof _actDetailId!=='undefined' && _actDetailId===actId){
+      var btnE=document.getElementById('adet-btn-email');
+      if(btnE){
+        btnE.style.background='rgba(34,197,94,.12)';
+        btnE.style.borderColor='rgba(34,197,94,.4)';
+        btnE.style.color='#22c55e';
+        btnE.innerHTML='&#10003; Correo enviado';
+      }
+      setTimeout(function(){closeActDetail();},600);
+    }
+    showToast('&#10003; Correo enviado correctamente','success');
   } else {
-    // Si es desde el modal, guardar la actividad y marcarla
+    // Si es desde el modal de nueva actividad, guardar y marcar
     saveActividad();
     showToast('Actividad guardada. Abriendo correo...','success');
   }
