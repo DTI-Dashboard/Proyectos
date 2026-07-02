@@ -2992,44 +2992,45 @@ function openActModal(id){
     if(!a) return;
     document.getElementById('act-modal-tag').textContent='EDITAR ACTIVIDAD';
     document.getElementById('act-save-btn').textContent='\u2713 Guardar cambios';
-    // titulo secundario eliminado
     document.getElementById('act-inp-id').value=id;
-    document.getElementById('act-inp-nombre').value=a.nombre;
-    // area removida del modal
+    // Llenar nombre: primero el hidden, luego intentar seleccionar en el select
+    var nomHid=document.getElementById('act-inp-nombre');
+    if(nomHid) nomHid.value=a.nombre||'';
+    populateDestSelect();
+    var selNom=document.getElementById('act-inp-nombre-sel');
+    if(selNom){
+      selNom.value=a.nombre||'';
+      // Si el nombre no está en el directorio, agregar opción temporal
+      if(selNom.value!==a.nombre){
+        var optTmp=document.createElement('option');
+        optTmp.value=a.nombre; optTmp.textContent=a.nombre;
+        optTmp.dataset.nombre=a.nombre;
+        optTmp.dataset.email=a.emailDest||'';
+        selNom.insertBefore(optTmp, selNom.options[1]);
+        selNom.value=a.nombre;
+      }
+    }
     document.getElementById('act-inp-actividad').value=a.actividad;
     const hoyStr=new Date().toISOString().split('T')[0];
     const fechaInp=document.getElementById('act-inp-fecha');
-    // Si la fecha existente es pasada, permitir verla pero no bloquear
     fechaInp.min=a.fechaFin && a.fechaFin < hoyStr ? a.fechaFin : hoyStr;
     fechaInp.value=a.fechaFin;
     document.getElementById('act-inp-prioridad').value=a.prioridad||'Media';
-    // Llenar campos al editar
-    populateDestSelect();
-    var selNom=document.getElementById('act-inp-nombre-sel');
-    if(selNom){ selNom.value=a.nombre||''; }
-    var nomHid=document.getElementById('act-inp-nombre');
-    if(nomHid) nomHid.value=a.nombre||'';
     var emailInp=document.getElementById('act-inp-email');
     if(emailInp) emailInp.value=a.emailDest||'';
     document.getElementById('act-inp-dest').value=a.emailDest||'';
     var sendBtn=document.getElementById('act-btn-send-modal');
     if(sendBtn) sendBtn.style.display=(a.emailDest)?'inline-block':'none';
-    // estatus removido del modal
-    // semana removida del modal
-    // notas removido del modal
   } else {
     document.getElementById('act-modal-tag').textContent='NUEVA ACTIVIDAD';
     document.getElementById('act-save-btn').textContent='\uD83D\uDCBE Guardar actividad';
-    // titulo secundario eliminado
     ['act-inp-id','act-inp-nombre','act-inp-actividad'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('act-inp-fecha').min=new Date().toISOString().split('T')[0];
-    // Inicializar campos de correo
     var ei=document.getElementById('act-inp-email'); if(ei) ei.value='';
     var ds=document.getElementById('act-inp-dest'); if(ds){ populateDestSelect(); ds.value=''; }
     var sb=document.getElementById('act-btn-send-modal'); if(sb) sb.style.display='none';
     document.getElementById('act-inp-fecha').value='';
     document.getElementById('act-inp-prioridad').value='Media';
-    // estatus y notas removidos del modal
   }
 }
 
@@ -3098,13 +3099,15 @@ function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCan
 }
 
 function deleteActividad(id){
+  // Capturar el id inmediatamente en una variable local del closure
+  var _idToDelete = id;
   showConfirm({
     icon:'🗑️', title:'Eliminar actividad',
     msg:'Esta acción <strong>no se puede deshacer</strong>.<br>¿Confirmas que deseas eliminar esta actividad?',
     btnOk:'Sí, eliminar', btnCancel:'Cancelar', danger:true,
-    onOk:()=>{
-      _actividades=_actividades.filter(x=>x.id!==id);
-      _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada');
+    onOk:function(){
+      _actividades=_actividades.filter(function(x){return x.id!==_idToDelete;});
+      _saveAct(); renderActividades(); showToast('🗑️ Actividad eliminada','success');
     }
   });
 }
