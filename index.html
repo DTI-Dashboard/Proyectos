@@ -32,7 +32,8 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .btn-upload{background:var(--gold);color:var(--navy);border:none;cursor:pointer;font-weight:700;font-size:12px;padding:8px 16px;border-radius:7px;transition:.2s;}
 .btn-upload:hover{background:var(--gold-dim);}
 
-.tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px;}
+.tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:4px;overflow-x:auto;}
+.tab{padding:12px 18px;font-size:13px;font-weight:600;}
 
 .tab:hover{color:#fff;}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
@@ -355,7 +356,2203 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
   <!-- ENCABEZADO -->
   <div class="mod-header">
     <div class="mod-header-left">
-      <div class="mod-title">&#128202; <span>Resumen</span> Ejecutivo</div>
+      <div class="mod-title"><span>Resumen</span></div>
+      <div class="mod-sub" id="res-subtitle">Consolidado estratégico de todos los módulos DTI — Dirección General</div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
+      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Exportar Excel</button>
+    </div>
+  </div>
+
+  <!-- KPIs GLOBALES -->
+  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px"></div>
+
+  <!-- FILTROS -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:24px">
+    <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los módulos</option>
+      <option value="IMC">IMC</option>
+      <option value="Desarrollo">Desarrollo</option>
+      <option value="Soporte">Soporte</option>
+      <option value="IA">IA</option>
+    </select>
+    <select id="res-fil-sem" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los estatus</option>
+      <option value="terminado">Terminado</option>
+      <option value="tiempo">A tiempo</option>
+      <option value="riesgo">Riesgo de atraso</option>
+      <option value="atrasado">Atrasado</option>
+      <option value="stand">Stand By</option>
+    </select>
+    <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todas las áreas</option>
+    </select>
+    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto o responsable..." style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:200px;outline:none">
+    <span id="res-count" style="font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap"></span>
+  </div>
+
+  <!-- TABLA CONSOLIDADA -->
+  <div class="card" style="margin-bottom:28px;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <div class="card-title" style="margin:0">&#128203; Portafolio Completo de Proyectos</div>
+      <span id="res-tbl-badge" style="background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(201,168,76,.3)"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr>
+          <th style="min-width:90px">Módulo</th>
+          <th style="min-width:80px">Tipo</th>
+          <th style="min-width:220px">Proyecto</th>
+          <th style="min-width:110px">Área</th>
+          <th style="min-width:82px">Inicio</th>
+          <th style="min-width:82px">Fin</th>
+          <th style="min-width:200px">Avance</th>
+          <th style="min-width:130px">Semáforo</th>
+        </tr></thead>
+        <tbody id="res-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FILA 1: 3 DONAS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127970; Por Módulo</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución del portafolio</div>
+      <canvas id="res-chart-modulo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128680; Estado General</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Semáforo consolidado</div>
+      <canvas id="res-chart-semaforo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127959; Por Área</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Top áreas por volumen</div>
+      <div id="res-treemap-area" style="height:200px"></div>
+    </div>
+  </div>
+
+  <!-- FILA 2: AVANCE POR MÓDULO + RIESGO POR ÁREA -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128200; Avance Real vs Esperado</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Comparativo por módulo</div>
+      <canvas id="res-chart-avance" height="180"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#9888;&#65039; Proyectos en Riesgo / Atrasados</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Por área — requieren atención</div>
+      <canvas id="res-chart-riesgo" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 3: GANTT GLOBAL - ancho completo -->
+  <div class="card" style="padding:22px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">&#128197; L&#237;nea de Tiempo &#8212; Gantt Global</div>
+        <div style="font-size:11px;color:var(--muted)">Proyectos activos con fechas de inicio y fin</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="toggleResGanttFilter()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">&#9776; Proyectos</button>
+        <button onclick="exportResGanttPDF()" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">&#128196; PDF</button>
+      </div>
+    </div>
+    <div id="res-gantt-checks" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)"></div>
+    <div style="overflow-x:auto"><canvas id="res-chart-gantt" style="min-height:360px"></canvas></div>
+  </div>
+
+  <!-- FILA 3b: SCATTER -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+  <!-- FILA 4: TOP RESPONSABLES + TIPOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128100; Carga por Responsable</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Proyectos asignados por persona</div>
+      <canvas id="res-chart-resp" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127775; Tipos de Proyecto</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución por categoría</div>
+      <canvas id="res-chart-tipo" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- PROYECTOS CRITICOS -->
+  <div class="card" style="padding:22px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="card-title" style="margin:0">&#128680; Proyectos Críticos — Acción Inmediata</div>
+      <span style="background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.3)">ATRASADOS + RIESGO</span>
+    </div>
+    <div id="res-criticos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+  </div>
+
+</section>
+<!-- ═══ IMC ═══ -->
+<section class="module active" id="mod-imc">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>IMC</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
+      <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="k-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="k-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="k-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="k-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="k-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="k-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('imc','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('imc','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('imc','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('imc','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="imc-tipo-select" onchange="filterTipo('imc',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="imc-resp-select" onchange="filterResp('imc',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('imc',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos IMC — Vista detallada</div><span class="badge b" id="imc-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('imc','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="imc-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="imc-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="imc-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('imc')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="imc-gantt-btn" onclick="toggleGanttFilter('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="imc-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="imc-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="imc-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ DESARROLLO ═══ -->
+<section class="module" id="mod-desarrollo">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Desarrollo</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="dv-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="dv-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="dv-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="dv-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="dv-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('dev','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('dev','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('dev','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('dev','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="dev-tipo-select" onchange="filterTipo('dev',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="dev-resp-select" onchange="filterResp('dev',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('dev',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Desarrollo — Vista detallada</div><span class="badge b" id="dev-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('dev','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="dev-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="dev-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="dev-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('dev')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="dev-gantt-btn" onclick="toggleGanttFilter('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="dev-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="dev-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="dev-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ SOPORTE E INFRAESTRUCTURA ═══ -->
+<section class="module" id="mod-infraestructura">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="inf-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="inf-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="inf-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="inf-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="inf-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('inf','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('inf','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('inf','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('inf','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="inf-tipo-select" onchange="filterTipo('inf',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="inf-resp-select" onchange="filterResp('inf',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('inf',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Soporte e Infraestructura — Vista detallada</div><span class="badge b" id="inf-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('inf','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="inf-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="inf-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="inf-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('inf')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="inf-gantt-btn" onclick="toggleGanttFilter('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="inf-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="inf-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="inf-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ IA ═══ -->
+<section class="module" id="mod-ia">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Inteligencia Artificial</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="ia-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="ia-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="ia-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="ia-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('ia','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('ia','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('ia','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('ia','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('ia',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="ia-tipo-select" onchange="filterTipo('ia',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="ia-resp-select" onchange="filterResp('ia',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('ia',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Inteligencia Artificial — Vista detallada</div><span class="badge b" id="ia-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('ia','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="ia-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="ia-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="ia-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('ia')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="ia-gantt-btn" onclick="toggleGanttFilter('ia')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="ia-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="ia-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="ia-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="ia-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ ACTIVIDADES SEMANALES ═══ -->
+<section class="module" id="mod-actividades">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Actividades Semanales</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-act-add" onclick="openActModal(null)">➕ Nueva Actividad</button>
+      <button class="btn-xlsx" onclick="exportActXLSX()">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer" onclick="kpiActFilter('todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="act-k-total">0</div><div class="kpi-sub">Esta semana</div></div>
+    <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilter('En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="act-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+    <div class="kpi g" style="cursor:pointer" onclick="kpiActFilter('Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="act-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+    <div class="kpi r" style="cursor:pointer" onclick="kpiActFilter('Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="act-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Colaboradores</div><div class="kpi-val gold" id="act-k-personas">0</div><div class="kpi-sub">Activos esta semana</div></div>
+  </div>
+  <div class="act-week-nav">
+    <div class="act-filters-row">
+      <!-- Multi-select Estatus -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-est-btn" onclick="toggleActPanel('estatus')">🔵 Todos los estatus ▾</button>
+        <div class="act-multi-panel" id="act-estatus-panel">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700"><input type="checkbox" id="act-est-todos" onchange="actSelTodos('estatus',this)" style="accent-color:var(--gold)" checked> ✓ Todos los estatus</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="En proceso" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Concluido" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+        </div>
+      </div>
+      <!-- Multi-select Colaboradores -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
+        <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+            <input type="checkbox" id="act-nom-todos" checked onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
+          </label>
+          <div id="act-nombre-checks"></div>
+        </div>
+      </div>
+      <!-- Semana navegador -->
+      <div style="display:flex;align-items:center;gap:4px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:3px 6px;">
+        <button onclick="actNavSemana(-1)" title="Semana anterior" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">‹</button>
+        <span id="act-semana-label" style="font-size:12px;color:#fff;min-width:180px;text-align:center;cursor:pointer;" onclick="actNavSemanaHoy()" title="Ir a semana actual">📋 Todas las actividades</span>
+        <button onclick="actNavSemana(1)" title="Semana siguiente" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">›</button>
+      </div>
+      <!-- Prioridad -->
+      <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">⚡ Todas las prioridades</option>
+        <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+        <option value="Media" style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+        <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+      </select>
+      <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:180px">
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Actividades — Vista detallada</div>
+      <span class="badge b" id="act-count">0 actividades</span>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th class="act-sort-th" style="width:180px;min-width:180px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
+        <th>Actividad</th>
+        <th class="act-sort-th" style="width:120px;min-width:120px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:80px;min-width:80px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:130px" onclick="sortAct('estatus',this)">Estatus <span class="sort-icon">⇅</span></th>
+        <th style="width:80px">Acciones</th>
+      </tr></thead>
+      <tbody id="act-tbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+
+<!-- ═══ CARGA ═══ -->
+<section class="module" id="mod-carga" style="position:relative">
+  <!-- Overlay de contraseña -->
+  <div id="carga-lock" style="position:absolute;top:0;left:0;width:100%;height:100%;background:var(--navy);z-index:100;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:12px">
+    <div class="lock-box">
+      <div class="lock-icon">🔐</div>
+      <div class="lock-title">Carga de Datos</div>
+      <div class="lock-sub">Esta sección requiere contraseña</div>
+      <input class="lock-input" id="carga-pwd" type="password" placeholder="••••••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')verificarClave()"
+        oninput="document.getElementById('carga-err').textContent=''">
+      <button class="lock-btn" onclick="verificarClave()">Acceder</button>
+      <div class="lock-error" id="carga-err"></div>
+    </div>
+  </div>
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Carga de <span>Datos</span></div>
+      <div class="mod-sub">Gestiona datos del dashboard</div>
+    </div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px">
+    <button id="ctab-layout" onclick="switchCargaTab('layout')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:700;color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-2px;transition:all .2s">&#128196; Carga de Layout</button>
+    <button id="ctab-directorio" onclick="switchCargaTab('directorio')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128231; Directorio de Colaboradores</button>
+  </div>
+
+  <!-- Sub-tab: Layout -->
+  <div id="cpanel-layout">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">&#11015;&#65039; Descargar Plantilla</button>
+    </div>
+    <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
+      <strong style="color:var(--gold)">&#10067; Como funciona?</strong><br>
+      1&#65039;&#8419; Descarga la plantilla CSV -- tiene todos los proyectos con sus nombres exactos<br>
+      2&#65039;&#8419; Llena las columnas que necesites y guarda como <strong>CSV UTF-8</strong><br>
+      3&#65039;&#8419; Sube el archivo -- solo se actualizan los campos que llenaste
+    </div>
+    <div class="upload-zone"
+    onclick="document.getElementById('file-input').click()"
+    ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(201,168,76,0.08)'"
+    ondragleave="this.style.borderColor='';this.style.background=''"
+    ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';if(event.dataTransfer.files.length)loadCSV({target:{files:event.dataTransfer.files,value:''}})">
+      <div class="uz-icon">&#128196;</div>
+      <div class="uz-title">Arrastra tu archivo CSV aqui o haz clic para seleccionar</div>
+      <div class="uz-sub">Columnas: modulo, nombre, area, responsable, solicitante, descripcion, url_plan</div>
+    </div>
+    </div>
+    <div id="upload-preview" style="display:none;position:relative;z-index:200">
+      <div class="card">
+        <div class="card-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="card-title">Vista Previa -- Pendiente de Confirmar</div>
+            <span class="badge g" id="upload-count-badge">0 filas</span>
+            <span id="upload-error-badge" style="display:none;background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px"></span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="cancelarCarga()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);color:rgba(255,255,255,.6);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:12px;font-weight:600">x Cancelar</button>
+            <button onclick="confirmarCarga()" style="background:#22c55e;border:none;color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:12px;font-weight:700">&#9989; Confirmar y Aplicar</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Modulo</th><th>Tipo</th><th>Proyecto</th><th>Area</th><th>Responsable</th><th>Solicitante</th><th>Descripcion</th><th>URL Plan</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Directorio -->
+  <div id="cpanel-directorio" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted)">Administra los colaboradores a quienes puedes enviar actividades por correo</div>
+      <button onclick="openDirModal()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar colaborador</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Nombre</th>
+          <th style="text-align:left;padding:10px 14px">Correo</th>
+          <th style="text-align:left;padding:10px 14px;width:100px">Acciones</th>
+        </tr></thead>
+        <tbody id="dir-tbody"></tbody>
+      </table>
+      <div id="dir-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin colaboradores. Agrega el primero con el boton de arriba.</div>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- Modal Directorio -->
+<div id="dir-modal-bg" onclick="if(event.target===this)closeDirModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">&#128231; Agregar colaborador</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="dir-inp-nombre" class="act-inp" placeholder="Ej: Omar Aguilar" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="dir-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="dir-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntry()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Actividad -->
+<div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
+    <div style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:8px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label>
+        <select id="act-inp-nombre-sel" class="act-inp" style="background:#1c2535;color:#fff;border:1px solid rgba(201,168,76,.4)" onchange="onColabSelect(this.value)">
+          <option value="">-- Selecciona un colaborador --</option>
+        </select>
+        <input type="hidden" id="act-inp-nombre" value="">
+      </div>
+      
+      <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
+      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp" onchange="validarFechaLaboral(this)"></div>
+      
+      <div><label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="act-inp-prioridad" class="act-inp">
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2">
+        <label class="act-inp-lbl">&#128231; CORREO DEL DESTINATARIO</label>
+        <input id="act-inp-email" class="act-inp" placeholder="Se llena automaticamente al seleccionar colaborador" readonly style="color:var(--muted)">
+        <input type="hidden" id="act-inp-dest" value="">
+      </div>
+    </div>
+    <input type="hidden" id="act-inp-id">
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button id="act-save-btn" onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo(null)" style="display:none;background:rgba(99,179,237,.15);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-weight:600;font-size:13px;cursor:pointer">&#128231; Guardar y enviar correo</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="proj-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-tipo" id="m-tipo"></div>
+        <div class="modal-nombre" id="m-nombre"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="m-desc-wrap">
+        <div class="modal-section-label">Descripción</div>
+        <div class="modal-desc" id="m-desc">—</div>
+      </div>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Responsable</div>
+          <div class="modal-field-value" id="m-resp">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Usuario solicitante</div>
+          <div class="modal-field-value" id="m-user">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Área</div>
+          <div class="modal-field-value" id="m-area">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Inicio — Fin</div>
+          <div class="modal-field-value" id="m-fechas" style="font-family:'JetBrains Mono',monospace;font-size:12px;">—</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="modal-section-label" style="margin:0">Avance</div>
+          <div style="display:flex;gap:14px;font-size:11px;font-family:'JetBrains Mono',monospace;">
+            <span id="m-real-lbl" style="font-weight:700;"></span>
+            <span id="m-esp-lbl" style="color:rgba(255,255,255,0.4);"></span>
+          </div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:4px;position:relative;overflow:hidden;">
+          <div id="m-bar-esp" style="position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,0.18);border-radius:4px;transition:width .4s;"></div>
+          <div id="m-bar-real" style="position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .4s;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="m-sem"></span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--gold);font-weight:700;text-decoration:none;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:8px;padding:8px 18px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">📋 Consultar plan de trabajo →</a>
+          <span id="m-plan-none" style="display:none;font-size:13px;color:rgba(255,255,255,0.4);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px">📋 Sin registro de plan de trabajo</span>
+          <button id="m-ev-btn" onclick="openEvModal()" style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(201,168,76,0.1)';this.style.borderColor='rgba(201,168,76,0.4)';this.style.color='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.75)'">⚠ Documentar eventualidad</button>
+          <span class="modal-hint">Clic fuera para cerrar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- ── Modal Eventualidad ── -->
+<div id="ev-modal-bg" onclick="if(event.target===this)closeEvModal()">
+  <div id="ev-modal-box">
+    <div class="ev-modal-title">⚠ Documentar Eventualidad</div>
+    <div class="ev-modal-nombre" id="ev-nombre"></div>
+    <textarea id="ev-textarea" placeholder="Describe la eventualidad o bloqueo de este proyecto..." maxlength="500" oninput="document.getElementById('ev-char-count').textContent=this.value.length+'/500'"></textarea>
+    <div id="ev-char-count">0/500</div>
+    <div class="ev-modal-actions">
+      <button class="ev-btn-delete" id="ev-btn-delete" onclick="deleteEventualidad()" style="display:none">🗑 Eliminar</button>
+      <button class="ev-btn-cancel" onclick="closeEvModal()">Cancelar</button>
+      <button class="ev-btn-save" onclick="saveEventualidad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+// ─── DATOS ───
+const IMC_DATA = [
+  {tipo:"Proyecto",nombre:"Talleres || Mecánica Mx (Mejoras)",area:"Talleres",inicio:"07/04/2026",fin:"01/07/2026",real:76,esp:100,sem:"Atrasado",responsable:"Eduardo Sanchez",solicitante:"Elizabeth Luna",descripcion:"Implementación de mejoras funcionales, reportes y optimización de procesos en Mecánica MX.",url_plan:"https://app.smartsheet.com/sheets/pFqH6ggrMWfC69c5RM9xq2839gjqf3HFf38MH2R1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Administración || AdContent - Catálogos",area:"Control presupuestal",inicio:"01/04/2026",fin:"02/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Eduardo Sanchez",solicitante:"Astrid Martinez",descripcion:"Administración y homologación de catálogos maestros para las diferentes líneas de negocio.",url_plan:"https://app.smartsheet.com/sheets/vWf7CMcVRv947wJ8g4VPVhVMQg5C35gWjXWWRfr1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Capital Humano || BUK Soporte – Incidencia",area:"Capital Humano",inicio:"02/03/2026",fin:"29/05/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Maria del Pilar Velasco",descripcion:"Atención y corrección de incidencias operativas detectadas en la plataforma BUK.",url_plan:"https://app.smartsheet.com/sheets/vhRxx6XwGpXwjR6r3P7h4Hr84gr4HM56GrjRWv71?view=gantt"},
+  {tipo:"Proyecto",nombre:"Capital Humano || BUK Campos Personalizados",area:"Capital Humano",inicio:"26/02/2026",fin:"25/05/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Maria del Pilar Velasco",descripcion:"Configuración de campos personalizados para fortalecer la gestión de información del personal.",url_plan:"https://app.smartsheet.com/sheets/72pQmMQ2r75GJx8VXmVGJrcqQJG5xW7w8HmqhQ31?view=gantt"},
+  {tipo:"Proyecto",nombre:"TRIM || Marketplace || Caddi",area:"TRIM",inicio:"07/08/2025",fin:"04/08/2026",real:97,esp:90,sem:"A tiempo",responsable:"Ricardo Angeles",solicitante:"Alejandro Camara",descripcion:"Integración de servicios financieros para habilitar procesos de financiamiento dentro del marketplace.",url_plan:"https://app.smartsheet.com/sheets/p69RXf4hq2PRWRww5vv9hQppJQj7PqCPqXP95C91?view=gantt"},
+  {tipo:"Proyecto",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 1)",area:"Contabilidad",inicio:"14/08/2025",fin:"02/06/2026",real:95,esp:100,sem:"Atrasado",responsable:"Ricardo Angeles",solicitante:"Jorge Ramirez",descripcion:"Integración automática de información contable entre Mecánica MX y SAE.",url_plan:"https://app.smartsheet.com/sheets/F3XgJxXGR999Hfp4mvJjGwPq3cMFGvvPcXHHP881?view=gantt"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Desarrollos",area:"Operaciones Fleet",inicio:"08/08/2025",fin:"05/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Donaji Barrios",descripcion:"Desarrollo de requerimientos funcionales y mejoras para la operación diaria en SFLEET",url_plan:"https://app.smartsheet.com/sheets/PwG98qXrhqc7R74Phxw5gQ9rXqqPqjGxRFgfm941?view=gantt"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Lobby Fix",area:"Operaciones Fleet",inicio:"11/11/2025",fin:"29/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Donaji Barrios",descripcion:"Implementación de un sistema para el control de accesos y salidas de vehiculos",url_plan:"https://app.smartsheet.com/sheets/RVWGQ83CWhx5CRM4Hh3RmG74mwj9XGgc7P692hG1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Nexcar || Desarrollos",area:"Operaciones Fleet",inicio:"05/03/2026",fin:"10/07/2026",real:100,esp:93,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Donaji Barrios",descripcion:"Implementación de un sistema para el control de accesos y salidas de vehiculos",url_plan:"https://app.smartsheet.com/sheets/gJGr2XQQ8wjJhx3WMcVhf4cCrXXMF9wc6cRJGQM1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Data Lab",area:"Operaciones Fleet",inicio:"20/01/2026",fin:"22/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Donaji Barrios",descripcion:"Sistema para generación de tenencias (LCD y CFDI)",url_plan:"https://app.smartsheet.com/sheets/6g5hmr5FJch2pvpHR2rCWhghmCg8QcW6qGPR5gH1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Cartera || Cambio de Pac de Timbrado",area:"Cartera",inicio:"07/07/2025",fin:"25/02/2026",real:100,esp:100,sem:"Terminado",responsable:"Eduardo Sanchez",solicitante:"Talina Gonzalez",descripcion:"Migración y configuración del proveedor de timbrado fiscal.",url_plan:"https://app.smartsheet.com/sheets/W5CRx2FMJ3fCW9wW6mF8494WgWc2rfQj9HWVMv31?view=gantt"},
+  {tipo:"Proyecto",nombre:"Operaciones Fleet || Nueva Instancia",area:"Operaciones Fleet",inicio:"08/08/2025",fin:"01/06/2026",real:100,esp:100,sem:"Terminado",responsable:"Miguel Elizondo",solicitante:"Donaji Barrios",descripcion:"Implementación y puesta en marcha de nueva infraestructura operativa en SFLEET",url_plan:"https://app.smartsheet.com/sheets/Pm9mRRR45MwQgV4xMH2Xc2MchPMfvX24WqQWR8V1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Tesoreria || Adcontent H2H",area:"Tesorería",inicio:"07/04/2026",fin:"26/08/2026",real:22,esp:60,sem:"Atrasado",responsable:"Eduardo Sanchez",solicitante:"Claudia Montejano",descripcion:"Integración bancaria Host to Host para automatización de pagos y conciliaciones.",url_plan:"https://app.smartsheet.com/sheets/8CWqhCj9wjhQQQj7fHMHHcrqMjjHP92c7R9mW681?view=gantt"},
+  {tipo:"Proyecto",nombre:"Talleres || Integración Mecanica Mx - SAE",area:"Talleres",inicio:"20/04/2026",fin:"20/07/2026",real:79,esp:80,sem:"En riesgo",responsable:"Josue Montoya",solicitante:"Jorge Ramirez",descripcion:"Integración de procesos administrativos y contables entre plataformas.",url_plan:"https://app.smartsheet.com/sheets/FMJPpcm269G7QwJmj7GhHPPMXHXP4QJX8J5Hw9c1?view=gantt"},
+  {tipo:"Proyecto",nombre:"Contabilidad || Integración Mecanica-SAE (Fase 2)",area:"Contabilidad",inicio:"21/04/2026",fin:"12/06/2026",real:99,esp:100,sem:"Atrasado",responsable:"Ricardo Angeles",solicitante:"Jorge Ramirez",descripcion:"Ampliación de la integración contable incorporando nuevos procesos y validaciones.",url_plan:"https://app.smartsheet.com/sheets/r6vHFm67gGg2V6288MvFqpXmRCpxG2GcWGfcwCm1?view=gantt"},
+  {tipo:"Proyecto",nombre:"DTI || Integración de sistemas",area:"DTI",inicio:"01/06/2026",fin:"23/09/2026",real:31,esp:27,sem:"A tiempo",responsable:"Josue Montoya",solicitante:"Ivan Arturo Franco",descripcion:"Integración de los diversos sistemas que hay en el grupo de Incepam en una sola arquitectura",url_plan:"https://app.smartsheet.com/sheets/WmQW43fWF7pXH9J4M222mfHjJpvR53x9X9MmCgV1?view=gantt"}
+];
+const DEV_DATA = [
+  {tipo:"Proyecto",nombre:"Carga y depuración de documentos SFLEET-Core Image",area:"Compliance",inicio:"05/02/2026",fin:"19/06/2026",real:97,esp:100,sem:"Atrasado",responsable:"Carlos Argenis",solicitante:"Fernando Anaya",descripcion:"Durante la migración de documentación de SFLEET a Core Image se detectaron archivos duplicados, se realizaron mejoras en el proceso para no migrar esta información y para elimiar los que ya estaban migrados.",url_plan:"https://app.smartsheet.com/sheets/GR34h3MwGvXFCqfPx6g4VgwHGqfHwm94w3MVmwM1"},
+  {tipo:"Proyecto",nombre:"Crédito automotriz Fase 2",area:"Riesgo Operativo",inicio:"01/10/2025",fin:"15/06/2026",real:75,esp:100,sem:"Atrasado",responsable:"Carlos Argenis",solicitante:"Dirección General",descripcion:"Mejoras solicitadas para terminar con el flujo del módulo de crédito automotriz",url_plan:"https://app.smartsheet.com/sheets/9vgmxcm3532mPvCvHV639M24Ppg4mQ39HR6w3x21"},
+  {tipo:"Proyecto",nombre:"Interconexión con Plataforma Única de Identidad (PUI) Fase 3",area:"Compliance",inicio:"23/03/2026",fin:"30/04/2026",real:18,esp:100,sem:"Atrasado",responsable:"Carlos Argenis",solicitante:"Yessica Tecante",descripcion:"Solicitud para consulta de información de personas perdidas por parte del gobierno.",url_plan:"https://app.smartsheet.com/sheets/grvwrr9pPcFfpPPMP2pVjCc5M6F8r4rrF4xWFrM1?view=grid"},
+  {tipo:"Proyecto",nombre:"Optimización de Control de Flota en Flexsys",area:"Flexys",inicio:"09/06/2026",fin:"09/06/2026",real:99,esp:0,sem:"Atrasado",responsable:"Carlos Argenis",solicitante:"Tania Perez Cano",descripcion:"Mejoras solicitadas por el area de Flex para mejoras en la administración de su flotilla.",url_plan:"https://app.smartsheet.com/sheets/J2xF9Q9x8RrCwMH2rrRRP96jmj777F7gMcmJfpg1"},
+  {tipo:"Proyecto",nombre:"Mejoras 2do trimestre ciclo de activo fijo 2026",area:"Administración de activos",inicio:"01/04/2026",fin:"06/07/2026",real:96,esp:95,sem:"A tiempo",responsable:"Carlos Argenis",solicitante:"Fernando Anaya",descripcion:"Mejoras dentro del ciclo del activo fijo para alinearse con la operación.",url_plan:"https://app.smartsheet.com/sheets/2JPfxhVMr5rHCcXPJwx9FRJWWMcXGgGHX8Ph2jq1?view=grid"},
+  {tipo:"Proyecto",nombre:"Carga de fondeos UNIFIN, Bansi y Multiva LUMOSYS",area:"Fondeos",inicio:"15/04/2026",fin:"28/07/2026",real:100,esp:75,sem:"Terminado",responsable:"Carlos Argenis",solicitante:"Liliana Valdez",descripcion:"Revisión de carga masiva y generación de layouts para carga de fondes de UNIFIN. Revisión, cambios y generación de funcionalidad para fondeos de Bansi y Multiva",url_plan:"https://app.smartsheet.com/sheets/Gjj4wpc3xrpgWH7M73Jc94R72345mWQvFrJwPgW1?view=grid"},
+  {tipo:"Proyecto",nombre:"Mejoras cartera 2do trimestre 2026",area:"Cartera",inicio:"01/04/2026",fin:"08/07/2026",real:87,esp:93,sem:"En riesgo",responsable:"Carlos Argenis",solicitante:"Talina Gonzalez",descripcion:"Proyecto trimestral con mejoras para el area de cartera, este semestre se llevaron requerimientos para la automatización de procesos del area.",url_plan:"https://app.smartsheet.com/sheets/RF3c287rw8935CMw9XgH8xhWc2mpFrhh4jjMHR61?view=grid"},
+  {tipo:"Proyecto",nombre:"Gasto integral de unidades",area:"Administración",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:71,sem:"Terminado",responsable:"Carlos Argenis",solicitante:"Astrid Martinez",descripcion:"Proyecto para obtener el gasto que representa cada unidad para la empresa.",url_plan:"https://app.smartsheet.com/sheets/JWF9Pwmcw7hFjrCpRvmWqj2g4xwCVWvJ3j2389m1?view=grid"},
+  {tipo:"Proyecto",nombre:"Apoyo proyectos IA",area:"TI",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:71,sem:"Terminado",responsable:"Carlos Argenis",solicitante:"Ivan Arturo Franco",descripcion:"Apoyo al area de AI con personal para atender sus proyectos.",url_plan:"https://app.smartsheet.com/sheets/F5VPgCF2cxjVJX7FXXgqqxVG3PjvF4M2w8X3cRw1"},
+  {tipo:"Proyecto",nombre:"Planeación cambio arquitectura",area:"TI",inicio:"29/04/2026",fin:"28/07/2026",real:99,esp:71,sem:"A tiempo",responsable:"Carlos Argenis",solicitante:"Ivan Arturo Franco",descripcion:"Revisión de la arquitectura para varios proyectos internos.",url_plan:"https://app.smartsheet.com/sheets/M9F9VPvQwx3frGj2MfmfCRG4mFF74249vGrh4RJ1"},
+  {tipo:"Proyecto",nombre:"IFRS-Modelo Arrendatario Fase 3",area:"Contabilidad",inicio:"29/04/2026",fin:"28/07/2026",real:100,esp:71,sem:"Terminado",responsable:"Carlos Argenis",solicitante:"Ruben Dario Castaneda",descripcion:"Aplicación para la gestión y cálculo de operaciones bajo la norma IFRS 16. Permite la administración de arrendamientos, rentas, intereses y reportes financieros.",url_plan:"https://app.smartsheet.com/sheets/W9Q66WxxCgMP58GX2pwfj7HHg685QmwvxGQvC921"}
+];
+const IA_DATA = [
+  {tipo:"Proyecto",nombre:"Proyecto 1",area:"",inicio:"07/04/2026",fin:"04/08/2026",real:94,esp:72,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""},
+  {tipo:"Proyecto",nombre:"Mejora 1",area:"sds",inicio:"07/04/2026",fin:"20/07/2026",real:90,esp:82,sem:"A tiempo",responsable:"",solicitante:"",descripcion:"Sincronizado desde Smartsheet",url_plan:""}
+];
+const INF_DATA=[
+  {tipo:"Proyecto",nombre:"Migración oficinas Tlalnepantla",area:"Infraestructura",inicio:"01/03/2026",fin:"30/07/2026",real:78,esp:80,sem:"A tiempo"},
+  {tipo:"Proyecto",nombre:"Renovación Firewall / VPN Corporativa",area:"Seguridad",inicio:"15/02/2026",fin:"30/06/2026",real:50,esp:65,sem:"En riesgo"},
+  {tipo:"Mejoras",nombre:"Data Center Azure — Zona 2",area:"Cloud",inicio:"01/04/2026",fin:"31/12/2026",real:35,esp:35,sem:"A tiempo"},
+  {tipo:"Proyecto",nombre:"Actualización CCTV y Biométricos",area:"Seguridad Física",inicio:"01/01/2026",fin:"28/02/2026",real:100,esp:100,sem:"Terminado"},
+  {tipo:"Mejoras",nombre:"Red estructurada — Edificio B",area:"Redes",inicio:"15/04/2026",fin:"31/08/2026",real:20,esp:40,sem:"Atrasado"},
+];
+
+const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
+
+const ACT_DATA = [
+  {id:"ex6",nombre:"Omar Aguilar Tirado",actividad:"Configuración de campos BUK Personalizado Fase 22ss",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-07-02T04:51:11.694Z"},
+  {id:"mr2rqto6lwp",nombre:"Helmut Abraham Esquivel",actividad:"Entrega de análisis de requerisdsdmientos — AI HUB FLEX",area:"",prioridad:"Media",fechaFin:"2026-07-03",semana:"2026-W27",estatus:"Concluido",notas:"",createdAt:"2026-07-02T00:31:06.678Z",updatedAt:"2026-07-02T04:51:31.643Z"},
+  {id:"mr2weppiibr",nombre:"Carlos Argenis Aldana",actividad:"Configuración de campos BUK Personalizado Fase 22",area:"",prioridad:"Media",fechaFin:"2026-07-22",semana:"2026-W30",estatus:"En proceso",notas:"",createdAt:"2026-07-02T02:41:39.750Z",updatedAt:"2026-07-02T04:32:33.151Z"},
+  {id:"mr30psjfrn8",nombre:"Josue Montoya Martinez",actividad:"Entrega de análisis de requerimientos — AI HUB FLEX",area:"",prioridad:"Media",fechaFin:"2026-07-15",semana:"2026-W29",estatus:"En proceso",notas:"",createdAt:"2026-07-02T04:42:15.099Z",updatedAt:"2026-07-02T04:42:15.099Z"},
+  {id:"mr313p9clfq",nombre:"Carlos Argenis Aldana",actividad:"mandar sesion",area:"",prioridad:"Media",fechaFin:"2026-07-02",semana:"2026-W27",estatus:"En proceso",notas:"",createdAt:"2026-07-02T04:53:04.032Z",updatedAt:"2026-07-02T04:53:04.032Z"}
+]; // INYECTADO POR SYNC.PY
+
+// ─── Eventualidades IMC (declarado temprano: buildRow lo usa desde el primer render) ───
+let _eventualidades = {};
+let _evProyectoActual = '';
+</script>
+<!-- Chart.js para gráficas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --navy:#1A2340; --navy-mid:#243058; --navy-light:#2e3d70;
+  --gold:#C9A84C; --gold-dim:#a8893e; --gold-faint:rgba(201,168,76,0.10);
+  --surface:#0f1520; --surface2:#161e2e; --surface3:#1c2640;
+  --text:#ffffff; --text-dim:#ffffff; --text-muted:#a0aec0;
+  --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --blue:#3b82f6; --purple:#8b5cf6;
+  --border:rgba(255,255,255,0.09); --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-height:100vh;}
+
+.topbar{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.4);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-logo{width:34px;height:34px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--navy);}
+.brand-name{font-weight:700;font-size:15px;color:#fff;line-height:1.2;}
+.brand-sub{font-size:10px;color:var(--gold);letter-spacing:.06em;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.date-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;background:rgba(255,255,255,.08);padding:5px 11px;border-radius:20px;border:1px solid var(--border);}
+.btn-upload{background:var(--gold);color:var(--navy);border:none;cursor:pointer;font-weight:700;font-size:12px;padding:8px 16px;border-radius:7px;transition:.2s;}
+.btn-upload:hover{background:var(--gold-dim);}
+
+.tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:4px;overflow-x:auto;}
+.tab{padding:12px 18px;font-size:13px;font-weight:600;}
+
+.tab:hover{color:#fff;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.main{padding:24px 28px;max-width:1440px;margin:0 auto;}
+.module{display:none;}
+.module.active{display:block;animation:fadeUp .22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.mod-header{margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.mod-header-left{}
+.mod-title{font-size:20px;font-weight:700;color:#fff;}
+.mod-title span{color:var(--gold);}
+.mod-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;}
+.export-btns{display:flex;gap:8px;flex-shrink:0;margin-top:4px;}
+.btn-pptx{background:#C9A84C;color:#1A2340;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-pptx:hover{background:#a8893e;}
+.btn-xlsx{background:#1d6f42;color:#fff;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-xlsx:hover{background:#155535;}
+.btn-sync{background:transparent;color:var(--gold);border:1px solid var(--gold);cursor:pointer;font-weight:700;font-size:11px;padding:6px 13px;border-radius:20px;transition:.2s;display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;}
+.btn-sync:hover{background:rgba(201,168,76,.12);}
+.btn-sync:disabled{opacity:.55;cursor:not-allowed;}
+.btn-sync .ico{display:inline-block;}
+.btn-sync.loading .ico{animation:spin 1s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;} .kpi[onclick]{cursor:pointer;} .kpi[onclick]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:var(--gold);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.g::after{background:var(--green);}
+.kpi.y::after{background:var(--yellow);}
+.kpi.r::after{background:var(--red);}
+.kpi.b::after{background:var(--blue);}
+.kpi.p::after{background:var(--purple);}
+.kpi.gold::after{background:var(--gold);}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;margin-bottom:8px;font-weight:700;text-align:center;}
+.kpi-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;text-align:center;}
+.kpi-val.g{color:var(--green)}.kpi-val.y{color:var(--yellow)}.kpi-val.r{color:var(--red)}.kpi-val.b{color:var(--blue)}.kpi-val.gold{color:var(--gold)}.kpi-val.p{color:var(--purple)}
+.kpi-sub{font-size:11px;color:#fff;margin-top:5px;text-align:center;}
+
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:700;color:#fff;}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;}
+.badge.g{background:rgba(34,197,94,.15);color:var(--green);}
+.badge.y{background:rgba(245,158,11,.15);color:var(--yellow);}
+.badge.r{background:rgba(239,68,68,.15);color:var(--red);}
+.badge.b{background:rgba(59,130,246,.15);color:var(--blue);}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;font-weight:700;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.03);}
+.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:#ffffff;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
+.p-area{font-size:11px;color:#fff;margin-top:2px;}
+.p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--blue);}
+.p-tipo.t1{background:rgba(59,130,246,.18);color:#60a5fa;}
+.p-tipo.t2{background:rgba(139,92,246,.18);color:#a78bfa;}
+.p-tipo.t3{background:rgba(34,197,94,.18);color:#4ade80;}
+.p-tipo.t4{background:rgba(245,158,11,.18);color:#fbbf24;}
+.p-tipo.t5{background:rgba(239,68,68,.18);color:#f87171;}
+.p-tipo.t6{background:rgba(20,184,166,.18);color:#2dd4bf;}
+.p-tipo.t7{background:rgba(249,115,22,.18);color:#fb923c;}
+.p-tipo.t8{background:rgba(236,72,153,.18);color:#f472b6;}
+
+.sem{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.sem::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sem.tiempo{background:rgba(34,197,94,.12);color:var(--green);}.sem.tiempo::before{background:var(--green);}
+.sem.atrasado{background:rgba(239,68,68,.12);color:var(--red);}.sem.atrasado::before{background:var(--red);}
+.sem.standby{background:rgba(139,92,246,.12);color:var(--purple);}.sem.standby::before{background:var(--purple);}
+.sem.terminado{background:rgba(59,130,246,.12);color:var(--blue);}.sem.terminado::before{background:var(--blue);}
+.sem.riesgo{background:rgba(245,158,11,.12);color:var(--yellow);}.sem.riesgo::before{background:var(--yellow);}
+
+.prog-wrap{min-width:140px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:9px;color:#fff;margin-bottom:3px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.prog-track{height:6px;background:rgba(255,255,255,.1);border-radius:4px;position:relative;overflow:hidden;}
+.prog-esp{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.18);border-radius:4px;}
+.prog-real{position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .5s ease;}
+.prog-real.g{background:var(--green);}.prog-real.y{background:var(--yellow);}.prog-real.r{background:var(--red);}.prog-real.b{background:var(--blue);}
+
+.date-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;}
+
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:#fff;cursor:pointer;transition:.2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--gold-faint);border-color:var(--gold);color:var(--gold);}
+.filter-label{font-size:11px;color:#fff;font-weight:600;}
+.filter-resp{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:rgba(255,255,255,.7);cursor:pointer;outline:none;transition:.2s;}
+.filter-resp:hover,.filter-resp:focus{border-color:var(--gold);color:var(--gold);}
+.filter-resp option{background:var(--surface2);color:#fff;}
+.search-box{background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:#fff;outline:none;margin-left:auto;width:200px;}
+.search-box:focus{border-color:var(--gold);}
+.search-box::placeholder{color:rgba(255,255,255,.4);}
+
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:20px;}
+.upload-zone:hover{border-color:var(--gold);background:var(--gold-faint);}
+.uz-icon{font-size:32px;margin-bottom:10px;}
+.uz-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:5px;}
+.uz-sub{font-size:12px;color:rgba(255,255,255,.6);}
+#file-input{display:none;}
+
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:16px 18px;border-top:1px solid var(--border);}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px;padding:4px 0;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bv{font-size:10px;font-family:'JetBrains Mono',monospace;color:#fff;font-weight:600;}
+.bb{width:100%;border-radius:4px 4px 0 0;}
+.bl{font-size:9px;color:#fff;text-align:center;}
+
+.th-sort:hover{color:var(--gold);background:rgba(201,168,76,0.06);}
+.th-sort .sort-icon{font-size:10px;opacity:.5;margin-left:3px;}
+.th-sort.asc .sort-icon::after{content:"↑";opacity:1;}
+.th-sort.desc .sort-icon::after{content:"↓";opacity:1;}
+.th-sort.asc .sort-icon,.th-sort.desc .sort-icon{font-size:0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid3c{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:18px;}
+.treemap-wrap{display:flex;flex-wrap:wrap;gap:8px;min-height:120px;}
+.treemap-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;color:#fff;font-weight:700;cursor:default;transition:.2s;padding:8px;}
+.treemap-cell:hover{filter:brightness(1.15);}
+.treemap-area{font-size:11px;opacity:.85;margin-top:2px;text-align:center;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}.grid3c{grid-template-columns:1fr;}}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#1c2535;border:1px solid rgba(255,255,255,0.12);border-radius:12px;width:90%;max-width:540px;overflow:hidden;font-family:'Inter',sans-serif;animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.modal-header{background:#1A2340;border-bottom:8px solid #C9A84C;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-tipo{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.modal-nombre{font-size:15px;font-weight:600;color:#fff;line-height:1.3;}
+.modal-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:12px;transition:.2s;}
+.modal-close:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.modal-section-label{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.modal-desc{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6;background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-field{background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;}
+.modal-field-label{font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.modal-field-value{font-size:13px;color:#fff;font-weight:500;}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+.modal-hint{font-size:11px;color:rgba(255,255,255,0.25);}
+
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9999;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;pointer-events:none;}
+.toast.success{background:#166534;}
+.toast.error{background:#7f1d1d;}
+.toast.info{background:#1e3a5f;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(8px)}}
+.lock-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,14,26,.97);z-index:2000;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:16px;padding:36px 40px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.lock-icon{font-size:40px;margin-bottom:12px;}
+.lock-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;}
+.lock-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:24px;}
+.lock-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:12px 14px;color:#fff;font-size:16px;letter-spacing:4px;text-align:center;outline:none;box-sizing:border-box;transition:.2s;}
+.lock-input:focus{border-color:var(--gold);}
+.lock-btn{width:100%;margin-top:14px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;}
+.lock-btn:hover{background:var(--gold-dim);}
+.lock-error{font-size:12px;color:#ef4444;margin-top:10px;min-height:18px;}
+
+/* ── Actividades Semanales ── */
+.act-week-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.act-week-ctrl{display:flex;align-items:center;gap:8px;}
+.act-week-btn{background:var(--navy-light);color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;transition:.2s;}
+.act-week-btn:hover{background:rgba(201,168,76,.12);}
+.act-filters-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn-act-add{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 18px;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-act-add:hover{background:#a8893e;}
+.act-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;box-sizing:border-box;outline:none;transition:.2s;}
+.act-inp:focus{border-color:var(--gold);}
+.act-inp-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.5px;}
+
+/* Actividades - filtros y fecha */
+input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;}
+.act-multi-btn{background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.act-multi-btn.active{border-color:var(--gold);color:var(--gold);}
+.act-multi-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:300;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.act-multi-wrap{position:relative;}
+.act-multi-lbl{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;font-size:12px;color:#fff;white-space:nowrap;}
+.act-multi-lbl:hover{background:rgba(255,255,255,.07);}
+.act-sort-th{cursor:pointer;user-select:none;}
+.act-sort-th:hover{color:var(--gold);}
+.dashboard-init { opacity: 0; }
+.dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
+.dti-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInOv .18s ease;}
+@keyframes fadeInOv{from{opacity:0}to{opacity:1}}
+.dti-modal-box{background:#1e2a4a;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:36px 40px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:popIn .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.dti-modal-icon{font-size:48px;margin-bottom:14px;line-height:1;}
+.dti-modal-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+.dti-modal-msg{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:26px;line-height:1.6;}
+.dti-modal-btns{display:flex;gap:10px;justify-content:center;}
+.dti-modal-btn{padding:10px 26px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:transform .12s,opacity .12s;letter-spacing:.02em;}
+.dti-modal-btn:hover{transform:translateY(-1px);opacity:.9;}
+.dti-modal-btn.ok-danger{background:#ef4444;color:#fff;}
+.dti-modal-btn.ok-success{background:var(--gold);color:#1a2340;}
+.dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
+
+/* ═══════════════════════════════════════════
+   MODO CLARO — light-mode
+   ═══════════════════════════════════════════ */
+body.light-mode{--navy:#e8edf5;--navy-mid:#d4dce8;--navy-light:#c0ccd8;--surface:#f0f4fa;--surface2:#e4eaf4;--surface3:#d8e0ee;--border:rgba(0,0,0,.12);}
+
+/* Topbar y tabs: SIEMPRE OSCURO */
+body.light-mode .topbar{background:#1A2340 !important;}
+body.light-mode .topbar *{color:#fff !important;}
+body.light-mode .tabs{background:#1e2a4a !important;}
+body.light-mode .tab{color:#fff !important;}
+body.light-mode .tab.active{color:var(--gold) !important;}
+
+/* Todo el contenido principal: NEGRO */
+body.light-mode .main *{color:#1a2340 !important;}
+body.light-mode .mod-title{color:#1a2340 !important;}
+body.light-mode .mod-title span{color:var(--gold) !important;}
+body.light-mode .btn-xlsx{color:#fff !important;}
+body.light-mode .btn-xlsx *{color:#fff !important;}
+
+/* Fondos */
+body.light-mode .module{background:#f0f4fa;}
+body.light-mode .card,body.light-mode .kpi{background:#e4eaf4 !important;border-color:rgba(0,0,0,.12) !important;}
+body.light-mode .tbl th{background:#d4dce8 !important;}
+body.light-mode .tbl tr:nth-child(even){background:rgba(0,0,0,.04);}
+
+/* Inputs, filtros, selects */
+body.light-mode .filter-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode .filter-btn.active{color:var(--gold) !important;border-color:var(--gold) !important;background:rgba(201,168,76,.12) !important;}
+body.light-mode .filter-resp,body.light-mode select{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode input,body.light-mode textarea,body.light-mode .act-inp,body.light-mode .search-box,body.light-mode .act-multi-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode ::placeholder{color:rgba(26,35,64,.45) !important;}
+
+/* Modales y overlays */
+body.light-mode .modal-box,body.light-mode .dti-modal-box,body.light-mode .act-multi-panel,body.light-mode .lock-box{background:#e4eaf4 !important;}
+body.light-mode .modal-box .modal-header{background:#1A2340 !important;}
+body.light-mode .modal-box .modal-header *{color:#fff !important;}
+body.light-mode .modal-box .modal-tipo{color:var(--gold) !important;}
+body.light-mode .modal-box .modal-body *{color:#1a2340 !important;}
+
+/* Semáforos mantienen color */
+body.light-mode .sem.tiempo{color:var(--green) !important;background:rgba(34,197,94,.15);}
+body.light-mode .sem.atrasado{color:var(--red) !important;background:rgba(239,68,68,.15);}
+body.light-mode .sem.riesgo{color:var(--yellow) !important;background:rgba(245,158,11,.15);}
+body.light-mode .sem.terminado{color:var(--blue) !important;background:rgba(59,130,246,.15);}
+body.light-mode .sem.standby{color:var(--purple) !important;background:rgba(139,92,246,.15);}
+
+/* KPI valores mantienen color */
+body.light-mode .kpi-val.b{color:var(--blue) !important;}
+body.light-mode .kpi-val.g{color:var(--green) !important;}
+body.light-mode .kpi-val.r{color:var(--red) !important;}
+body.light-mode .kpi-val.y{color:var(--yellow) !important;}
+body.light-mode .kpi-val.gold{color:var(--gold) !important;}
+
+/* Botones especiales */
+body.light-mode .btn-sync{color:var(--gold) !important;}
+/* ── Modal Eventualidad ── */
+#ev-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;}
+#ev-modal-bg.active{display:flex;}
+#ev-modal-box{background:#1a2340;border-radius:14px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(201,168,76,0.3);}
+.ev-modal-title{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.ev-modal-nombre{font-size:16px;font-weight:700;color:#fff;margin-bottom:20px;line-height:1.3;}
+#ev-textarea{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;padding:12px;resize:vertical;min-height:110px;font-family:inherit;outline:none;transition:.2s;}
+#ev-textarea:focus{border-color:rgba(201,168,76,0.6);background:rgba(255,255,255,0.08);}
+.ev-modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;align-items:center;}
+.ev-btn-save{background:var(--gold);color:#1a2340;border:none;border-radius:8px;padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;}
+.ev-btn-save:hover{opacity:.85;}
+.ev-btn-cancel{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 18px;font-size:13px;cursor:pointer;transition:.2s;}
+.ev-btn-cancel:hover{background:rgba(255,255,255,0.12);}
+.ev-btn-delete{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;transition:.2s;margin-right:auto;}
+.ev-btn-delete:hover{background:rgba(239,68,68,0.22);}
+#ev-char-count{font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;text-align:right;}
+#nota-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;}
+#nota-modal-bg.active{display:flex;}
+#nota-modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:440px;max-width:95vw;}
+#nota-modal h3{margin:0 0 12px;color:var(--gold);font-size:15px;}
+#nota-textarea{width:100%;min-height:120px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;}
+.nota-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.nota-modal-btns button{border:none;border-radius:6px;padding:7px 18px;cursor:pointer;font-size:13px;font-weight:600;}
+.nota-btn-save{background:var(--gold);color:#1A2340;}
+.nota-btn-del{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)!important;}
+.nota-btn-cancel{background:rgba(255,255,255,.08);color:var(--text);}
+</style>
+<!-- LAST_SYNC -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
+<meta name="last-sync" content="2026-07-02T18:46:50Z">
+</head>
+<body class="dashboard-init">
+
+<header class="topbar">
+  <div class="brand">
+    <img src="data:image/png;base64,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" alt="INCEPADEM" style="height:34px;width:auto;object-fit:contain;">
+    <div style="border-left:1px solid var(--gold);padding-left:12px;margin-left:4px;">
+      <div class="brand-name">Dashboard DTI</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="date-chip" id="live-date"></span>
+    <span class="date-chip" id="sync-chip" style="display:none;border-color:rgba(34,197,94,.4);color:rgba(34,197,94,.9);cursor:default;" title="Última sincronización con Smartsheet"></span>
+    <button onclick="toggleTheme()" id="theme-btn" title="Modo claro/oscuro" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;margin-right:4px">🌙</button>
+    <button class="btn-sync" id="btn-sync" onclick="triggerSync()" title="Forzar una actualización inmediata desde Smartsheet">
+      <span class="ico">🔄</span><span id="btn-sync-label">Actualizar Datos</span>
+    </button>
+    <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)" style="display:none">
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab" onclick="switchTab('resumen',this)">📊 Resumen</div>
+  <div class="tab active" onclick="switchTab('imc',this)">🗂️ IMC</div>
+  <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
+  <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
+  <div class="tab" onclick="switchTab('ia',this)">🤖 IA</div>
+  <div class="tab" onclick="switchTab('actividades',this)">📋 Actividades Semanales</div>
+  <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
+</nav>
+
+<main class="main">
+
+<!-- ═══ RESUMEN ═══ -->
+<section class="module" id="mod-resumen">
+
+  <!-- ENCABEZADO -->
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title"><span>Resumen</span></div>
+      <div class="mod-sub" id="res-subtitle">Consolidado estratégico de todos los módulos DTI — Dirección General</div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
+      <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Exportar Excel</button>
+    </div>
+  </div>
+
+  <!-- KPIs GLOBALES -->
+  <div id="res-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px"></div>
+
+  <!-- FILTROS -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:24px">
+    <select id="res-fil-modulo" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los módulos</option>
+      <option value="IMC">IMC</option>
+      <option value="Desarrollo">Desarrollo</option>
+      <option value="Soporte">Soporte</option>
+      <option value="IA">IA</option>
+    </select>
+    <select id="res-fil-sem" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todos los estatus</option>
+      <option value="terminado">Terminado</option>
+      <option value="tiempo">A tiempo</option>
+      <option value="riesgo">Riesgo de atraso</option>
+      <option value="atrasado">Atrasado</option>
+      <option value="stand">Stand By</option>
+    </select>
+    <select id="res-fil-area" onchange="renderResumen()" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px">
+      <option value="">Todas las áreas</option>
+    </select>
+    <input id="res-search" oninput="renderResumen()" placeholder="&#128269; Buscar proyecto o responsable..." style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;flex:1;min-width:200px;outline:none">
+    <span id="res-count" style="font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap"></span>
+  </div>
+
+  <!-- TABLA CONSOLIDADA -->
+  <div class="card" style="margin-bottom:28px;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <div class="card-title" style="margin:0">&#128203; Portafolio Completo de Proyectos</div>
+      <span id="res-tbl-badge" style="background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(201,168,76,.3)"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr>
+          <th style="min-width:90px">Módulo</th>
+          <th style="min-width:80px">Tipo</th>
+          <th style="min-width:220px">Proyecto</th>
+          <th style="min-width:110px">Área</th>
+          <th style="min-width:82px">Inicio</th>
+          <th style="min-width:82px">Fin</th>
+          <th style="min-width:200px">Avance</th>
+          <th style="min-width:130px">Semáforo</th>
+        </tr></thead>
+        <tbody id="res-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FILA 1: 3 DONAS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127970; Por Módulo</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución del portafolio</div>
+      <canvas id="res-chart-modulo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128680; Estado General</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Semáforo consolidado</div>
+      <canvas id="res-chart-semaforo" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127959; Por Área</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Top áreas por volumen</div>
+      <canvas id="res-chart-area" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 2: AVANCE POR MÓDULO + RIESGO POR ÁREA -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128200; Avance Real vs Esperado</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Comparativo por módulo</div>
+      <canvas id="res-chart-avance" height="180"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#9888;&#65039; Proyectos en Riesgo / Atrasados</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Por área — requieren atención</div>
+      <canvas id="res-chart-riesgo" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- FILA 3: GANTT GLOBAL - ancho completo -->
+  <div class="card" style="padding:22px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">&#128197; L&#237;nea de Tiempo &#8212; Gantt Global</div>
+        <div style="font-size:11px;color:var(--muted)">Proyectos activos con fechas de inicio y fin</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="toggleResGanttFilter()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">&#9776; Proyectos</button>
+        <button onclick="exportResGanttPDF()" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">&#128196; PDF</button>
+      </div>
+    </div>
+    <div id="res-gantt-checks" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)"></div>
+    <div style="overflow-x:auto"><canvas id="res-chart-gantt" style="min-height:360px"></canvas></div>
+  </div>
+
+  <!-- FILA 3b: SCATTER -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+  <!-- FILA 4: TOP RESPONSABLES + TIPOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#128100; Carga por Responsable</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Proyectos asignados por persona</div>
+      <canvas id="res-chart-resp" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:22px">
+      <div class="card-title" style="margin-bottom:4px">&#127775; Tipos de Proyecto</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Distribución por categoría</div>
+      <canvas id="res-chart-tipo" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- PROYECTOS CRITICOS -->
+  <div class="card" style="padding:22px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="card-title" style="margin:0">&#128680; Proyectos Críticos — Acción Inmediata</div>
+      <span style="background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.3)">ATRASADOS + RIESGO</span>
+    </div>
+    <div id="res-criticos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+  </div>
+
+</section>
+<!-- ═══ IMC ═══ -->
+<section class="module active" id="mod-imc">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>IMC</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
+      <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="k-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="k-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="k-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="k-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="k-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('imc','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="k-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('imc','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('imc','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('imc','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('imc','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('imc','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('imc',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="imc-tipo-select" onchange="filterTipo('imc',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="imc-resp-select" onchange="filterResp('imc',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('imc',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos IMC — Vista detallada</div><span class="badge b" id="imc-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('imc','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('imc','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="imc-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="imc-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="imc-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('imc')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="imc-gantt-btn" onclick="toggleGanttFilter('imc')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="imc-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="imc-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="imc-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="imc-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ DESARROLLO ═══ -->
+<section class="module" id="mod-desarrollo">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Desarrollo</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="dv-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="dv-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="dv-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="dv-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="dv-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('dev','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('dev','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('dev','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('dev','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('dev','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('dev',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="dev-tipo-select" onchange="filterTipo('dev',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="dev-resp-select" onchange="filterResp('dev',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('dev',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Desarrollo — Vista detallada</div><span class="badge b" id="dev-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('dev','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('dev','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="dev-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="dev-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="dev-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('dev')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="dev-gantt-btn" onclick="toggleGanttFilter('dev')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="dev-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="dev-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="dev-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ SOPORTE E INFRAESTRUCTURA ═══ -->
+<section class="module" id="mod-infraestructura">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
+      
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="inf-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="inf-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="inf-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="inf-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="inf-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('inf','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('inf','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('inf','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('inf','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('inf','Atrasado',this)">🔴 Atrasado</button>
+    
+    <button class="filter-btn" onclick="filterTabPorCerrar('inf',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="inf-tipo-select" onchange="filterTipo('inf',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="inf-resp-select" onchange="filterResp('inf',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('inf',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Soporte e Infraestructura — Vista detallada</div><span class="badge b" id="inf-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('inf','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('inf','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="inf-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="inf-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="inf-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('inf')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="inf-gantt-btn" onclick="toggleGanttFilter('inf')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="inf-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="inf-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="inf-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ IA ═══ -->
+<section class="module" id="mod-ia">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Inteligencia Artificial</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
+      <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
+    <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
+    <div class="kpi g" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','A tiempo')" title="Filtrar a tiempo"><div class="kpi-lbl">A Tiempo</div><div class="kpi-val g" id="ia-ok">0</div><div class="kpi-sub">En rango esperado</div></div>
+    <div class="kpi y" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','En riesgo')" title="Filtrar en riesgo"><div class="kpi-lbl">En Riesgo</div><div class="kpi-val y" id="ia-riesgo">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi r" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Atrasado')" title="Filtrar atrasados"><div class="kpi-lbl">Atrasados</div><div class="kpi-val r" id="ia-atr">0</div><div class="kpi-sub">Escalados</div></div>
+    <div class="kpi gold" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','porcerrar')" title="Filtrar por cerrar"><div class="kpi-lbl">Por Cerrar</div><div class="kpi-val gold" id="ia-pc">0</div><div class="kpi-sub">Avance &gt;90% y &lt;99%</div></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTab('ia','todos',this)">Todos</button>
+    <button class="filter-btn" onclick="filterTab('ia','Terminado',this)">✅ Terminado</button>
+    <button class="filter-btn" onclick="filterTab('ia','A tiempo',this)">🟢 A tiempo</button>
+    <button class="filter-btn" onclick="filterTab('ia','En riesgo',this)">🟡 En riesgo</button>
+    <button class="filter-btn" onclick="filterTab('ia','Atrasado',this)">🔴 Atrasado</button>
+    <button class="filter-btn" onclick="filterTabPorCerrar('ia',this)">⭐ Por cerrar</button>
+    <select class="filter-resp" id="ia-tipo-select" onchange="filterTipo('ia',this.value)" style="margin-right:6px">
+      <option value="">🏷️ Todos los tipos</option>
+    </select>
+    <select class="filter-resp" id="ia-resp-select" onchange="filterResp('ia',this.value)">
+      <option value="">👤 Todos los responsables</option>
+    </select>
+    <input class="search-box" placeholder="🔍 Buscar proyecto..." oninput="searchTab('ia',this.value)">
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Proyectos Inteligencia Artificial — Vista detallada</div><span class="badge b" id="ia-count">0 proyectos</span></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+<th class="th-sort" onclick="sortTab('ia','tipo',this)" style="cursor:pointer;user-select:none">Tipo <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','nombre',this)" style="cursor:pointer;user-select:none">Proyecto <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','area',this)" style="cursor:pointer;user-select:none">Área <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','inicio',this)" style="cursor:pointer;user-select:none">Inicio <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','fin',this)" style="cursor:pointer;user-select:none">Fin <span class="sort-icon">⇅</span></th>
+<th class="th-sort" onclick="sortTab('ia','real',this)" style="cursor:pointer;user-select:none">Avance Real vs Esperado <span class="sort-icon">⇅</span></th>
+<th>Semáforo</th>
+</tr></thead><tbody id="ia-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:18px">
+    <div class="card"><div class="card-head"><div class="card-title">Estatus de Proyectos</div></div><div style="padding:20px;display:flex;align-items:center;justify-content:center;height:300px"><canvas id="ia-donut"></canvas></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Proyectos por Área</div></div><div style="padding:16px" id="ia-treemap"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="card-title">Línea de Tiempo (Gantt)</div>
+      <div style="position:relative">
+        <button onclick="exportGanttPDF('ia')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button id="ia-gantt-btn" onclick="toggleGanttFilter('ia')" style="background:var(--navy-mid);color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <span id="ia-gantt-lbl">Todos los proyectos</span> ▾
+        </button>
+        <div id="ia-gantt-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:200;min-width:260px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+          <div id="ia-gantt-checks"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px;overflow-x:auto"><canvas id="ia-gantt"></canvas></div>
+  </div>
+</section>
+
+<!-- ═══ ACTIVIDADES SEMANALES ═══ -->
+<section class="module" id="mod-actividades">
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Módulo <span>Actividades Semanales</span></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-act-add" onclick="openActModal(null)">➕ Nueva Actividad</button>
+      <button class="btn-xlsx" onclick="exportActXLSX()">📗 Descargar Excel</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi b" style="cursor:pointer" onclick="kpiActFilter('todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="act-k-total">0</div><div class="kpi-sub">Esta semana</div></div>
+    <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilter('En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="act-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+    <div class="kpi g" style="cursor:pointer" onclick="kpiActFilter('Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="act-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+    <div class="kpi r" style="cursor:pointer" onclick="kpiActFilter('Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="act-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Colaboradores</div><div class="kpi-val gold" id="act-k-personas">0</div><div class="kpi-sub">Activos esta semana</div></div>
+  </div>
+  <div class="act-week-nav">
+    <div class="act-filters-row">
+      <!-- Multi-select Estatus -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-est-btn" onclick="toggleActPanel('estatus')">🔵 Todos los estatus ▾</button>
+        <div class="act-multi-panel" id="act-estatus-panel">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700"><input type="checkbox" id="act-est-todos" onchange="actSelTodos('estatus',this)" style="accent-color:var(--gold)" checked> ✓ Todos los estatus</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="En proceso" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Concluido" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+          <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+        </div>
+      </div>
+      <!-- Multi-select Colaboradores -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
+        <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+            <input type="checkbox" id="act-nom-todos" checked onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
+          </label>
+          <div id="act-nombre-checks"></div>
+        </div>
+      </div>
+      <!-- Semana navegador -->
+      <div style="display:flex;align-items:center;gap:4px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:3px 6px;">
+        <button onclick="actNavSemana(-1)" title="Semana anterior" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">‹</button>
+        <span id="act-semana-label" style="font-size:12px;color:#fff;min-width:180px;text-align:center;cursor:pointer;" onclick="actNavSemanaHoy()" title="Ir a semana actual">📋 Todas las actividades</span>
+        <button onclick="actNavSemana(1)" title="Semana siguiente" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">›</button>
+      </div>
+      <!-- Prioridad -->
+      <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">⚡ Todas las prioridades</option>
+        <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+        <option value="Media" style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+        <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+      </select>
+      <input id="act-search" placeholder="🔍 Buscar actividad..." oninput="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:180px">
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Actividades — Vista detallada</div>
+      <span class="badge b" id="act-count">0 actividades</span>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th class="act-sort-th" style="width:180px;min-width:180px" onclick="sortAct('nombre',this)">Nombre <span class="sort-icon">⇅</span></th>
+        <th>Actividad</th>
+        <th class="act-sort-th" style="width:120px;min-width:120px" onclick="sortAct('prioridad',this)">Prioridad <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:80px;min-width:80px" onclick="sortAct('fechaFin',this)">Fecha Fin <span class="sort-icon">⇅</span></th>
+        <th class="act-sort-th" style="width:130px" onclick="sortAct('estatus',this)">Estatus <span class="sort-icon">⇅</span></th>
+        <th style="width:80px">Acciones</th>
+      </tr></thead>
+      <tbody id="act-tbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+
+<!-- ═══ CARGA ═══ -->
+<section class="module" id="mod-carga" style="position:relative">
+  <!-- Overlay de contraseña -->
+  <div id="carga-lock" style="position:absolute;top:0;left:0;width:100%;height:100%;background:var(--navy);z-index:100;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:12px">
+    <div class="lock-box">
+      <div class="lock-icon">🔐</div>
+      <div class="lock-title">Carga de Datos</div>
+      <div class="lock-sub">Esta sección requiere contraseña</div>
+      <input class="lock-input" id="carga-pwd" type="password" placeholder="••••••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')verificarClave()"
+        oninput="document.getElementById('carga-err').textContent=''">
+      <button class="lock-btn" onclick="verificarClave()">Acceder</button>
+      <div class="lock-error" id="carga-err"></div>
+    </div>
+  </div>
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title">Carga de <span>Datos</span></div>
+      <div class="mod-sub">Gestiona datos del dashboard</div>
+    </div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px">
+    <button id="ctab-layout" onclick="switchCargaTab('layout')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:700;color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-2px;transition:all .2s">&#128196; Carga de Layout</button>
+    <button id="ctab-directorio" onclick="switchCargaTab('directorio')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128231; Directorio de Colaboradores</button>
+  </div>
+
+  <!-- Sub-tab: Layout -->
+  <div id="cpanel-layout">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">&#11015;&#65039; Descargar Plantilla</button>
+    </div>
+    <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
+      <strong style="color:var(--gold)">&#10067; Como funciona?</strong><br>
+      1&#65039;&#8419; Descarga la plantilla CSV -- tiene todos los proyectos con sus nombres exactos<br>
+      2&#65039;&#8419; Llena las columnas que necesites y guarda como <strong>CSV UTF-8</strong><br>
+      3&#65039;&#8419; Sube el archivo -- solo se actualizan los campos que llenaste
+    </div>
+    <div class="upload-zone"
+    onclick="document.getElementById('file-input').click()"
+    ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(201,168,76,0.08)'"
+    ondragleave="this.style.borderColor='';this.style.background=''"
+    ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';if(event.dataTransfer.files.length)loadCSV({target:{files:event.dataTransfer.files,value:''}})">
+      <div class="uz-icon">&#128196;</div>
+      <div class="uz-title">Arrastra tu archivo CSV aqui o haz clic para seleccionar</div>
+      <div class="uz-sub">Columnas: modulo, nombre, area, responsable, solicitante, descripcion, url_plan</div>
+    </div>
+    </div>
+    <div id="upload-preview" style="display:none;position:relative;z-index:200">
+      <div class="card">
+        <div class="card-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="card-title">Vista Previa -- Pendiente de Confirmar</div>
+            <span class="badge g" id="upload-count-badge">0 filas</span>
+            <span id="upload-error-badge" style="display:none;background:rgba(239,68,68,.15);color:#ef4444;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px"></span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="cancelarCarga()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);color:rgba(255,255,255,.6);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:12px;font-weight:600">x Cancelar</button>
+            <button onclick="confirmarCarga()" style="background:#22c55e;border:none;color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:12px;font-weight:700">&#9989; Confirmar y Aplicar</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Modulo</th><th>Tipo</th><th>Proyecto</th><th>Area</th><th>Responsable</th><th>Solicitante</th><th>Descripcion</th><th>URL Plan</th></tr></thead><tbody id="upload-tbody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Directorio -->
+  <div id="cpanel-directorio" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted)">Administra los colaboradores a quienes puedes enviar actividades por correo</div>
+      <button onclick="openDirModal()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar colaborador</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Nombre</th>
+          <th style="text-align:left;padding:10px 14px">Correo</th>
+          <th style="text-align:left;padding:10px 14px;width:100px">Acciones</th>
+        </tr></thead>
+        <tbody id="dir-tbody"></tbody>
+      </table>
+      <div id="dir-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin colaboradores. Agrega el primero con el boton de arriba.</div>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- Modal Directorio -->
+<div id="dir-modal-bg" onclick="if(event.target===this)closeDirModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">&#128231; Agregar colaborador</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="dir-inp-nombre" class="act-inp" placeholder="Ej: Omar Aguilar" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="dir-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="dir-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntry()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Actividad -->
+<div id="act-modal-bg" onclick="if(event.target===this)closeActModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px" id="act-modal-tag">NUEVA ACTIVIDAD</div>
+    <div style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:8px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="act-inp-lbl">NOMBRE DEL COLABORADOR</label>
+        <select id="act-inp-nombre-sel" class="act-inp" style="background:#1c2535;color:#fff;border:1px solid rgba(201,168,76,.4)" onchange="onColabSelect(this.value)">
+          <option value="">-- Selecciona un colaborador --</option>
+        </select>
+        <input type="hidden" id="act-inp-nombre" value="">
+      </div>
+      
+      <div style="grid-column:span 2"><label class="act-inp-lbl">ACTIVIDAD</label><input id="act-inp-actividad" class="act-inp" placeholder="Descripción clara de la actividad a realizar"></div>
+      <div><label class="act-inp-lbl">FECHA FIN</label><input id="act-inp-fecha" type="date" class="act-inp" onchange="validarFechaLaboral(this)"></div>
+      
+      <div><label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="act-inp-prioridad" class="act-inp">
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2">
+        <label class="act-inp-lbl">&#128231; CORREO DEL DESTINATARIO</label>
+        <input id="act-inp-email" class="act-inp" placeholder="Se llena automaticamente al seleccionar colaborador" readonly style="color:var(--muted)">
+        <input type="hidden" id="act-inp-dest" value="">
+      </div>
+    </div>
+    <input type="hidden" id="act-inp-id">
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeActModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button id="act-save-btn" onclick="saveActividad()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:13px;cursor:pointer">&#128190; Guardar actividad</button>
+      <button id="act-btn-send-modal" onclick="enviarActividadCorreo(null)" style="display:none;background:rgba(99,179,237,.15);color:#63b3ed;border:1px solid rgba(99,179,237,.4);border-radius:8px;padding:9px 20px;font-weight:600;font-size:13px;cursor:pointer">&#128231; Guardar y enviar correo</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="proj-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-tipo" id="m-tipo"></div>
+        <div class="modal-nombre" id="m-nombre"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="m-desc-wrap">
+        <div class="modal-section-label">Descripción</div>
+        <div class="modal-desc" id="m-desc">—</div>
+      </div>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Responsable</div>
+          <div class="modal-field-value" id="m-resp">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Usuario solicitante</div>
+          <div class="modal-field-value" id="m-user">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Área</div>
+          <div class="modal-field-value" id="m-area">—</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Inicio — Fin</div>
+          <div class="modal-field-value" id="m-fechas" style="font-family:'JetBrains Mono',monospace;font-size:12px;">—</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="modal-section-label" style="margin:0">Avance</div>
+          <div style="display:flex;gap:14px;font-size:11px;font-family:'JetBrains Mono',monospace;">
+            <span id="m-real-lbl" style="font-weight:700;"></span>
+            <span id="m-esp-lbl" style="color:rgba(255,255,255,0.4);"></span>
+          </div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:4px;position:relative;overflow:hidden;">
+          <div id="m-bar-esp" style="position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,0.18);border-radius:4px;transition:width .4s;"></div>
+          <div id="m-bar-real" style="position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .4s;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="m-sem"></span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--gold);font-weight:700;text-decoration:none;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:8px;padding:8px 18px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">📋 Consultar plan de trabajo →</a>
+          <span id="m-plan-none" style="display:none;font-size:13px;color:rgba(255,255,255,0.4);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px">📋 Sin registro de plan de trabajo</span>
+          <button id="m-ev-btn" onclick="openEvModal()" style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(201,168,76,0.1)';this.style.borderColor='rgba(201,168,76,0.4)';this.style.color='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.75)'">⚠ Documentar eventualidad</button>
+          <span class="modal-hint">Clic fuera para cerrar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- ── Modal Eventualidad ── -->
+<div id="ev-modal-bg" onclick="if(event.target===this)closeEvModal()">
+  <div id="ev-modal-box">
+    <div class="ev-modal-title">⚠ Documentar Eventualidad</div>
+    <div class="ev-modal-nombre" id="ev-nombre"></div>
+    <textarea id="ev-textarea" placeholder="Describe la eventualidad o bloqueo de este proyecto..." maxlength="500" oninput="document.getElementById('ev-char-count').textContent=this.value.length+'/500'"></textarea>
+    <div id="ev-char-count">0/500</div>
+    <div class="ev-modal-actions">
+      <button class="ev-btn-delete" id="ev-btn-delete" onclick="deleteEventualidad()" style="display:none">🗑 Eliminar</button>
+      <button class="ev-btn-cancel" onclick="closeEvModal()">Cancelar</button>
+      <button class="ev-btn-save" onclick="saveEventualidad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Chart.js para gráficas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --navy:#1A2340; --navy-mid:#243058; --navy-light:#2e3d70;
+  --gold:#C9A84C; --gold-dim:#a8893e; --gold-faint:rgba(201,168,76,0.10);
+  --surface:#0f1520; --surface2:#161e2e; --surface3:#1c2640;
+  --text:#ffffff; --text-dim:#ffffff; --text-muted:#a0aec0;
+  --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --blue:#3b82f6; --purple:#8b5cf6;
+  --border:rgba(255,255,255,0.09); --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-height:100vh;}
+
+.topbar{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.4);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-logo{width:34px;height:34px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--navy);}
+.brand-name{font-weight:700;font-size:15px;color:#fff;line-height:1.2;}
+.brand-sub{font-size:10px;color:var(--gold);letter-spacing:.06em;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.date-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;background:rgba(255,255,255,.08);padding:5px 11px;border-radius:20px;border:1px solid var(--border);}
+.btn-upload{background:var(--gold);color:var(--navy);border:none;cursor:pointer;font-weight:700;font-size:12px;padding:8px 16px;border-radius:7px;transition:.2s;}
+.btn-upload:hover{background:var(--gold-dim);}
+
+.tabs{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:4px;overflow-x:auto;}
+.tab{padding:12px 18px;font-size:13px;font-weight:600;}
+
+.tab:hover{color:#fff;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.main{padding:24px 28px;max-width:1440px;margin:0 auto;}
+.module{display:none;}
+.module.active{display:block;animation:fadeUp .22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.mod-header{margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.mod-header-left{}
+.mod-title{font-size:20px;font-weight:700;color:#fff;}
+.mod-title span{color:var(--gold);}
+.mod-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;}
+.export-btns{display:flex;gap:8px;flex-shrink:0;margin-top:4px;}
+.btn-pptx{background:#C9A84C;color:#1A2340;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-pptx:hover{background:#a8893e;}
+.btn-xlsx{background:#1d6f42;color:#fff;border:none;cursor:pointer;font-weight:700;font-size:12px;padding:9px 16px;border-radius:7px;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-xlsx:hover{background:#155535;}
+.btn-sync{background:transparent;color:var(--gold);border:1px solid var(--gold);cursor:pointer;font-weight:700;font-size:11px;padding:6px 13px;border-radius:20px;transition:.2s;display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;}
+.btn-sync:hover{background:rgba(201,168,76,.12);}
+.btn-sync:disabled{opacity:.55;cursor:not-allowed;}
+.btn-sync .ico{display:inline-block;}
+.btn-sync.loading .ico{animation:spin 1s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;} .kpi[onclick]{cursor:pointer;} .kpi[onclick]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:var(--gold);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.g::after{background:var(--green);}
+.kpi.y::after{background:var(--yellow);}
+.kpi.r::after{background:var(--red);}
+.kpi.b::after{background:var(--blue);}
+.kpi.p::after{background:var(--purple);}
+.kpi.gold::after{background:var(--gold);}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;margin-bottom:8px;font-weight:700;text-align:center;}
+.kpi-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;text-align:center;}
+.kpi-val.g{color:var(--green)}.kpi-val.y{color:var(--yellow)}.kpi-val.r{color:var(--red)}.kpi-val.b{color:var(--blue)}.kpi-val.gold{color:var(--gold)}.kpi-val.p{color:var(--purple)}
+.kpi-sub{font-size:11px;color:#fff;margin-top:5px;text-align:center;}
+
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:700;color:#fff;}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;}
+.badge.g{background:rgba(34,197,94,.15);color:var(--green);}
+.badge.y{background:rgba(245,158,11,.15);color:var(--yellow);}
+.badge.r{background:rgba(239,68,68,.15);color:var(--red);}
+.badge.b{background:rgba(59,130,246,.15);color:var(--blue);}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#fff;font-weight:700;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.03);}
+.p-name{font-weight:500;color:#fff;line-height:1.3;text-decoration:underline;text-decoration-color:#ffffff;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
+.p-area{font-size:11px;color:#fff;margin-top:2px;}
+.p-tipo{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--blue);}
+.p-tipo.t1{background:rgba(59,130,246,.18);color:#60a5fa;}
+.p-tipo.t2{background:rgba(139,92,246,.18);color:#a78bfa;}
+.p-tipo.t3{background:rgba(34,197,94,.18);color:#4ade80;}
+.p-tipo.t4{background:rgba(245,158,11,.18);color:#fbbf24;}
+.p-tipo.t5{background:rgba(239,68,68,.18);color:#f87171;}
+.p-tipo.t6{background:rgba(20,184,166,.18);color:#2dd4bf;}
+.p-tipo.t7{background:rgba(249,115,22,.18);color:#fb923c;}
+.p-tipo.t8{background:rgba(236,72,153,.18);color:#f472b6;}
+
+.sem{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.sem::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sem.tiempo{background:rgba(34,197,94,.12);color:var(--green);}.sem.tiempo::before{background:var(--green);}
+.sem.atrasado{background:rgba(239,68,68,.12);color:var(--red);}.sem.atrasado::before{background:var(--red);}
+.sem.standby{background:rgba(139,92,246,.12);color:var(--purple);}.sem.standby::before{background:var(--purple);}
+.sem.terminado{background:rgba(59,130,246,.12);color:var(--blue);}.sem.terminado::before{background:var(--blue);}
+.sem.riesgo{background:rgba(245,158,11,.12);color:var(--yellow);}.sem.riesgo::before{background:var(--yellow);}
+
+.prog-wrap{min-width:140px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:9px;color:#fff;margin-bottom:3px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.prog-track{height:6px;background:rgba(255,255,255,.1);border-radius:4px;position:relative;overflow:hidden;}
+.prog-esp{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.18);border-radius:4px;}
+.prog-real{position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .5s ease;}
+.prog-real.g{background:var(--green);}.prog-real.y{background:var(--yellow);}.prog-real.r{background:var(--red);}.prog-real.b{background:var(--blue);}
+
+.date-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;}
+
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:#fff;cursor:pointer;transition:.2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--gold-faint);border-color:var(--gold);color:var(--gold);}
+.filter-label{font-size:11px;color:#fff;font-weight:600;}
+.filter-resp{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:rgba(255,255,255,.7);cursor:pointer;outline:none;transition:.2s;}
+.filter-resp:hover,.filter-resp:focus{border-color:var(--gold);color:var(--gold);}
+.filter-resp option{background:var(--surface2);color:#fff;}
+.search-box{background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:#fff;outline:none;margin-left:auto;width:200px;}
+.search-box:focus{border-color:var(--gold);}
+.search-box::placeholder{color:rgba(255,255,255,.4);}
+
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:20px;}
+.upload-zone:hover{border-color:var(--gold);background:var(--gold-faint);}
+.uz-icon{font-size:32px;margin-bottom:10px;}
+.uz-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:5px;}
+.uz-sub{font-size:12px;color:rgba(255,255,255,.6);}
+#file-input{display:none;}
+
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:16px 18px;border-top:1px solid var(--border);}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px;padding:4px 0;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bv{font-size:10px;font-family:'JetBrains Mono',monospace;color:#fff;font-weight:600;}
+.bb{width:100%;border-radius:4px 4px 0 0;}
+.bl{font-size:9px;color:#fff;text-align:center;}
+
+.th-sort:hover{color:var(--gold);background:rgba(201,168,76,0.06);}
+.th-sort .sort-icon{font-size:10px;opacity:.5;margin-left:3px;}
+.th-sort.asc .sort-icon::after{content:"↑";opacity:1;}
+.th-sort.desc .sort-icon::after{content:"↓";opacity:1;}
+.th-sort.asc .sort-icon,.th-sort.desc .sort-icon{font-size:0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid3c{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:18px;}
+.treemap-wrap{display:flex;flex-wrap:wrap;gap:8px;min-height:120px;}
+.treemap-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;color:#fff;font-weight:700;cursor:default;transition:.2s;padding:8px;}
+.treemap-cell:hover{filter:brightness(1.15);}
+.treemap-area{font-size:11px;opacity:.85;margin-top:2px;text-align:center;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}.grid3c{grid-template-columns:1fr;}}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#1c2535;border:1px solid rgba(255,255,255,0.12);border-radius:12px;width:90%;max-width:540px;overflow:hidden;font-family:'Inter',sans-serif;animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.modal-header{background:#1A2340;border-bottom:8px solid #C9A84C;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-tipo{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.modal-nombre{font-size:15px;font-weight:600;color:#fff;line-height:1.3;}
+.modal-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:12px;transition:.2s;}
+.modal-close:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.modal-section-label{font-size:10px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.modal-desc{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6;background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-field{background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;}
+.modal-field-label{font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.modal-field-value{font-size:13px;color:#fff;font-weight:500;}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+.modal-hint{font-size:11px;color:rgba(255,255,255,0.25);}
+
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9999;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;pointer-events:none;}
+.toast.success{background:#166534;}
+.toast.error{background:#7f1d1d;}
+.toast.info{background:#1e3a5f;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(8px)}}
+.lock-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,14,26,.97);z-index:2000;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:16px;padding:36px 40px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.lock-icon{font-size:40px;margin-bottom:12px;}
+.lock-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;}
+.lock-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:24px;}
+.lock-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:12px 14px;color:#fff;font-size:16px;letter-spacing:4px;text-align:center;outline:none;box-sizing:border-box;transition:.2s;}
+.lock-input:focus{border-color:var(--gold);}
+.lock-btn{width:100%;margin-top:14px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;}
+.lock-btn:hover{background:var(--gold-dim);}
+.lock-error{font-size:12px;color:#ef4444;margin-top:10px;min-height:18px;}
+
+/* ── Actividades Semanales ── */
+.act-week-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.act-week-ctrl{display:flex;align-items:center;gap:8px;}
+.act-week-btn{background:var(--navy-light);color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;transition:.2s;}
+.act-week-btn:hover{background:rgba(201,168,76,.12);}
+.act-filters-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn-act-add{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 18px;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-act-add:hover{background:#a8893e;}
+.act-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;box-sizing:border-box;outline:none;transition:.2s;}
+.act-inp:focus{border-color:var(--gold);}
+.act-inp-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;display:block;margin-bottom:5px;letter-spacing:.5px;}
+
+/* Actividades - filtros y fecha */
+input[type="date"].act-inp::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;}
+.act-multi-btn{background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.act-multi-btn.active{border-color:var(--gold);color:var(--gold);}
+.act-multi-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:8px;z-index:300;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.act-multi-wrap{position:relative;}
+.act-multi-lbl{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;font-size:12px;color:#fff;white-space:nowrap;}
+.act-multi-lbl:hover{background:rgba(255,255,255,.07);}
+.act-sort-th{cursor:pointer;user-select:none;}
+.act-sort-th:hover{color:var(--gold);}
+.dashboard-init { opacity: 0; }
+.dashboard-ready { opacity: 1; transition: opacity 0.15s ease; }
+.dti-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInOv .18s ease;}
+@keyframes fadeInOv{from{opacity:0}to{opacity:1}}
+.dti-modal-box{background:#1e2a4a;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:36px 40px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:popIn .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.dti-modal-icon{font-size:48px;margin-bottom:14px;line-height:1;}
+.dti-modal-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+.dti-modal-msg{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:26px;line-height:1.6;}
+.dti-modal-btns{display:flex;gap:10px;justify-content:center;}
+.dti-modal-btn{padding:10px 26px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:transform .12s,opacity .12s;letter-spacing:.02em;}
+.dti-modal-btn:hover{transform:translateY(-1px);opacity:.9;}
+.dti-modal-btn.ok-danger{background:#ef4444;color:#fff;}
+.dti-modal-btn.ok-success{background:var(--gold);color:#1a2340;}
+.dti-modal-btn.cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
+
+/* ═══════════════════════════════════════════
+   MODO CLARO — light-mode
+   ═══════════════════════════════════════════ */
+body.light-mode{--navy:#e8edf5;--navy-mid:#d4dce8;--navy-light:#c0ccd8;--surface:#f0f4fa;--surface2:#e4eaf4;--surface3:#d8e0ee;--border:rgba(0,0,0,.12);}
+
+/* Topbar y tabs: SIEMPRE OSCURO */
+body.light-mode .topbar{background:#1A2340 !important;}
+body.light-mode .topbar *{color:#fff !important;}
+body.light-mode .tabs{background:#1e2a4a !important;}
+body.light-mode .tab{color:#fff !important;}
+body.light-mode .tab.active{color:var(--gold) !important;}
+
+/* Todo el contenido principal: NEGRO */
+body.light-mode .main *{color:#1a2340 !important;}
+body.light-mode .mod-title{color:#1a2340 !important;}
+body.light-mode .mod-title span{color:var(--gold) !important;}
+body.light-mode .btn-xlsx{color:#fff !important;}
+body.light-mode .btn-xlsx *{color:#fff !important;}
+
+/* Fondos */
+body.light-mode .module{background:#f0f4fa;}
+body.light-mode .card,body.light-mode .kpi{background:#e4eaf4 !important;border-color:rgba(0,0,0,.12) !important;}
+body.light-mode .tbl th{background:#d4dce8 !important;}
+body.light-mode .tbl tr:nth-child(even){background:rgba(0,0,0,.04);}
+
+/* Inputs, filtros, selects */
+body.light-mode .filter-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode .filter-btn.active{color:var(--gold) !important;border-color:var(--gold) !important;background:rgba(201,168,76,.12) !important;}
+body.light-mode .filter-resp,body.light-mode select{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode input,body.light-mode textarea,body.light-mode .act-inp,body.light-mode .search-box,body.light-mode .act-multi-btn{background:#d8e0ee !important;border-color:rgba(0,0,0,.2) !important;}
+body.light-mode ::placeholder{color:rgba(26,35,64,.45) !important;}
+
+/* Modales y overlays */
+body.light-mode .modal-box,body.light-mode .dti-modal-box,body.light-mode .act-multi-panel,body.light-mode .lock-box{background:#e4eaf4 !important;}
+body.light-mode .modal-box .modal-header{background:#1A2340 !important;}
+body.light-mode .modal-box .modal-header *{color:#fff !important;}
+body.light-mode .modal-box .modal-tipo{color:var(--gold) !important;}
+body.light-mode .modal-box .modal-body *{color:#1a2340 !important;}
+
+/* Semáforos mantienen color */
+body.light-mode .sem.tiempo{color:var(--green) !important;background:rgba(34,197,94,.15);}
+body.light-mode .sem.atrasado{color:var(--red) !important;background:rgba(239,68,68,.15);}
+body.light-mode .sem.riesgo{color:var(--yellow) !important;background:rgba(245,158,11,.15);}
+body.light-mode .sem.terminado{color:var(--blue) !important;background:rgba(59,130,246,.15);}
+body.light-mode .sem.standby{color:var(--purple) !important;background:rgba(139,92,246,.15);}
+
+/* KPI valores mantienen color */
+body.light-mode .kpi-val.b{color:var(--blue) !important;}
+body.light-mode .kpi-val.g{color:var(--green) !important;}
+body.light-mode .kpi-val.r{color:var(--red) !important;}
+body.light-mode .kpi-val.y{color:var(--yellow) !important;}
+body.light-mode .kpi-val.gold{color:var(--gold) !important;}
+
+/* Botones especiales */
+body.light-mode .btn-sync{color:var(--gold) !important;}
+/* ── Modal Eventualidad ── */
+#ev-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;}
+#ev-modal-bg.active{display:flex;}
+#ev-modal-box{background:#1a2340;border-radius:14px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(201,168,76,0.3);}
+.ev-modal-title{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.ev-modal-nombre{font-size:16px;font-weight:700;color:#fff;margin-bottom:20px;line-height:1.3;}
+#ev-textarea{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;padding:12px;resize:vertical;min-height:110px;font-family:inherit;outline:none;transition:.2s;}
+#ev-textarea:focus{border-color:rgba(201,168,76,0.6);background:rgba(255,255,255,0.08);}
+.ev-modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;align-items:center;}
+.ev-btn-save{background:var(--gold);color:#1a2340;border:none;border-radius:8px;padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;}
+.ev-btn-save:hover{opacity:.85;}
+.ev-btn-cancel{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 18px;font-size:13px;cursor:pointer;transition:.2s;}
+.ev-btn-cancel:hover{background:rgba(255,255,255,0.12);}
+.ev-btn-delete{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;transition:.2s;margin-right:auto;}
+.ev-btn-delete:hover{background:rgba(239,68,68,0.22);}
+#ev-char-count{font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;text-align:right;}
+#nota-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;}
+#nota-modal-bg.active{display:flex;}
+#nota-modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:440px;max-width:95vw;}
+#nota-modal h3{margin:0 0 12px;color:var(--gold);font-size:15px;}
+#nota-textarea{width:100%;min-height:120px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;}
+.nota-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.nota-modal-btns button{border:none;border-radius:6px;padding:7px 18px;cursor:pointer;font-size:13px;font-weight:600;}
+.nota-btn-save{background:var(--gold);color:#1A2340;}
+.nota-btn-del{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)!important;}
+.nota-btn-cancel{background:rgba(255,255,255,.08);color:var(--text);}
+</style>
+<!-- LAST_SYNC -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
+<meta name="last-sync" content="2026-07-02T18:46:50Z">
+</head>
+<body class="dashboard-init">
+
+<header class="topbar">
+  <div class="brand">
+    <img src="data:image/png;base64,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" alt="INCEPADEM" style="height:34px;width:auto;object-fit:contain;">
+    <div style="border-left:1px solid var(--gold);padding-left:12px;margin-left:4px;">
+      <div class="brand-name">Dashboard DTI</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="date-chip" id="live-date"></span>
+    <span class="date-chip" id="sync-chip" style="display:none;border-color:rgba(34,197,94,.4);color:rgba(34,197,94,.9);cursor:default;" title="Última sincronización con Smartsheet"></span>
+    <button onclick="toggleTheme()" id="theme-btn" title="Modo claro/oscuro" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;margin-right:4px">🌙</button>
+    <button class="btn-sync" id="btn-sync" onclick="triggerSync()" title="Forzar una actualización inmediata desde Smartsheet">
+      <span class="ico">🔄</span><span id="btn-sync-label">Actualizar Datos</span>
+    </button>
+    <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)" style="display:none">
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab" onclick="switchTab('resumen',this)">📊 Resumen</div>
+  <div class="tab active" onclick="switchTab('imc',this)">🗂️ IMC</div>
+  <div class="tab" onclick="switchTab('desarrollo',this)">⌨️ Desarrollo</div>
+  <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
+  <div class="tab" onclick="switchTab('ia',this)">🤖 IA</div>
+  <div class="tab" onclick="switchTab('actividades',this)">📋 Actividades Semanales</div>
+  <div class="tab" onclick="switchTab('carga',this)">📂 Carga de Datos</div>
+</nav>
+
+<main class="main">
+
+<!-- ═══ RESUMEN ═══ -->
+<section class="module" id="mod-resumen">
+
+  <!-- ENCABEZADO -->
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-title"><span>Resumen</span></div>
       <div class="mod-sub" id="res-subtitle">Consolidado estratégico de todos los módulos DTI — Dirección General</div>
     </div>
     <div class="export-btns">
@@ -1550,6 +3747,21 @@ function openResumenModal(idx){
   openModal(p);
 }
 
+function filterResumenByKPI(filter){
+  var sel=document.getElementById('res-fil-sem');
+  if(!sel) return;
+  if(filter==='porCerrar'){
+    sel.value='';
+    document.getElementById('res-search').value='';
+    // Filtrar proyectos con >90% y no terminados
+    _resKpiFilter='porCerrar';
+  } else {
+    sel.value=filter;
+    _resKpiFilter='';
+  }
+  renderResumen();
+}
+var _resKpiFilter='';
 function _getAllProyectos(){
   var all=[];
   [{key:'imc',label:'IMC'},{key:'dev',label:'Desarrollo'},{key:'inf',label:'Soporte'},{key:'ia',label:'IA'}].forEach(function(m){
@@ -1578,7 +3790,7 @@ function renderResumen(){
   var todos=_getAllProyectos();
   var isDark=!document.body.classList.contains('light-mode');
   var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-  var tickColor=isDark?'rgba(255,255,255,.5)':'rgba(0,0,0,.5)';
+  var tickColor=isDark?'#ffffff':'#1a2340';
   var borderBg=isDark?'#1A2340':'#f0f4fa';
 
   if(!todos.length){
@@ -1601,7 +3813,8 @@ function renderResumen(){
 
   var filtered=todos.filter(function(p){
     if(filMod && p._modulo!==filMod) return false;
-    if(filSem && _resSem(p)!==filSem) return false;
+    if(_resKpiFilter==='porCerrar'){ if(!((p.real||0)>=90 && _resSem(p)!=='terminado')) return false; }
+    else if(filSem && _resSem(p)!==filSem) return false;
     if(filArea && (p.area||'Sin área')!==filArea) return false;
     if(search && !(p.nombre||'').toLowerCase().includes(search) && !(p.responsable||'').toLowerCase().includes(search) && !(p.area||'').toLowerCase().includes(search)) return false;
     return true;
@@ -1619,18 +3832,15 @@ function renderResumen(){
   var saludPct=total?Math.round((term+atiempo)/total*100):0;
 
   var kpis=[
-    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo'},
-    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total'},
-    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado'},
-    {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear'},
-    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata'},
-    {l:'Por Cerrar',v:porCerrar,c:'#a78bfa',sub:'Avance >90%'},
-    {l:'Stand By',v:stand,c:'#6b7280',sub:'En pausa'},
-    {l:'Avance Prom.',v:avgReal+'%',c:'#63b3ed',sub:'Todos los módulos'},
-    {l:'Salud General',v:saludPct+'%',c:saludPct>=70?'#22c55e':saludPct>=50?'#f59e0b':'#ef4444',sub:saludPct>=70?'Portafolio saludable':'Requiere atención'}
+    {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo',filter:''},
+    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total',filter:'terminado'},
+    {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado',filter:'tiempo'},
+    {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear',filter:'riesgo'},
+    {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata',filter:'atrasado'},
+    {l:'Por Cerrar',v:porCerrar,c:'#a78bfa',sub:'Avance >90%',filter:'porCerrar'}
   ];
   document.getElementById('res-kpis').innerHTML=kpis.map(function(k){
-    return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:default;min-height:100px">'
+    return '<div class="kpi" style="border-top:3px solid '+k.c+';cursor:pointer;min-height:90px" data-kpi-filter="'+k.filter+'">'  
       +'<div class="kpi-val" style="color:'+k.c+';font-size:26px;font-weight:800;line-height:1">'+k.v+'</div>'
       +'<div class="kpi-label" style="font-size:10px;font-weight:700;letter-spacing:.05em;margin-top:5px;text-align:center">'+k.l+'</div>'
       +'<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:center">'+k.sub+'</div>'
@@ -1724,11 +3934,7 @@ function renderResumen(){
   var areaCts={};
   filtered.forEach(function(p){var a=p.area||'Sin área';areaCts[a]=(areaCts[a]||0)+1;});
   var aSorted=Object.entries(areaCts).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
-  _resChartArea=new Chart(document.getElementById('res-chart-area'),{
-    type:'bar',
-    data:{labels:aSorted.map(function(x){return x[0];}),datasets:[{label:'Proyectos',data:aSorted.map(function(x){return x[1];}),backgroundColor:['#C9A84C','#63b3ed','#22c55e','#a78bfa','#f59e0b','#ef4444','#14b8a6','#f97316'],borderRadius:6,borderWidth:0}]},
-    options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}},y:{ticks:{color:tickColor,font:{size:10}},grid:{display:false}}}}}
-  );
+  buildTreemap(filtered, 'res-treemap-area');
 
   // ── BARRAS AGRUPADAS: Avance Real vs Esperado por módulo ─────────────
   var modAvgR={},modAvgE={},modCnt={};
@@ -1828,6 +4034,9 @@ function renderResumen(){
 }
 
 function exportResumenPPTX(){
+  if(typeof PptxGenJS==='undefined'){alert('La libreria PowerPoint aun carga. Espera.');return;}
+  if(!window.allProjects) window.allProjects={};
+  window.allProjects['resumen']=_getAllProyectos();
   exportPPTX('resumen');
 }
 function exportResumenExcel(){
@@ -3788,4 +5997,40 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
   </div>
 </div>
 </body>
-</html>
+</htmlfunction exportResGanttPDF(){
+  var canvas=document.getElementById('res-chart-gantt');
+  if(!canvas){showToast('Sin gantt para exportar','error');return;}
+  var link=document.createElement('a');
+  link.download='Gantt_DTI_'+new Date().toISOString().slice(0,10)+'.png';
+  link.href=canvas.toDataURL('image/png',1.0);
+  link.click();
+  showToast('\u2705 Gantt exportado','success');
+}
+function renderResGantt(allGantt){
+  var semCG={terminado:'rgba(34,197,94,.8)',tiempo:'rgba(34,197,94,.8)',riesgo:'rgba(245,158,11,.8)',atrasado:'rgba(239,68,68,.8)',stand:'rgba(107,114,128,.8)'};
+  var isDk=!document.body.classList.contains('light-mode');
+  var tC=isDk?'#fff':'#1a2340'; var gC=isDk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)'; var bB=isDk?'#1A2340':'#f0f4fa';
+  var checks=document.querySelectorAll('#res-gantt-checks input[type=checkbox]');
+  var visible=allGantt;
+  if(checks.length>0){var sel=[];checks.forEach(function(c){if(c.checked)sel.push(parseInt(c.dataset.idx));});visible=allGantt.filter(function(_,i){return sel.indexOf(i)!==-1;});}
+  if(!visible.length){if(_resChartGantt){_resChartGantt.destroy();_resChartGantt=null;}return;}
+  var pF=function(s){var pt=s.split('/');return pt.length===3?new Date(+pt[2],+pt[1]-1,+pt[0]):new Date(s);};
+  var aD=visible.reduce(function(acc,p){acc.push(pF(p.inicio),pF(p.fin));return acc;},[]);
+  var minD=new Date(Math.min.apply(null,aD)),maxD=new Date(Math.max.apply(null,aD));
+  var tD=(maxD-minD)/86400000||1;
+  var labels=visible.map(function(p){return p.nombre.length>32?p.nombre.slice(0,30)+'…':p.nombre;});
+  var starts=visible.map(function(p){return(pF(p.inicio)-minD)/86400000;});
+  var durs=visible.map(function(p){return Math.max(1,(pF(p.fin)-pF(p.inicio))/86400000);});
+  var cols=visible.map(function(p){return semCG[_resSem(p)]||'rgba(201,168,76,.7)';});
+  var canvas=document.getElementById('res-chart-gantt');if(!canvas)return;
+  if(_resChartGantt){_resChartGantt.destroy();_resChartGantt=null;}
+  _resChartGantt=new Chart(canvas,{type:'bar',
+    data:{labels:labels,datasets:[{data:starts,backgroundColor:'transparent',borderWidth:0},{label:'Duración',data:durs,backgroundColor:cols,borderRadius:4,borderWidth:0,borderSkipped:false}]},
+    options:{responsive:true,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{filter:function(i){return i.datasetIndex===1;},callbacks:{label:function(c){var p=visible[c.dataIndex];return p.inicio+' → '+p.fin+' | '+p.real+'% real';},title:function(c){return visible[c[0].dataIndex].nombre;}}}},
+      scales:{x:{stacked:true,min:0,max:tD,ticks:{color:tC,font:{size:10},maxTicksLimit:10,callback:function(v){var d=new Date(minD.getTime()+v*86400000);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});}},grid:{color:gC}},
+        y:{stacked:true,ticks:{color:tC,font:{size:11},padding:8},grid:{display:false}}}
+    }
+  });
+}
+>
