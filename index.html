@@ -1652,7 +1652,7 @@ function renderResumen(){
   // ── TABLA ────────────────
   document.getElementById('res-kpis').querySelectorAll('.kpi').forEach(function(el){
     el.addEventListener('click',function(){filterResumenByKPI(this.getAttribute('data-kpi-filter')||'');});
-  });─────────────────────────────────────────────
+  });
   var semC={terminado:'#22c55e',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#6b7280'};
   var semL={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
   var semI={terminado:'&#9679;',tiempo:'&#9679;',riesgo:'&#9651;',atrasado:'&#9679;',stand:'&#9632;'};
