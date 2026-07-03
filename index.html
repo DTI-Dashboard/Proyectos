@@ -4036,7 +4036,6 @@ function renderResumen(){
 }
 
 function exportResumenPPTX(){
-  if(typeof PptxGenJS==='undefined'){alert('La libreria PowerPoint aun carga. Espera.');return;}
   if(!window.allProjects) window.allProjects={};
   window.allProjects['resumen']=_getAllProyectos();
   exportPPTX('resumen');
