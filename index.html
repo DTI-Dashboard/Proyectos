@@ -1669,9 +1669,8 @@ function renderResumen(){
     :filtered.map(function(p,i){
       var s=_resSem(p);var sc=semC[s]||'#888';var sl=semL[s]||p.sem;var si=semI[s]||'&#9679;';
       var bc=semC[s]||'#888';
-      var pct=Math.min(p.real||0,100); var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
+      var pct=Math.min(p.real||0,100); var espPct=Math.min(p.esp||0,100); var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
       var mc=modBg[p._modulo]||'rgba(255,255,255,.1)'; var mt=modTx[p._modulo]||'#fff';
-      var gap=((p.real||0)-(p.esp||0));var gapStr=(gap>=0?'+':'')+gap+'%';var gapC=gap>=0?'#22c55e':'#ef4444';
       return '<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.06);height:52px">'
         +'<td style="padding:11px 10px"><span style="background:'+mc+';color:'+mt+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">'+p._modulo+'</span></td>'
         +'<td style="padding:11px 10px;font-size:12px;color:var(--muted)">'+(p.tipo||'—')+'</td>'
@@ -1680,8 +1679,11 @@ function renderResumen(){
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.inicio||'—')+'</td>'
         +'<td style="padding:9px 8px;font-size:11px;color:var(--muted);white-space:nowrap">'+(p.fin||'—')+'</td>'
         +'<td style="padding:9px 8px;min-width:160px">'
-        +'<div style="background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:20px"></div></div>'
-        +'<div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px"><span style="color:var(--muted)">'+p.real+'% real</span><span style="color:'+gapC+';font-weight:700">'+gapStr+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:9px;color:#fff;margin-bottom:3px;font-family:\'JetBrains Mono\',monospace;font-weight:600"><span>'+(p.real||0)+'%</span><span>esp '+(p.esp||0)+'%</span></div>'
+        +'<div style="height:6px;background:rgba(255,255,255,.1);border-radius:4px;position:relative;overflow:hidden">'
+        +'<div style="position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.18);border-radius:4px;width:'+espPct+'%"></div>'
+        +'<div style="position:absolute;top:0;left:0;height:100%;border-radius:4px;background:'+bc+';width:'+pct+'%"></div>'
+        +'</div>'
         +'</td>'
         +'<td style="padding:9px 8px"><span style="color:'+sc+';background:'+sc+'22;border:1px solid '+sc+'44;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap">'+si+' '+sl+'</span></td>'
         +'</tr>';
