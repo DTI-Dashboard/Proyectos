@@ -1982,22 +1982,30 @@ async function exportPPTX(tab){
     s2.addText(k.l,{x:cx+0.05,y:cardY+1.1,w:cardW-0.1,h:0.42,fontSize:9,fontFace:'Calibri',color:'555555',align:'center'});
   });
 
-  // Treemap — Proyectos por Área (colores dorado, todas las áreas, ancho automático)
+  // Treemap — Proyectos por Área (grid dorado que envuelve en filas si hay muchas áreas)
   const areas={};
   projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
   const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
-  const tmY=3.85, tmH=2.35, tmX=0.4, tmW=12.53;
+  const tmY=3.85, tmX=0.4, tmW=12.53, tmBottom=7.15; // límite inferior disponible en el slide
   s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
-  const numA=areaEntries.length||1;
-  const cellW=(tmW-(numA-1)*0.07)/numA;
   const goldShades=['C9A84C','B8943A','D4B460','A07830','E0C070','C09040','D8BC58','B09038'];
+  const numA=areaEntries.length||1;
+  const gap=0.10;
+  const maxColsSingleRow=8;
+  const cols=numA<=maxColsSingleRow ? numA : Math.ceil(Math.sqrt(numA*2.2));
+  const rows=Math.ceil(numA/cols);
+  const cellW=(tmW-(cols-1)*gap)/cols;
+  const availH=tmBottom-tmY;
+  const cellH=Math.min(2.35, (availH-(rows-1)*gap)/rows);
   areaEntries.forEach(([area,cnt],i)=>{
-    const cx=tmX+i*(cellW+0.07);
+    const rIdx=Math.floor(i/cols), cIdx=i%cols;
+    const cx=tmX+cIdx*(cellW+gap);
+    const cy=tmY+rIdx*(cellH+gap);
     const col=goldShades[i%goldShades.length];
-    s2.addShape(R,{x:cx,y:tmY,w:cellW,h:tmH,fill:{color:col},line:{color:col}});
-    const numFs=Math.min(32,Math.max(14,Math.round(cellW*16)));
-    s2.addText(String(cnt),{x:cx,y:tmY+0.15,w:cellW,h:0.85,fontSize:numFs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'});
-    s2.addText(area,{x:cx+0.02,y:tmY+1.1,w:cellW-0.04,h:1.1,fontSize:Math.min(10,Math.max(8,Math.round(cellW*6))),fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center',wrap:true,valign:'top'});
+    s2.addShape(R,{x:cx,y:cy,w:cellW,h:cellH,fill:{color:col},line:{color:col}});
+    const numFs=Math.min(30,Math.max(12,Math.round(cellH*13)));
+    s2.addText(String(cnt),{x:cx,y:cy+cellH*0.08,w:cellW,h:cellH*0.5,fontSize:numFs,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center',valign:'bottom'});
+    s2.addText(area,{x:cx+0.03,y:cy+cellH*0.56,w:cellW-0.06,h:cellH*0.4,fontSize:Math.min(10,Math.max(7,Math.round(cellW*5.5))),fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center',wrap:true,valign:'top'});
   });
 
   // ── Slide 3+ — Tabla de proyectos (paginada, 18 por slide) ──
@@ -3315,6 +3323,7 @@ function toggleTheme(){
   localStorage.setItem('dti_theme',isLight?'light':'dark');
   // Re-renderizar todas las gráficas con nuevos colores
   renderTab('imc'); renderTab('dev'); renderTab('inf'); renderTab('ia');
+  if(document.getElementById('mod-resumen') && document.getElementById('mod-resumen').classList.contains('active')) renderResumen();
 }
 function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCancel='Cancelar',danger=false,onOk}){
   const ov=document.createElement('div');
