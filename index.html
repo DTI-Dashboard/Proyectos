@@ -1809,8 +1809,9 @@ function renderResumen(){
 }
 
 function exportResumenPPTX(){
-  if(!window.allProjects) window.allProjects={};
-  window.allProjects['resumen']=_getAllProyectos();
+  var todos=_getAllProyectos();
+  if(!todos.length){ showToast('Sin datos para exportar','error'); return; }
+  allProjects.resumen=todos;
   exportPPTX('resumen');
 }
 function exportResumenExcel(){
@@ -1932,6 +1933,7 @@ const DEPT_NAMES = {
   dev: 'Dirección de Desarrollo e Innovación',
   inf: 'Dirección de Soporte e Infraestructura',
   ia:  'Dirección de Inteligencia Artificial',
+  resumen: 'Resumen Ejecutivo — Dirección General',
 };
 
 async function exportPPTX(tab){
@@ -1983,7 +1985,12 @@ async function exportPPTX(tab){
   // Treemap — Proyectos por Área (colores dorado, todos visibles)
   const areas={};
   projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
-  const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
+  let areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
+  if(areaEntries.length>8){
+    const topAreas=areaEntries.slice(0,7);
+    const restTotal=areaEntries.slice(7).reduce(function(s,e){return s+e[1];},0);
+    areaEntries=topAreas.concat([['Otras áreas',restTotal]]);
+  }
   const tmY=3.85, tmH=2.35, tmX=0.4, tmW=12.53;
   s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
   const numA=areaEntries.length||1;
@@ -1998,34 +2005,34 @@ async function exportPPTX(tab){
     s2.addText(area,{x:cx+0.02,y:tmY+1.1,w:cellW-0.04,h:1.1,fontSize:Math.min(10,Math.max(8,Math.round(cellW*6))),fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center',wrap:true,valign:'top'});
   });
 
-  // ── Slide 3 — Tabla de proyectos ─────────────────────────
-  const s3 = pres.addSlide();
-  s3.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s3.addText('RESUMEN DE PROYECTOS',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s3.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
-  s3.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
+  // ── Slide 3+ — Tabla de proyectos (paginada, 18 por slide) ──
   const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
   const cW=[0.90,3.75,1.40,0.90,0.90,0.95,0.95,2.33];
-  ['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
-    s3.addText(h,{x:cX[i]+0.03,y:1.52,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
   const sc2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
-  projects.slice(0,18).forEach((p,ri)=>{
-    const ry=1.82+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
-    s3.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
-    [p.tipo,p.nombre.slice(0,42),(p.area||'').slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
-      const isSem=ci===7||ci===5;
-      s3.addText(cell||'—',{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
+  const rowsPerPage=18;
+  const totalTblPages=Math.max(1,Math.ceil(projects.length/rowsPerPage));
+  for(let pg=0; pg<totalTblPages; pg++){
+    const sT=pres.addSlide();
+    sT.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
+    const tblTitle=totalTblPages>1?('RESUMEN DE PROYECTOS ('+(pg+1)+'/'+totalTblPages+')'):'RESUMEN DE PROYECTOS';
+    sT.addText(tblTitle,{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+    sT.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
+    sT.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
+    ['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
+      sT.addText(h,{x:cX[i]+0.03,y:1.52,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
+    projects.slice(pg*rowsPerPage,(pg+1)*rowsPerPage).forEach((p,ri)=>{
+      const ry=1.82+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
+      sT.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
+      [p.tipo,p.nombre.slice(0,42),(p.area||'').slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
+        const isSem=ci===7||ci===5;
+        sT.addText(cell||'—',{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
+      });
     });
-  });
+  }
 
-  // ── Slide 4 — Diagrama de Gantt (programático, fondo blanco) ──
-  const s4 = pres.addSlide();
-  s4.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
-  s4.addText('DIAGRAMA DE GANTT',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
-  s4.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
-
-  // Respetar el filtro actual del Gantt (_ganttSel)
-  const ganttSel2=_ganttSel[tab]; // null = todos, array = seleccionados
+  // ── Slide — Diagrama de Gantt (programático, fondo blanco, paginado) ──
+  // Respetar el filtro actual del Gantt (_ganttSel) — Resumen usa la clave 'res'
+  const ganttSel2=_ganttSel[tab==='resumen'?'res':tab]; // null = todos, array = seleccionados
   const ganttProjs=projects.filter(p=>
     p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—'&&
     (ganttSel2===null||ganttSel2.includes(p.nombre))
@@ -2033,45 +2040,61 @@ async function exportPPTX(tab){
   if(ganttProjs.length>0){
     const parseD=s=>{const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d).getTime();};
     const allT=ganttProjs.flatMap(p=>[parseD(p.inicio),parseD(p.fin)]);
-    const minT2=Math.min(...allT), maxT2=Math.max(...allT), timeR=maxT2-minT2;
+    const minT2=Math.min(...allT), maxT2=Math.max(...allT), timeR=maxT2-minT2||1;
     const semCols2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',riesgo:'f59e0b'};
     const labelW=3.7, barAreaX=0.5+labelW, barAreaW=12.33-labelW;
-    const startY=1.35, rowH=Math.min(0.30, 5.5/ganttProjs.length);
-    const totalH=ganttProjs.length*rowH;
+    const rowsPerGanttPage=26; // altura mínima legible por fila
+    const totalGanttPages=Math.max(1,Math.ceil(ganttProjs.length/rowsPerGanttPage));
 
-    // Fondo blanco del área
-    s4.addShape(R,{x:0.4,y:startY,w:12.53,h:totalH+0.4,fill:{color:'FFFFFF'},line:{color:'E0E0E0',width:0.5}});
+    for(let gp=0; gp<totalGanttPages; gp++){
+      const sG=pres.addSlide();
+      sG.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
+      const gTitle=totalGanttPages>1?('DIAGRAMA DE GANTT ('+(gp+1)+'/'+totalGanttPages+')'):'DIAGRAMA DE GANTT';
+      sG.addText(gTitle,{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+      sG.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
 
-    // Líneas de meses + etiquetas
-    const d0=new Date(minT2); d0.setDate(1);
-    while(d0.getTime()<=maxT2){
-      const xPos=barAreaX+((d0.getTime()-minT2)/timeR)*barAreaW;
-      if(xPos>=barAreaX&&xPos<=barAreaX+barAreaW){
-        s4.addShape('line',{x:xPos,y:startY,w:0,h:totalH,line:{color:'DDDDDD',width:0.3}});
-        const lbl=d0.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});
-        s4.addText(lbl,{x:xPos-0.35,y:startY+totalH+0.05,w:0.75,h:0.25,fontSize:6.5,fontFace:'Calibri',color:'555555',align:'center'});
+      const pageProjs=ganttProjs.slice(gp*rowsPerGanttPage,(gp+1)*rowsPerGanttPage);
+      const startY=1.35, rowH=Math.min(0.30, 5.5/pageProjs.length);
+      const totalH=pageProjs.length*rowH;
+
+      // Fondo blanco del área
+      sG.addShape(R,{x:0.4,y:startY,w:12.53,h:totalH+0.4,fill:{color:'FFFFFF'},line:{color:'E0E0E0',width:0.5}});
+
+      // Líneas de meses + etiquetas (escala compartida entre todas las páginas)
+      const d0=new Date(minT2); d0.setDate(1);
+      while(d0.getTime()<=maxT2){
+        const xPos=barAreaX+((d0.getTime()-minT2)/timeR)*barAreaW;
+        if(xPos>=barAreaX&&xPos<=barAreaX+barAreaW){
+          sG.addShape('line',{x:xPos,y:startY,w:0,h:totalH,line:{color:'DDDDDD',width:0.3}});
+          const lbl=d0.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});
+          sG.addText(lbl,{x:xPos-0.35,y:startY+totalH+0.05,w:0.75,h:0.25,fontSize:6.5,fontFace:'Calibri',color:'555555',align:'center'});
+        }
+        d0.setMonth(d0.getMonth()+1);
       }
-      d0.setMonth(d0.getMonth()+1);
+
+      // Filas de proyectos
+      pageProjs.forEach((p,ri)=>{
+        const ry=startY+ri*rowH;
+        const bg=ri%2===0?'FFFFFF':'F5F6FA';
+        sG.addShape(R,{x:0.4,y:ry,w:12.53,h:rowH,fill:{color:bg},line:{color:'EEEEEE',width:0.3}});
+        // Nombre del proyecto
+        const nm=p.nombre.length>50?p.nombre.slice(0,48)+'…':p.nombre;
+        sG.addText(nm,{x:0.45,y:ry+0.02,w:labelW-0.1,h:rowH-0.04,fontSize:6.5,fontFace:'Calibri',color:'222222',align:'left',valign:'middle'});
+        // Barra
+        const sc3=semClass(p.sem), col3=semCols2[sc3]||'8b5cf6';
+        const bx=barAreaX+((parseD(p.inicio)-minT2)/timeR)*barAreaW;
+        const bw=Math.max(0.08,((parseD(p.fin)-parseD(p.inicio))/timeR)*barAreaW);
+        sG.addShape(R,{x:bx,y:ry+rowH*0.18,w:bw,h:rowH*0.64,fill:{color:col3},line:{color:col3}});
+      });
+
+      // Línea separadora vertical entre nombres y barras
+      sG.addShape('line',{x:barAreaX,y:startY,w:0,h:totalH,line:{color:'CCCCCC',width:0.5}});
     }
-
-    // Filas de proyectos
-    ganttProjs.forEach((p,ri)=>{
-      const ry=startY+ri*rowH;
-      const bg=ri%2===0?'FFFFFF':'F5F6FA';
-      s4.addShape(R,{x:0.4,y:ry,w:12.53,h:rowH,fill:{color:bg},line:{color:'EEEEEE',width:0.3}});
-      // Nombre del proyecto
-      const nm=p.nombre.length>50?p.nombre.slice(0,48)+'…':p.nombre;
-      s4.addText(nm,{x:0.45,y:ry+0.02,w:labelW-0.1,h:rowH-0.04,fontSize:6.5,fontFace:'Calibri',color:'222222',align:'left',valign:'middle'});
-      // Barra
-      const sc3=semClass(p.sem), col3=semCols2[sc3]||'8b5cf6';
-      const bx=barAreaX+((parseD(p.inicio)-minT2)/timeR)*barAreaW;
-      const bw=Math.max(0.08,((parseD(p.fin)-parseD(p.inicio))/timeR)*barAreaW);
-      s4.addShape(R,{x:bx,y:ry+rowH*0.18,w:bw,h:rowH*0.64,fill:{color:col3},line:{color:col3}});
-    });
-
-    // Línea separadora vertical entre nombres y barras
-    s4.addShape('line',{x:barAreaX,y:startY,w:0,h:totalH,line:{color:'CCCCCC',width:0.5}});
   } else {
+    const s4=pres.addSlide();
+    s4.addImage({data:BG_CONTENT, x:0, y:0, w:13.33, h:7.5});
+    s4.addText('DIAGRAMA DE GANTT',{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
+    s4.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
     s4.addText('Sin datos en el Gantt',{x:1,y:3,w:11,h:1,fontSize:14,fontFace:'Calibri',color:'999999',align:'center'});
   }
 
@@ -3295,7 +3318,6 @@ function toggleTheme(){
   localStorage.setItem('dti_theme',isLight?'light':'dark');
   // Re-renderizar todas las gráficas con nuevos colores
   renderTab('imc'); renderTab('dev'); renderTab('inf'); renderTab('ia');
-  if(document.getElementById('mod-resumen') && document.getElementById('mod-resumen').classList.contains('active')) renderResumen();
 }
 function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCancel='Cancelar',danger=false,onOk}){
   const ov=document.createElement('div');
