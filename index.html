@@ -1637,7 +1637,7 @@ function renderResumen(){
 
   var kpis=[
     {l:'Total Proyectos',v:total,c:'#C9A84C',sub:'Portafolio activo',filter:''},
-    {l:'Terminados',v:term,c:'#22c55e',sub:Math.round(term/total*100||0)+'% del total',filter:'terminado'},
+    {l:'Terminados',v:term,c:'#3b82f6',sub:Math.round(term/total*100||0)+'% del total',filter:'terminado'},
     {l:'A Tiempo',v:atiempo,c:'#22c55e',sub:'En rango esperado',filter:'tiempo'},
     {l:'Riesgo',v:riesgo,c:'#f59e0b',sub:'Monitorear',filter:'riesgo'},
     {l:'Atrasados',v:atras,c:'#ef4444',sub:'Acción inmediata',filter:'atrasado'},
@@ -1655,7 +1655,7 @@ function renderResumen(){
   document.getElementById('res-kpis').querySelectorAll('.kpi').forEach(function(el){
     el.addEventListener('click',function(){filterResumenByKPI(this.getAttribute('data-kpi-filter')||'');});
   });
-  var semC={terminado:'#22c55e',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#6b7280'};
+  var semC={terminado:'#3b82f6',tiempo:'#22c55e',riesgo:'#f59e0b',atrasado:'#ef4444',stand:'#8b5cf6'};
   var semL={terminado:'Terminado',tiempo:'A tiempo',riesgo:'Riesgo de atraso',atrasado:'Atrasado',stand:'Stand By'};
   var semI={terminado:'&#9679;',tiempo:'&#9679;',riesgo:'&#9651;',atrasado:'&#9679;',stand:'&#9632;'};
   var modBg={IMC:'rgba(201,168,76,.18)',Desarrollo:'rgba(99,179,237,.18)',Soporte:'rgba(34,197,94,.18)',IA:'rgba(167,139,250,.18)'};
@@ -1668,7 +1668,7 @@ function renderResumen(){
     ?'<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">Sin proyectos con los filtros aplicados</td></tr>'
     :filtered.map(function(p,i){
       var s=_resSem(p);var sc=semC[s]||'#888';var sl=semL[s]||p.sem;var si=semI[s]||'&#9679;';
-      var bc=s==='terminado'||s==='tiempo'?'#22c55e':s==='riesgo'?'#f59e0b':s==='atrasado'?'#ef4444':'#6b7280';
+      var bc=semC[s]||'#888';
       var pct=Math.min(p.real||0,100); var bg=i%2===0?'rgba(255,255,255,.02)':'transparent';
       var mc=modBg[p._modulo]||'rgba(255,255,255,.1)'; var mt=modTx[p._modulo]||'#fff';
       var gap=((p.real||0)-(p.esp||0));var gapStr=(gap>=0?'+':'')+gap+'%';var gapC=gap>=0?'#22c55e':'#ef4444';
@@ -1733,7 +1733,7 @@ function renderResumen(){
   // ── DONA: semáforo ───────────────────────────────────────────────────
   _resChartSem=new Chart(document.getElementById('res-chart-semaforo'),{
     type:'doughnut',
-    data:{labels:['Terminado','A Tiempo','Riesgo','Atrasado','Stand By'],datasets:[{data:[term,atiempo,riesgo,atras,stand],backgroundColor:['#22c55e','#4ade80','#f59e0b','#ef4444','#6b7280'],borderWidth:2,borderColor:borderBg,hoverOffset:8}]},
+    data:{labels:['Terminado','A Tiempo','Riesgo','Atrasado','Stand By'],datasets:[{data:[term,atiempo,riesgo,atras,stand],backgroundColor:['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6'],borderWidth:2,borderColor:borderBg,hoverOffset:8}]},
     options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:tickColor,font:{size:11},padding:8}}}}}
   );
 
@@ -1777,7 +1777,7 @@ function renderResumen(){
 
   // ── GANTT GLOBAL ─────────────────────────────────────────────────────
   var ganttProjs=filtered.filter(function(p){return p.inicio&&p.fin&&p.inicio!=='—'&&p.fin!=='—';}).slice(0,20);
-  var semColorsGantt={terminado:'rgba(34,197,94,.8)',tiempo:'rgba(34,197,94,.8)',riesgo:'rgba(245,158,11,.8)',atrasado:'rgba(239,68,68,.8)',stand:'rgba(107,114,128,.8)'};
+  var semColorsGantt={terminado:'rgba(59,130,246,.8)',tiempo:'rgba(34,197,94,.8)',riesgo:'rgba(245,158,11,.8)',atrasado:'rgba(239,68,68,.8)',stand:'rgba(139,92,246,.8)'};
   if(ganttProjs.length){
     var parseFecha=function(s){var p=s.split('/');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(s);};
     var allDates=ganttProjs.reduce(function(acc,p){acc.push(parseFecha(p.inicio),parseFecha(p.fin));return acc;},[]);
