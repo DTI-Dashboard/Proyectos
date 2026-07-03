@@ -3295,6 +3295,7 @@ function toggleTheme(){
   localStorage.setItem('dti_theme',isLight?'light':'dark');
   // Re-renderizar todas las gráficas con nuevos colores
   renderTab('imc'); renderTab('dev'); renderTab('inf'); renderTab('ia');
+  if(document.getElementById('mod-resumen') && document.getElementById('mod-resumen').classList.contains('active')) renderResumen();
 }
 function showConfirm({icon='❓',title='Confirmar',msg='',btnOk='Aceptar',btnCancel='Cancelar',danger=false,onOk}){
   const ov=document.createElement('div');
