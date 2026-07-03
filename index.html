@@ -1982,15 +1982,10 @@ async function exportPPTX(tab){
     s2.addText(k.l,{x:cx+0.05,y:cardY+1.1,w:cardW-0.1,h:0.42,fontSize:9,fontFace:'Calibri',color:'555555',align:'center'});
   });
 
-  // Treemap — Proyectos por Área (colores dorado, todos visibles)
+  // Treemap — Proyectos por Área (colores dorado, todas las áreas, ancho automático)
   const areas={};
   projects.forEach(p=>{if(p.area) areas[p.area]=(areas[p.area]||0)+1;});
-  let areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
-  if(areaEntries.length>8){
-    const topAreas=areaEntries.slice(0,7);
-    const restTotal=areaEntries.slice(7).reduce(function(s,e){return s+e[1];},0);
-    areaEntries=topAreas.concat([['Otras áreas',restTotal]]);
-  }
+  const areaEntries=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
   const tmY=3.85, tmH=2.35, tmX=0.4, tmW=12.53;
   s2.addText('PROYECTOS POR ÁREA',{x:tmX,y:tmY-0.32,w:tmW,h:0.28,fontSize:9,fontFace:'Calibri',color:'C9A84C',bold:true,align:'left'});
   const numA=areaEntries.length||1;
@@ -2006,8 +2001,9 @@ async function exportPPTX(tab){
   });
 
   // ── Slide 3+ — Tabla de proyectos (paginada, 18 por slide) ──
-  const cX=[0.30,1.25,5.05,6.50,7.45,8.40,9.40,10.40];
-  const cW=[0.90,3.75,1.40,0.90,0.90,0.95,0.95,2.33];
+  const TAB_MOD_LABEL={imc:'IMC',dev:'Desarrollo',inf:'Soporte',ia:'IA'};
+  const cX=[0.30,1.30,2.10,5.45,6.75,7.57,8.39,9.24,10.09];
+  const cW=[1.00,0.80,3.35,1.30,0.82,0.82,0.85,0.85,2.64];
   const sc2={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
   const rowsPerPage=18;
   const totalTblPages=Math.max(1,Math.ceil(projects.length/rowsPerPage));
@@ -2018,14 +2014,15 @@ async function exportPPTX(tab){
     sT.addText(tblTitle,{x:3.5,y:0.38,w:9.5,h:0.55,fontSize:18,fontFace:'Calibri',color:'1A2340',bold:true,align:'center'});
     sT.addText(today,{x:3.5,y:0.88,w:9.5,h:0.28,fontSize:9,fontFace:'Calibri',color:'777777',align:'center'});
     sT.addShape(R,{x:0.3,y:1.5,w:12.73,h:0.32,fill:{color:'C9A84C'},line:{color:'C9A84C'}});
-    ['TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
+    ['DIRECCIÓN','TIPO','PROYECTO','ÁREA','INICIO','FIN','% REAL','% ESP.','SEMÁFORO'].forEach((h,i)=>
       sT.addText(h,{x:cX[i]+0.03,y:1.52,w:cW[i]-0.06,h:0.28,fontSize:7,fontFace:'Calibri',color:'FFFFFF',bold:true,align:'center'}));
     projects.slice(pg*rowsPerPage,(pg+1)*rowsPerPage).forEach((p,ri)=>{
       const ry=1.82+ri*0.285, bg=ri%2===0?'FFFFFF':'F5F5F8', sc=semClass(p.sem), col=sc2[sc]||'8b5cf6';
+      const dirLabel=p._modulo||TAB_MOD_LABEL[tab]||'—';
       sT.addShape(R,{x:0.3,y:ry,w:12.73,h:0.285,fill:{color:bg},line:{color:'E8E8EC',width:0.3}});
-      [p.tipo,p.nombre.slice(0,42),(p.area||'').slice(0,18),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
-        const isSem=ci===7||ci===5;
-        sT.addText(cell||'—',{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===1?'left':'center'});
+      [dirLabel,p.tipo,p.nombre.slice(0,38),(p.area||'').slice(0,16),p.inicio,p.fin,p.real+'%',p.esp+'%',semLabel(p.sem)].forEach((cell,ci)=>{
+        const isSem=ci===8||ci===6;
+        sT.addText(cell||'—',{x:cX[ci]+0.03,y:ry+0.05,w:cW[ci]-0.06,h:0.22,fontSize:7,fontFace:'Calibri',color:isSem?col:'333333',bold:isSem,align:ci===2?'left':'center'});
       });
     });
   }
