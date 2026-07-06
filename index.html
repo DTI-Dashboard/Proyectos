@@ -3141,8 +3141,6 @@ function renderActividadesIMC(){
   var atr =base.filter(function(a){return a._estReal==='Atrasado';}).length;
   var personas=new Set(base.map(function(a){return a.nombre;}).filter(Boolean)).size;
   var setTxt=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
-  setTxt('actimc-k-total',total); setTxt('actimc-k-proc',proc); setTxt('actimc-k-conc',conc);
-  setTxt('actimc-k-atr',atr); setTxt('actimc-k-personas',personas);
 
   // Poblar filtro de colaborador con nombres únicos (todos los del directorio IMC + los que ya tengan actividad)
   if(colEl){
@@ -3159,12 +3157,16 @@ function renderActividadesIMC(){
   // Poblar filtro de proyecto con proyectos únicos asignados a actividades
   if(proyEl){
     var proyectosSet={};
-    base.forEach(function(a){ if(a.proyecto) proyectosSet[a.proyecto]=true; });
+    var hayIndependientes=false;
+    base.forEach(function(a){ if(a.proyecto) proyectosSet[a.proyecto]=true; else hayIndependientes=true; });
     var proyectosUnicos=Object.keys(proyectosSet).sort();
     var curProy=proyEl.value;
-    proyEl.innerHTML='<option value="">📁 Todos los proyectos</option>'+proyectosUnicos.map(function(p){
+    var optsProy='<option value="">📁 Todos los proyectos</option>';
+    if(hayIndependientes) optsProy+='<option value="__independiente__"'+(curProy==='__independiente__'?' selected':'')+'>Actividades Independientes</option>';
+    optsProy+=proyectosUnicos.map(function(p){
       return '<option value="'+p.replace(/"/g,'&quot;')+'"'+(p===curProy?' selected':'')+'>'+p+'</option>';
     }).join('');
+    proyEl.innerHTML=optsProy;
   }
 
   // Poblar filtro de semana: solo semanas (lunes-viernes) que realmente tienen actividades
@@ -3208,12 +3210,36 @@ function renderActividadesIMC(){
     }
   }
 
+  // ── KPIs: reflejan colaborador/proyecto/semana/mes/prioridad/búsqueda, pero NO el estatus
+  //    (el estatus lo desglosan los propios KPIs, filtrarlo aquí los dejaría en cero) ──
+  var kpiBase=base;
+  if(priF) kpiBase=kpiBase.filter(function(a){return a.prioridad===priF;});
+  if(colF) kpiBase=kpiBase.filter(function(a){return a.nombre===colF;});
+  if(proyF==='__independiente__') kpiBase=kpiBase.filter(function(a){return !a.proyecto;});
+  else if(proyF) kpiBase=kpiBase.filter(function(a){return a.proyecto===proyF;});
+  if(semF) kpiBase=kpiBase.filter(function(a){return a.fechaFin && _isoWeek(new Date(a.fechaFin+'T12:00:00'))===semF;});
+  if(_actIMCMesesSel.length===1 && _actIMCMesesSel[0]==='__ninguno__'){
+    kpiBase=[];
+  } else if(_actIMCMesesSel.length){
+    kpiBase=kpiBase.filter(function(a){return a.fechaFin && _actIMCMesesSel.indexOf(a.fechaFin.slice(0,7))!==-1;});
+  }
+  if(q) kpiBase=kpiBase.filter(function(a){return (a.nombre||'').toLowerCase().includes(q)||(a.actividad||'').toLowerCase().includes(q)||(a.proyecto||'').toLowerCase().includes(q);});
+
+  total=kpiBase.length;
+  proc=kpiBase.filter(function(a){return a._estReal==='En proceso';}).length;
+  conc=kpiBase.filter(function(a){return a._estReal==='Concluido';}).length;
+  atr =kpiBase.filter(function(a){return a._estReal==='Atrasado';}).length;
+  personas=new Set(kpiBase.map(function(a){return a.nombre;}).filter(Boolean)).size;
+  setTxt('actimc-k-total',total); setTxt('actimc-k-proc',proc); setTxt('actimc-k-conc',conc);
+  setTxt('actimc-k-atr',atr); setTxt('actimc-k-personas',personas);
+
   var list=base;
   if(_actIMCFiltro) list=list.filter(function(a){return a._estReal===_actIMCFiltro;});
   if(estF) list=list.filter(function(a){return a._estReal===estF;});
   if(priF) list=list.filter(function(a){return a.prioridad===priF;});
   if(colF) list=list.filter(function(a){return a.nombre===colF;});
-  if(proyF) list=list.filter(function(a){return a.proyecto===proyF;});
+  if(proyF==='__independiente__') list=list.filter(function(a){return !a.proyecto;});
+  else if(proyF) list=list.filter(function(a){return a.proyecto===proyF;});
   if(semF) list=list.filter(function(a){return a.fechaFin && _isoWeek(new Date(a.fechaFin+'T12:00:00'))===semF;});
   if(_actIMCMesesSel.length===1 && _actIMCMesesSel[0]==='__ninguno__'){
     list=[];
@@ -3257,16 +3283,12 @@ function renderActividadesIMC(){
     return '<tr>'
       +'<td><input type="checkbox" '+checked+' onchange="actIMCToggleOne(\''+a.id+'\',this)" style="accent-color:var(--gold)"></td>'
       +'<td style="font-weight:600;min-width:170px;max-width:170px;word-break:break-word;white-space:normal"><div style="max-width:170px;overflow-wrap:break-word">'+(a.nombre||'—')+'</div></td>'
-      +'<td style="font-size:12px;color:var(--muted);min-width:190px;max-width:190px;word-break:break-word;white-space:normal">'+(a.proyecto||'<span style="font-style:italic;color:rgba(255,255,255,.3)">Actividad Independiente</span>')+'</td>'
+      +'<td style="font-size:12px;color:var(--muted);min-width:190px;max-width:190px;word-break:break-word;white-space:normal">'+(a.proyecto||'<span style="font-style:italic;color:#fff">Actividad Independiente</span>')+'</td>'
       +'<td><span title="'+(a.actividad||'')+'" class="actimc-act-link" data-actid="'+a.id+'" style="cursor:pointer;color:#fff;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.7)">'+(a.actividad||'—')+'</span></td>'
       +'<td><span style="color:'+pc+';font-weight:700;font-size:11px">'+(a.prioridad||'Media')+'</span></td>'
       +'<td style="font-size:13px;font-weight:500"><div style="line-height:1.2">'+fechaDia+'</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">'+fechaAnio+'</div></td>'
       +'<td><span style="display:inline-flex;align-items:center;gap:5px;color:'+ec+';background:'+ec+'18;border:1px solid '+ec+'55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">'+emoji+' '+a._estReal+'</span></td>'
       +'<td style="white-space:nowrap;padding:6px 8px"><div style="display:flex;gap:6px;align-items:flex-end">'
-        +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
-          +'<button onclick="openActModalIMC(\''+a.id+'\')" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2);color:#63b3ed;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Editar">&#9998;</button>'
-          +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">EDITAR</span>'
-        +'</div>'
         +listoBtn
       +'</div></td></tr>';
   }).join('');
@@ -3308,10 +3330,17 @@ function _actIMCUpdateBulkBtn(){
 function actIMCMarcarConcluido(id){
   var a=_actividadesIMC.find(function(x){return x.id===id;});
   if(!a) return;
-  a.estatus='Concluido';
-  _saveActividadesIMC();
-  renderActividadesIMC();
-  showToast('Actividad marcada como concluida','success');
+  showConfirm({
+    icon:'✅', title:'Marcar como Concluido',
+    msg:'¿Confirmas que esta actividad fue completada? El estatus cambiará a <strong style="color:#22c55e">Concluido</strong>.',
+    btnOk:'Sí, concluir',
+    onOk:function(){
+      a.estatus='Concluido';
+      _saveActividadesIMC();
+      renderActividadesIMC();
+      showToast('Actividad marcada como concluida','success');
+    }
+  });
 }
 function deleteActividadIMC(id){
   showConfirm({
@@ -4267,13 +4296,24 @@ function renderActividades(){
   const lbl=document.getElementById('act-week-label');
   // nav bar removida
 
-  const weekActs=_actSemana?_actividades.filter(a=>_semanaDeFinDate(a.fechaFin)===_actSemana):_actividades;
   const setK=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  setK('act-k-total',weekActs.length);
-  setK('act-k-proc',weekActs.filter(a=>a.estatus==='En proceso').length);
-  setK('act-k-conc',weekActs.filter(a=>a.estatus==='Concluido').length);
-  setK('act-k-atr',weekActs.filter(a=>a.estatus==='Atrasado').length);
-  setK('act-k-personas',[...new Set(weekActs.map(a=>a.nombre))].length);
+
+  // KPIs: reflejan colaborador/prioridad/semana/mes/búsqueda, pero NO el estatus
+  // (el estatus lo desglosan los propios KPIs; filtrarlo aquí los dejaría en cero)
+  let kpiBase=_actividades.filter(a=>{
+    if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
+    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
+    if(fPrio && a.prioridad!==fPrio) return false;
+    if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
+    if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
+    if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
+    return true;
+  });
+  setK('act-k-total',kpiBase.length);
+  setK('act-k-proc',kpiBase.filter(a=>a.estatus==='En proceso').length);
+  setK('act-k-conc',kpiBase.filter(a=>a.estatus==='Concluido').length);
+  setK('act-k-atr',kpiBase.filter(a=>a.estatus==='Atrasado').length);
+  setK('act-k-personas',[...new Set(kpiBase.map(a=>a.nombre))].length);
 
   // Filtrar para la tabla
   let filtered=_actividades.filter(a=>{
