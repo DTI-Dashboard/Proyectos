@@ -3501,53 +3501,44 @@ function enviarSeleccionadasIMC(){
 
 function _actIMCBuildCorreoTexto(p, asunto){
   var prioEmoji={'Alta':'🔴','Media':'🟡','Baja':'🟢'};
-  var cuerpo='Hola, '+p.nombre+'.\n\n📌 Se te han asignado las siguientes actividades:\n\n';
+  var cuerpo='';
   p.actividades.forEach(function(a,idx){
     var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
     var proyLinea=a.proyecto?('\n   📁 Proyecto: '+a.proyecto):'';
     cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'\n\n';
   });
-  cuerpo+='Por favor revisa con anticipación.\n\nSaludos,';
   return cuerpo;
 }
 
 function _actIMCBuildCorreoHTML(p){
   var prioColor={'Alta':'#c0392b','Media':'#b8790a','Baja':'#1e8a4c'};
   var esc=function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var FONT='font-family:Arial,Helvetica,sans-serif;font-size:12px';
   var filas=p.actividades.map(function(a,idx){
     var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
     var pc=prioColor[a.prioridad]||'#666';
     var bg=idx%2===0?'#ffffff':'#f7f8fc';
     return '<tr style="background:'+bg+'">'
-      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#444">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
-      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#1a2340;font-weight:600">'+esc(a.actividad)+'</td>'
-      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;white-space:nowrap"><font color="'+pc+'"><b>'+esc(a.prioridad||'Media')+'</b></font></td>'
-      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#444;white-space:nowrap">'+f+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#1a2340;font-weight:bold">'+esc(a.actividad)+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:'+pc+';font-weight:bold;white-space:nowrap">'+esc(a.prioridad||'Media')+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444;white-space:nowrap">'+f+'</td>'
       +'</tr>';
   }).join('');
   return ''
-    +'<div style="font-family:Arial,Helvetica,sans-serif;background:#eef1f7;padding:24px 12px">'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:10px;border:1px solid #e2e6ee">'
-      +'<tr><td style="padding:26px 28px 6px">'
-        +'<p style="margin:0 0 6px;font-size:16px;color:#1a2340;font-weight:bold">Hola, '+esc(p.nombre)+'.</p>'
-        +'<p style="margin:0 0 18px;font-size:14px;color:#555">📌 Se te han asignado las siguientes actividades para esta semana:</p>'
-      +'</td></tr>'
-      +'<tr><td style="padding:0 20px 22px">'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border:1px solid #e2e6ee;border-radius:8px">'
+      +'<tr><td style="padding:6px">'
         +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'
           +'<tr style="background:#1a2340">'
-            +'<th align="left" style="padding:11px 14px;color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;border-radius:6px 0 0 0">Proyecto</th>'
-            +'<th align="left" style="padding:11px 14px;color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px">Actividad</th>'
-            +'<th align="left" style="padding:11px 14px;color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px">Prioridad</th>'
-            +'<th align="left" style="padding:11px 14px;color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;border-radius:0 6px 0 0">Fecha límite</th>'
+            +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Proyecto</th>'
+            +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Actividad</th>'
+            +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Prioridad</th>'
+            +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Fecha límite</th>'
           +'</tr>'
           +filas
         +'</table>'
       +'</td></tr>'
-      +'<tr><td style="padding:0 28px 26px">'
-        +'<p style="margin:0;font-size:13px;color:#555">Por favor revisa con anticipación. Cualquier duda, quedo al pendiente.</p>'
-      +'</td></tr>'
-    +'</table>'
-    +'</div>';
+    +'</table>';
 }
 
 var _actIMCColaEnvio=[]; var _actIMCColaIdx=0; var _actIMCColaOv=null;
@@ -3567,6 +3558,7 @@ function _actIMCProcesarSiguienteEnvio(){
   var asunto='IMC || Actividades Semanales || '+_semanaActualLabel();
   var html=_actIMCBuildCorreoHTML(p);
   var texto=_actIMCBuildCorreoTexto(p, asunto);
+  var primerNombre=(p.nombre||'').trim().split(' ')[0];
 
   var copiado=true;
   try{
@@ -3581,13 +3573,14 @@ function _actIMCProcesarSiguienteEnvio(){
     }
   }catch(e){ copiado=false; console.warn('Clipboard error:', e); }
 
-  var mailto='mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(asunto);
+  var cuerpo='Hola '+primerNombre+'\n\n📌 Se te han asignado las siguientes actividades para esta semana:\n\n\n\n\nPor favor revisa con anticipación. Cualquier duda, quedo al pendiente.';
+  var mailto='mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo);
   window.open(mailto,'_blank');
 
   var idx=_actIMCColaIdx, total=_actIMCColaEnvio.length;
   var esUltimo=idx===total-1;
   var msg = copiado
-    ? 'Se abrió el correo para <strong>'+p.nombre+'</strong> y ya copiamos la tabla con formato al portapapeles.<br><br>Haz clic dentro del cuerpo del correo y pega con <strong>Ctrl+V</strong> (Cmd+V en Mac).'
+    ? 'Se abrió el correo para <strong>'+p.nombre+'</strong> con el saludo y cierre ya escritos, y copiamos la tabla al portapapeles.<br><br>Haz clic en el <strong>espacio en blanco entre esas dos líneas</strong> y pega con <strong>Ctrl+V</strong> (Cmd+V en Mac).'
     : 'Se abrió el correo para <strong>'+p.nombre+'</strong>, pero el navegador no permitió copiar la tabla con formato — copia manualmente el detalle desde la actividad.';
 
   if(_actIMCColaOv) _actIMCColaOv.remove();
