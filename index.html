@@ -3512,28 +3512,22 @@ function _actIMCBuildCorreoTexto(p, asunto){
 }
 
 function _actIMCBuildCorreoHTML(p){
-  var prioColor={'Alta':{bg:'#fde2e2',fg:'#c0392b'},'Media':{bg:'#fdf1d6',fg:'#b8790a'},'Baja':{bg:'#dff5e6',fg:'#1e8a4c'}};
+  var prioColor={'Alta':'#c0392b','Media':'#b8790a','Baja':'#1e8a4c'};
   var esc=function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var filas=p.actividades.map(function(a,idx){
     var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
-    var pc=prioColor[a.prioridad]||{bg:'#eee',fg:'#666'};
+    var pc=prioColor[a.prioridad]||'#666';
     var bg=idx%2===0?'#ffffff':'#f7f8fc';
     return '<tr style="background:'+bg+'">'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#444">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#1a2340;font-weight:600">'+esc(a.actividad)+'</td>'
-      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:12px;white-space:nowrap"><span style="background:'+pc.bg+';color:'+pc.fg+';padding:3px 11px;border-radius:12px;font-weight:bold;font-size:11px">'+esc(a.prioridad||'Media')+'</span></td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;white-space:nowrap"><font color="'+pc+'"><b>'+esc(a.prioridad||'Media')+'</b></font></td>'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;font-size:13px;color:#444;white-space:nowrap">'+f+'</td>'
       +'</tr>';
   }).join('');
   return ''
     +'<div style="font-family:Arial,Helvetica,sans-serif;background:#eef1f7;padding:24px 12px">'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:10px;border:1px solid #e2e6ee">'
-      +'<tr><td style="background:#1A2340;padding:20px 28px;border-radius:10px 10px 0 0">'
-        +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
-          +'<td style="font-family:Arial,sans-serif;font-size:19px;font-weight:bold;color:#C9A84C;letter-spacing:.5px">IMC</td>'
-          +'<td align="right" style="font-family:Arial,sans-serif;font-size:12px;color:rgba(255,255,255,.65)">Actividades Semanales</td>'
-        +'</tr></table>'
-      +'</td></tr>'
       +'<tr><td style="padding:26px 28px 6px">'
         +'<p style="margin:0 0 6px;font-size:16px;color:#1a2340;font-weight:bold">Hola, '+esc(p.nombre)+'.</p>'
         +'<p style="margin:0 0 18px;font-size:14px;color:#555">📌 Se te han asignado las siguientes actividades para esta semana:</p>'
@@ -3549,11 +3543,8 @@ function _actIMCBuildCorreoHTML(p){
           +filas
         +'</table>'
       +'</td></tr>'
-      +'<tr><td style="padding:0 28px 24px">'
+      +'<tr><td style="padding:0 28px 26px">'
         +'<p style="margin:0;font-size:13px;color:#555">Por favor revisa con anticipación. Cualquier duda, quedo al pendiente.</p>'
-      +'</td></tr>'
-      +'<tr><td style="background:#f7f8fc;padding:16px 28px;border-top:1px solid #eef0f5;border-radius:0 0 10px 10px">'
-        +'<p style="margin:0;font-size:12px;color:#8a8f9c">Enviado desde el Dashboard DTI · Grupo INCEPADEM</p>'
       +'</td></tr>'
     +'</table>'
     +'</div>';
