@@ -879,10 +879,16 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
         </div>
       </div>
-      <!-- Colaborador (select simple, misma logica que IMC) -->
-      <select id="act-f-colab" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">👤 Todos los colaboradores</option>
-      </select>
+      <!-- Multi-select Colaboradores -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
+        <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+            <input type="checkbox" id="act-nom-todos" checked onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
+          </label>
+          <div id="act-nombre-checks"></div>
+        </div>
+      </div>
       <!-- Semana (dinámico, solo semanas con actividades) -->
       <select id="act-f-semana" onchange="_actSemana=this.value; renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;max-width:230px">
         <option value="">📅 Todas las fechas</option>
@@ -3490,21 +3496,106 @@ function enviarSeleccionadasIMC(){
   });
   var personas=Object.values(porPersona);
   if(!personas.length){ showToast('Ninguna de las seleccionadas tiene correo asignado','error'); return; }
+  _actIMCIniciarColaEnvio(personas);
+}
 
-  var asunto='IMC || Actividades Semanales || '+_semanaActualLabel();
+function _actIMCBuildCorreoTexto(p, asunto){
   var prioEmoji={'Alta':'🔴','Media':'🟡','Baja':'🟢'};
-  personas.forEach(function(p,i){
-    var cuerpo='Hola, '+p.nombre+'.\n\n📌 Se te han asignado las siguientes actividades:\n\n';
-    p.actividades.forEach(function(a,idx){
-      var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
-      var proyLinea=a.proyecto?('\n   📁 Proyecto: '+a.proyecto):'';
-      cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'\n\n';
-    });
-    cuerpo+='Por favor revisa con anticipación.\n\nSaludos,';
-    var mailto='mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo);
-    setTimeout(function(){ window.open(mailto,'_blank'); }, i*400); // pequeño delay para evitar bloqueo de popups
+  var cuerpo='Hola, '+p.nombre+'.\n\n📌 Se te han asignado las siguientes actividades:\n\n';
+  p.actividades.forEach(function(a,idx){
+    var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+    var proyLinea=a.proyecto?('\n   📁 Proyecto: '+a.proyecto):'';
+    cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'\n\n';
   });
-  showToast('✅ Preparando '+personas.length+' correo(s) agrupado(s) — revisa tu cliente de correo','success',6000);
+  cuerpo+='Por favor revisa con anticipación.\n\nSaludos,';
+  return cuerpo;
+}
+
+function _actIMCBuildCorreoHTML(p){
+  var prioColor={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
+  var esc=function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var filas=p.actividades.map(function(a){
+    var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    var pc=prioColor[a.prioridad]||'#888';
+    return '<tr>'
+      +'<td style="padding:8px 10px;border:1px solid #ddd">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
+      +'<td style="padding:8px 10px;border:1px solid #ddd">'+esc(a.actividad)+'</td>'
+      +'<td style="padding:8px 10px;border:1px solid #ddd;color:'+pc+';font-weight:bold">'+esc(a.prioridad||'Media')+'</td>'
+      +'<td style="padding:8px 10px;border:1px solid #ddd">'+f+'</td>'
+      +'</tr>';
+  }).join('');
+  return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222">'
+    +'<p>Hola, '+esc(p.nombre)+'.</p>'
+    +'<p>📌 Se te han asignado las siguientes actividades:</p>'
+    +'<table style="border-collapse:collapse;width:100%;max-width:640px">'
+    +'<tr style="background:#dbe4f3">'
+      +'<th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Proyecto</th>'
+      +'<th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Actividad</th>'
+      +'<th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Prioridad</th>'
+      +'<th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Fecha Fin</th>'
+    +'</tr>'
+    +filas
+    +'</table>'
+    +'<p>Por favor revisa con anticipación.</p>'
+    +'<p>Saludos,</p>'
+    +'</div>';
+}
+
+var _actIMCColaEnvio=[]; var _actIMCColaIdx=0; var _actIMCColaOv=null;
+
+function _actIMCIniciarColaEnvio(personas){
+  _actIMCColaEnvio=personas; _actIMCColaIdx=0;
+  _actIMCProcesarSiguienteEnvio();
+}
+
+function _actIMCProcesarSiguienteEnvio(){
+  if(_actIMCColaIdx>=_actIMCColaEnvio.length){
+    if(_actIMCColaOv){ _actIMCColaOv.remove(); _actIMCColaOv=null; }
+    showToast('✅ Listo, se procesaron '+_actIMCColaEnvio.length+' correo(s)','success',5000);
+    return;
+  }
+  var p=_actIMCColaEnvio[_actIMCColaIdx];
+  var asunto='IMC || Actividades Semanales || '+_semanaActualLabel();
+  var html=_actIMCBuildCorreoHTML(p);
+  var texto=_actIMCBuildCorreoTexto(p, asunto);
+
+  var copiado=true;
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([texto], {type:'text/plain'})
+      })]);
+    } else if(navigator.clipboard){
+      navigator.clipboard.writeText(texto);
+      copiado=false; // solo texto plano, sin tabla
+    }
+  }catch(e){ copiado=false; console.warn('Clipboard error:', e); }
+
+  var mailto='mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(asunto);
+  window.open(mailto,'_blank');
+
+  var idx=_actIMCColaIdx, total=_actIMCColaEnvio.length;
+  var esUltimo=idx===total-1;
+  var msg = copiado
+    ? 'Se abrió el correo para <strong>'+p.nombre+'</strong> y ya copiamos la tabla con formato al portapapeles.<br><br>Haz clic dentro del cuerpo del correo y pega con <strong>Ctrl+V</strong> (Cmd+V en Mac).'
+    : 'Se abrió el correo para <strong>'+p.nombre+'</strong>, pero el navegador no permitió copiar la tabla con formato — copia manualmente el detalle desde la actividad.';
+
+  if(_actIMCColaOv) _actIMCColaOv.remove();
+  var ov=document.createElement('div');
+  ov.className='dti-modal-overlay';
+  ov.innerHTML='<div class="dti-modal-box" style="max-width:420px">'
+    +'<div class="dti-modal-icon">📧</div>'
+    +'<div class="dti-modal-title">Correo '+(idx+1)+' de '+total+'</div>'
+    +'<div class="dti-modal-msg">'+msg+'</div>'
+    +'<div class="dti-modal-btns">'
+      +'<button class="dti-modal-btn cancel" id="aimc-cola-cancelar">Cancelar envíos</button>'
+      +'<button class="dti-modal-btn ok-success" id="aimc-cola-siguiente">'+(esUltimo?'Finalizar ✓':'Ya pegué, siguiente ▶')+'</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  _actIMCColaOv=ov;
+  ov.querySelector('#aimc-cola-cancelar').onclick=function(){ ov.remove(); _actIMCColaOv=null; showToast('Envío cancelado','error'); };
+  ov.querySelector('#aimc-cola-siguiente').onclick=function(){ _actIMCColaIdx++; _actIMCProcesarSiguienteEnvio(); };
 }
 
 function exportActXLSXIMC(){
@@ -4293,7 +4384,7 @@ function renderActividades(){
   // Cargar desde localStorage si _actividades está vacío
   if(!_actividades.length){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){} }
   const fEst=_actFiltroEst; // array multi-select
-  const fNom=(document.getElementById('act-f-colab')||{}).value||''; // select simple
+  const fNom=_actFiltroNom; // array multi-select
   const fPrio=(document.getElementById('act-f-prioridad')||{}).value||'';
   const fSrch=((document.getElementById('act-search')||{}).value||'').toLowerCase();
   // _actSemana='' = todas, no resetear
@@ -4307,7 +4398,7 @@ function renderActividades(){
   // (el estatus lo desglosan los propios KPIs; filtrarlo aquí los dejaría en cero)
   let kpiBase=_actividades.filter(a=>{
     if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
-    if(fNom && a.nombre!==fNom) return false;
+    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
     if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
     if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
@@ -4324,7 +4415,7 @@ function renderActividades(){
   let filtered=_actividades.filter(a=>{
     if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
     if(fEst.length && !fEst.includes(a.estatus)) return false;
-    if(fNom && a.nombre!==fNom) return false;
+    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
     if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
     if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
@@ -4344,17 +4435,22 @@ function renderActividades(){
   const cnt=document.getElementById('act-count');
   if(cnt) cnt.textContent=filtered.length+' actividades';
 
-  // Poblar select de colaborador (todos los del directorio + los que ya tengan actividad)
-  const colSel=document.getElementById('act-f-colab');
-  if(colSel){
-    const nmsSet={};
-    _directorio.forEach(d=>{ if(d.nombre) nmsSet[d.nombre]=true; });
-    _actividades.forEach(a=>{ if(a.nombre) nmsSet[a.nombre]=true; });
-    const nms=Object.keys(nmsSet).sort();
-    const curColab=colSel.value;
-    colSel.innerHTML='<option value="">👤 Todos los colaboradores</option>'+nms.map(n=>
-      `<option value="${n}" ${n===curColab?'selected':''}>${n}</option>`
-    ).join('');
+  // Actualizar checkboxes de colaboradores (todos los del directorio + los que ya tengan actividad)
+  const nmsSet={};
+  _directorio.forEach(d=>{ if(d.nombre) nmsSet[d.nombre]=true; });
+  _actividades.forEach(a=>{ if(a.nombre) nmsSet[a.nombre]=true; });
+  const nms=Object.keys(nmsSet).sort();
+  const nomPanel=document.getElementById('act-nombre-checks');
+  if(nomPanel){
+    const cur=_actFiltroNom;
+    const allNomSel=cur.length===0;
+    // Actualizar el checkbox "Todos" sin regenerarlo (es estático en el HTML)
+    const todosChk=document.getElementById('act-nom-todos');
+    const ninguno=_actFiltroNom.length===1&&_actFiltroNom[0]==='__ninguno__';
+    if(todosChk) todosChk.checked=allNomSel&&!ninguno;
+    nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
+      <input type="checkbox" value="${n}" ${cur.length===0||(cur[0]!=='__ninguno__'&&cur.includes(n))?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
+    </label>`).join('');
   }
 
   // Poblar select de semana: solo semanas (lunes-viernes) que realmente tienen actividades
