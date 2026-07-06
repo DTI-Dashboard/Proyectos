@@ -879,16 +879,10 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" onchange="actCheckFilt('estatus')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
         </div>
       </div>
-      <!-- Multi-select Colaboradores -->
-      <div class="act-multi-wrap">
-        <button class="act-multi-btn" id="act-nom-btn" onclick="toggleActPanel('nombre')">👤 Todos los colaboradores ▾</button>
-        <div class="act-multi-panel" id="act-nombre-panel" style="min-width:220px">
-          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
-            <input type="checkbox" id="act-nom-todos" checked onchange="actSelTodos('nombre',this)" style="accent-color:var(--gold)"> ✓ Todos los colaboradores
-          </label>
-          <div id="act-nombre-checks"></div>
-        </div>
-      </div>
+      <!-- Colaborador (select simple, misma logica que IMC) -->
+      <select id="act-f-colab" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+        <option value="">👤 Todos los colaboradores</option>
+      </select>
       <!-- Semana (dinámico, solo semanas con actividades) -->
       <select id="act-f-semana" onchange="_actSemana=this.value; renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;max-width:230px">
         <option value="">📅 Todas las fechas</option>
@@ -4299,7 +4293,7 @@ function renderActividades(){
   // Cargar desde localStorage si _actividades está vacío
   if(!_actividades.length){ try{ _actividades=JSON.parse(localStorage.getItem('dti_actividades')||'[]'); }catch(e){} }
   const fEst=_actFiltroEst; // array multi-select
-  const fNom=_actFiltroNom; // array multi-select
+  const fNom=(document.getElementById('act-f-colab')||{}).value||''; // select simple
   const fPrio=(document.getElementById('act-f-prioridad')||{}).value||'';
   const fSrch=((document.getElementById('act-search')||{}).value||'').toLowerCase();
   // _actSemana='' = todas, no resetear
@@ -4313,7 +4307,7 @@ function renderActividades(){
   // (el estatus lo desglosan los propios KPIs; filtrarlo aquí los dejaría en cero)
   let kpiBase=_actividades.filter(a=>{
     if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
-    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
+    if(fNom && a.nombre!==fNom) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
     if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
     if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
@@ -4330,7 +4324,7 @@ function renderActividades(){
   let filtered=_actividades.filter(a=>{
     if(_actSemana && _isoWeek(new Date(a.fechaFin+'T12:00:00'))!==_actSemana) return false;
     if(fEst.length && !fEst.includes(a.estatus)) return false;
-    if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
+    if(fNom && a.nombre!==fNom) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
     if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
     if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
@@ -4350,22 +4344,17 @@ function renderActividades(){
   const cnt=document.getElementById('act-count');
   if(cnt) cnt.textContent=filtered.length+' actividades';
 
-  // Actualizar checkboxes de colaboradores (todos los del directorio + los que ya tengan actividad)
-  const nmsSet={};
-  _directorio.forEach(d=>{ if(d.nombre) nmsSet[d.nombre]=true; });
-  _actividades.forEach(a=>{ if(a.nombre) nmsSet[a.nombre]=true; });
-  const nms=Object.keys(nmsSet).sort();
-  const nomPanel=document.getElementById('act-nombre-checks');
-  if(nomPanel){
-    const cur=_actFiltroNom;
-    const allNomSel=cur.length===0;
-    // Actualizar el checkbox "Todos" sin regenerarlo (es estático en el HTML)
-    const todosChk=document.getElementById('act-nom-todos');
-    const ninguno=_actFiltroNom.length===1&&_actFiltroNom[0]==='__ninguno__';
-    if(todosChk) todosChk.checked=allNomSel&&!ninguno;
-    nomPanel.innerHTML=nms.map(n=>`<label class="act-multi-lbl">
-      <input type="checkbox" value="${n}" ${cur.length===0||(cur[0]!=='__ninguno__'&&cur.includes(n))?'checked':''} onchange="actCheckFilt('nombre')" style="accent-color:var(--gold)"> ${n}
-    </label>`).join('');
+  // Poblar select de colaborador (todos los del directorio + los que ya tengan actividad)
+  const colSel=document.getElementById('act-f-colab');
+  if(colSel){
+    const nmsSet={};
+    _directorio.forEach(d=>{ if(d.nombre) nmsSet[d.nombre]=true; });
+    _actividades.forEach(a=>{ if(a.nombre) nmsSet[a.nombre]=true; });
+    const nms=Object.keys(nmsSet).sort();
+    const curColab=colSel.value;
+    colSel.innerHTML='<option value="">👤 Todos los colaboradores</option>'+nms.map(n=>
+      `<option value="${n}" ${n===curColab?'selected':''}>${n}</option>`
+    ).join('');
   }
 
   // Poblar select de semana: solo semanas (lunes-viernes) que realmente tienen actividades
