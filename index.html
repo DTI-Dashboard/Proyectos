@@ -562,6 +562,16 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
   </div>
   </div>
   <div id="imc-sub-actividades" style="display:none">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <div class="mod-title">Submódulo <span>Actividades Semanales IMC</span></div>
+      </div>
+      <div class="export-btns">
+        <button class="btn-act-add" onclick="openActModalIMC(null)">➕ Nueva Actividad</button>
+        <button class="btn-pptx" id="actimc-bulk-btn" onclick="enviarSeleccionadasIMC()" disabled style="opacity:.5">📧 Enviar seleccionadas (0)</button>
+        <button class="btn-xlsx" onclick="exportActXLSXIMC()">📗 Descargar Excel</button>
+      </div>
+    </div>
     <div class="kpi-strip">
       <div class="kpi b" style="cursor:pointer" onclick="kpiActFilterIMC('todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="actimc-k-total">0</div><div class="kpi-sub">Actividades IMC</div></div>
       <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilterIMC('En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="actimc-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
@@ -569,23 +579,22 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="kpi r" style="cursor:pointer" onclick="kpiActFilterIMC('Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="actimc-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
       <div class="kpi gold"><div class="kpi-lbl">Equipo IMC</div><div class="kpi-val gold" id="actimc-k-personas">0</div><div class="kpi-sub">Colaboradores con actividad</div></div>
     </div>
-    <div class="filters" style="flex-wrap:wrap">
-      <span class="filter-label">Filtrar:</span>
-      <select id="actimc-f-estatus" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">🔵 Todos los estatus</option>
-        <option value="En proceso">🔵 En proceso</option>
-        <option value="Concluido">🟢 Concluido</option>
-        <option value="Atrasado">🔴 Atrasado</option>
-      </select>
-      <select id="actimc-f-prioridad" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
-        <option value="">⚡ Todas las prioridades</option>
-        <option value="Alta">🔴 Alta</option>
-        <option value="Media">🟡 Media</option>
-        <option value="Baja">🟢 Baja</option>
-      </select>
-      <input id="actimc-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:200px">
-      <button class="btn-act-add" onclick="openActModalIMC(null)" style="margin-left:auto">➕ Nueva Actividad</button>
-      <button class="btn-pptx" id="actimc-bulk-btn" onclick="enviarSeleccionadasIMC()" disabled style="opacity:.5">📧 Enviar seleccionadas (0)</button>
+    <div class="act-week-nav">
+      <div class="act-filters-row">
+        <select id="actimc-f-estatus" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+          <option value="">🔵 Todos los estatus</option>
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+        <select id="actimc-f-prioridad" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+          <option value="">⚡ Todas las prioridades</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media">🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+        <input id="actimc-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:200px">
+      </div>
     </div>
     <div class="card">
       <div class="card-head">
@@ -595,12 +604,12 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div style="overflow-x:auto"><table class="tbl">
         <thead><tr>
           <th style="width:34px"><input type="checkbox" id="actimc-chk-all" onchange="actIMCToggleAll(this)" style="accent-color:var(--gold)"></th>
-          <th style="width:170px">Colaborador</th>
+          <th class="act-sort-th" style="width:180px;min-width:180px">Nombre</th>
           <th>Actividad</th>
-          <th style="width:110px">Prioridad</th>
-          <th style="width:100px">Fecha Fin</th>
-          <th style="width:120px">Estatus</th>
-          <th style="width:110px">Acciones</th>
+          <th class="act-sort-th" style="width:120px;min-width:120px">Prioridad</th>
+          <th class="act-sort-th" style="width:80px;min-width:80px">Fecha Fin</th>
+          <th class="act-sort-th" style="width:130px">Estatus</th>
+          <th style="width:90px">Acciones</th>
         </tr></thead>
         <tbody id="actimc-tbody"></tbody>
       </table></div>
@@ -3102,19 +3111,34 @@ function renderActividadesIMC(){
   tbody.innerHTML=list.map(function(a){
     var checked=_actIMCSeleccionadas.has(a.id)?'checked':'';
     var ec=estColor[a._estReal]||'#888', pc=priColor[a.prioridad]||'#888';
-    var doneBtn=a._estReal==='Concluido'?'':'<button onclick="actIMCMarcarConcluido(\''+a.id+'\')" title="Marcar concluida" style="background:none;border:none;cursor:pointer;font-size:14px">✅</button>';
-    return '<tr style="border-bottom:1px solid rgba(255,255,255,.06)">'
+    var emoji=a._estReal==='En proceso'?'🔵':(a._estReal==='Concluido'?'🟢':'🔴');
+    var fd=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
+    var fechaDia=fd?fd.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—';
+    var fechaAnio=fd?String(fd.getFullYear()):'';
+    var listoBtn=a._estReal==='Concluido'?'':(
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<button onclick="actIMCMarcarConcluido(\''+a.id+'\')" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Marcar como Concluido">&#10003;</button>'
+      +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">LISTO</span>'
+      +'</div>'
+    );
+    return '<tr>'
       +'<td><input type="checkbox" '+checked+' onchange="actIMCToggleOne(\''+a.id+'\',this)" style="accent-color:var(--gold)"></td>'
-      +'<td style="font-weight:600">'+(a.nombre||'—')+'</td>'
-      +'<td style="font-size:12px;color:var(--muted)">'+(a.actividad||'—')+'</td>'
-      +'<td><span style="color:'+pc+';font-weight:700;font-size:12px">'+(a.prioridad||'—')+'</span></td>'
-      +'<td style="font-size:12px">'+(a.fechaFin||'—')+'</td>'
-      +'<td><span style="color:'+ec+';background:'+ec+'22;border:1px solid '+ec+'44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">'+a._estReal+'</span></td>'
-      +'<td style="white-space:nowrap">'
-        +'<button onclick="openActModalIMC(\''+a.id+'\')" title="Editar" style="background:none;border:none;cursor:pointer;font-size:14px">✏️</button>'
-        +doneBtn
-        +'<button onclick="deleteActividadIMC(\''+a.id+'\')" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:14px">🗑️</button>'
-      +'</td></tr>';
+      +'<td style="font-weight:600;min-width:180px;max-width:180px;word-break:break-word;white-space:normal"><div style="max-width:180px;overflow-wrap:break-word">'+(a.nombre||'—')+'</div></td>'
+      +'<td><span title="'+(a.actividad||'')+'" style="color:#fff">'+(a.actividad||'—')+'</span></td>'
+      +'<td><span style="color:'+pc+';font-weight:700;font-size:11px">'+(a.prioridad||'Media')+'</span></td>'
+      +'<td style="font-size:13px;font-weight:500"><div style="line-height:1.2">'+fechaDia+'</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">'+fechaAnio+'</div></td>'
+      +'<td><span style="display:inline-flex;align-items:center;gap:5px;color:'+ec+';background:'+ec+'18;border:1px solid '+ec+'55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">'+emoji+' '+a._estReal+'</span></td>'
+      +'<td style="white-space:nowrap;padding:6px 8px"><div style="display:flex;gap:6px;align-items:flex-end">'
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+          +'<button onclick="openActModalIMC(\''+a.id+'\')" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2);color:#63b3ed;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Editar">&#9998;</button>'
+          +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">EDITAR</span>'
+        +'</div>'
+        +listoBtn
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+          +'<button onclick="deleteActividadIMC(\''+a.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Eliminar">&#128465;</button>'
+          +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">BORRAR</span>'
+        +'</div>'
+      +'</div></td></tr>';
   }).join('');
 
   var chkAll=document.getElementById('actimc-chk-all');
@@ -3252,6 +3276,18 @@ function enviarSeleccionadasIMC(){
     setTimeout(function(){ window.open(mailto,'_blank'); }, i*400); // pequeño delay para evitar bloqueo de popups
   });
   showToast('✅ Preparando '+personas.length+' correo(s) agrupado(s) — revisa tu cliente de correo','success',6000);
+}
+
+function exportActXLSXIMC(){
+  if(!_actividadesIMC.length){ showToast('Sin actividades para exportar','error'); return; }
+  var wb=XLSX.utils.book_new();
+  var data=[['Nombre','Actividad','Prioridad','Fecha Fin','Estatus']];
+  _actividadesIMC.slice().sort(function(a,b){return (a.fechaFin||'').localeCompare(b.fechaFin||'');})
+    .forEach(function(a){ data.push([a.nombre,a.actividad,a.prioridad||'',a.fechaFin,_actIMCEstatusReal(a)]); });
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:22},{wch:55},{wch:12},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,'Actividades IMC');
+  XLSX.writeFile(wb,'Actividades_Semanales_IMC_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.xlsx');
 }
 
 // ── Envío de correo por actividad ─────────────────────────────────────────
