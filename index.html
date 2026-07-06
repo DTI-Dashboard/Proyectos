@@ -599,12 +599,17 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <option value="Media">🟡 Media</option>
           <option value="Baja">🟢 Baja</option>
         </select>
-        <div style="display:flex;align-items:center;gap:4px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:3px 8px">
-          <span style="font-size:11px;color:var(--muted)">📅 Fecha límite:</span>
-          <input id="actimc-f-fecha-desde" type="date" onchange="renderActividadesIMC()" style="background:transparent;color:#fff;border:none;font-size:12px;padding:2px">
-          <span style="font-size:11px;color:var(--muted)">a</span>
-          <input id="actimc-f-fecha-hasta" type="date" onchange="renderActividadesIMC()" style="background:transparent;color:#fff;border:none;font-size:12px;padding:2px">
-          <button onclick="document.getElementById('actimc-f-fecha-desde').value='';document.getElementById('actimc-f-fecha-hasta').value='';renderActividadesIMC()" title="Limpiar fechas" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px">✕</button>
+        <select id="actimc-f-semana" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;max-width:230px">
+          <option value="">📅 Todas las fechas</option>
+        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actimc-mes-btn" onclick="toggleActMesPanelIMC()">🗓️ Todos los meses ▾</button>
+          <div class="act-multi-panel" id="actimc-mes-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actimc-mes-todos" checked onchange="actMesSelTodosIMC(this)" style="accent-color:var(--gold)"> ✓ Todos los meses
+            </label>
+            <div id="actimc-mes-checks"></div>
+          </div>
         </div>
         <input id="actimc-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;width:200px">
       </div>
@@ -1086,9 +1091,9 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div style="flex:1">
         <label class="act-inp-lbl">PRIORIDAD</label>
         <select id="actimc-inp-prioridad" class="act-inp">
-          <option value="Alta">🔴 Alta</option>
-          <option value="Media" selected>🟡 Media</option>
-          <option value="Baja">🟢 Baja</option>
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
         </select>
       </div>
     </div>
@@ -1285,6 +1290,7 @@ let _actividadesIMC=[];
 let _actIMCFiltro='';   // filtro activo por KPI ('', 'En proceso', 'Concluido', 'Atrasado')
 let _actIMCSeleccionadas=new Set();
 let _actIMCListaActual=[]; // lista actualmente visible (post-filtro), para "seleccionar todo"
+let _actIMCMesesSel=[]; // filtro de meses IMC: [] = todos, ['__ninguno__'] = ninguno, o array de 'YYYY-MM'
 _loadEventualidades();
 _loadDirectorio();
 renderDirectorio();
@@ -3051,6 +3057,34 @@ function _saveActividadesIMC(){
   localStorage.setItem('dti_actividades_imc',JSON.stringify(_actividadesIMC));
 }
 
+function toggleActMesPanelIMC(){
+  var p=document.getElementById('actimc-mes-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+function actMesSelTodosIMC(chk){
+  _actIMCMesesSel = chk.checked ? [] : ['__ninguno__'];
+  renderActividadesIMC();
+}
+function actMesCheckIMC(){
+  var checks=[].slice.call(document.querySelectorAll('#actimc-mes-checks input[type=checkbox]'));
+  var total=checks.length;
+  var checked=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  if(checked.length===total) _actIMCMesesSel=[];
+  else if(checked.length===0) _actIMCMesesSel=['__ninguno__'];
+  else _actIMCMesesSel=checked;
+  renderActividadesIMC();
+}
+// Cerrar el panel de meses al hacer clic afuera
+document.addEventListener('click', function(e){
+  var wrap=document.getElementById('actimc-mes-panel');
+  var btn=document.getElementById('actimc-mes-btn');
+  if(!wrap || !btn) return;
+  if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
+    wrap.style.display='none';
+  }
+});
+
 function switchIMCSubtab(tab){
   document.getElementById('imc-sub-proyectos').style.display = tab==='proyectos' ? '' : 'none';
   document.getElementById('imc-sub-actividades').style.display = tab==='actividades' ? '' : 'none';
@@ -3081,14 +3115,12 @@ function kpiActFilterIMC(val){
 }
 
 function renderActividadesIMC(){
-  var estEl=document.getElementById('actimc-f-estatus'), priEl=document.getElementById('actimc-f-prioridad'), colEl=document.getElementById('actimc-f-colab'), proyEl=document.getElementById('actimc-f-proyecto'), qEl=document.getElementById('actimc-search');
-  var fDesdeEl=document.getElementById('actimc-f-fecha-desde'), fHastaEl=document.getElementById('actimc-f-fecha-hasta');
+  var estEl=document.getElementById('actimc-f-estatus'), priEl=document.getElementById('actimc-f-prioridad'), colEl=document.getElementById('actimc-f-colab'), proyEl=document.getElementById('actimc-f-proyecto'), semEl=document.getElementById('actimc-f-semana'), qEl=document.getElementById('actimc-search');
   var estF = estEl?estEl.value:'';
   var priF = priEl?priEl.value:'';
   var colF = colEl?colEl.value:'';
   var proyF = proyEl?proyEl.value:'';
-  var fDesde = fDesdeEl?fDesdeEl.value:'';
-  var fHasta = fHastaEl?fHastaEl.value:'';
+  var semF = semEl?semEl.value:'';
   var q = qEl?(qEl.value||'').toLowerCase():'';
 
   var base = _actividadesIMC.map(function(a){
@@ -3127,14 +3159,59 @@ function renderActividadesIMC(){
     }).join('');
   }
 
+  // Poblar filtro de semana: solo semanas (lunes-viernes) que realmente tienen actividades
+  if(semEl){
+    var semanasSet={};
+    base.forEach(function(a){ if(a.fechaFin){ semanasSet[_isoWeek(new Date(a.fechaFin+'T12:00:00'))]=true; } });
+    var semanasUnicas=Object.keys(semanasSet).sort();
+    var curSem=semEl.value;
+    semEl.innerHTML='<option value="">📅 Todas las fechas</option>'+semanasUnicas.map(function(iso){
+      return '<option value="'+iso+'"'+(iso===curSem?' selected':'')+'>'+_weekLabel(iso)+'</option>';
+    }).join('');
+  }
+
+  // Poblar filtro de mes (multi-select): solo meses que tienen actividades
+  var mesPanel=document.getElementById('actimc-mes-checks');
+  if(mesPanel){
+    var mesesSet={};
+    base.forEach(function(a){
+      if(a.fechaFin){
+        var mk=a.fechaFin.slice(0,7); // YYYY-MM
+        mesesSet[mk]=true;
+      }
+    });
+    var mesesUnicos=Object.keys(mesesSet).sort();
+    var MESES_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    var ninguno=_actIMCMesesSel.length===1 && _actIMCMesesSel[0]==='__ninguno__';
+    var todosSel=_actIMCMesesSel.length===0 && !ninguno;
+    mesPanel.innerHTML=mesesUnicos.map(function(mk){
+      var parts=mk.split('-'); var lbl=MESES_ES[parseInt(parts[1],10)-1]+' '+parts[0];
+      lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+      var checked = todosSel || (!ninguno && _actIMCMesesSel.indexOf(mk)!==-1);
+      return '<label class="act-multi-lbl"><input type="checkbox" value="'+mk+'" '+(checked?'checked':'')+' onchange="actMesCheckIMC()" style="accent-color:var(--gold)"> '+lbl+'</label>';
+    }).join('');
+    var todosChk=document.getElementById('actimc-mes-todos');
+    if(todosChk) todosChk.checked=todosSel;
+    var mesBtn=document.getElementById('actimc-mes-btn');
+    if(mesBtn){
+      if(ninguno) mesBtn.textContent='🗓️ Ningún mes ▾';
+      else if(todosSel) mesBtn.textContent='🗓️ Todos los meses ▾';
+      else mesBtn.textContent='🗓️ '+_actIMCMesesSel.length+' mes(es) ▾';
+    }
+  }
+
   var list=base;
   if(_actIMCFiltro) list=list.filter(function(a){return a._estReal===_actIMCFiltro;});
   if(estF) list=list.filter(function(a){return a._estReal===estF;});
   if(priF) list=list.filter(function(a){return a.prioridad===priF;});
   if(colF) list=list.filter(function(a){return a.nombre===colF;});
   if(proyF) list=list.filter(function(a){return a.proyecto===proyF;});
-  if(fDesde) list=list.filter(function(a){return a.fechaFin && a.fechaFin>=fDesde;});
-  if(fHasta) list=list.filter(function(a){return a.fechaFin && a.fechaFin<=fHasta;});
+  if(semF) list=list.filter(function(a){return a.fechaFin && _isoWeek(new Date(a.fechaFin+'T12:00:00'))===semF;});
+  if(_actIMCMesesSel.length===1 && _actIMCMesesSel[0]==='__ninguno__'){
+    list=[];
+  } else if(_actIMCMesesSel.length){
+    list=list.filter(function(a){return a.fechaFin && _actIMCMesesSel.indexOf(a.fechaFin.slice(0,7))!==-1;});
+  }
   if(q) list=list.filter(function(a){return (a.nombre||'').toLowerCase().includes(q)||(a.actividad||'').toLowerCase().includes(q)||(a.proyecto||'').toLowerCase().includes(q);});
 
   _actIMCListaActual=list;
@@ -3172,7 +3249,7 @@ function renderActividadesIMC(){
     return '<tr>'
       +'<td><input type="checkbox" '+checked+' onchange="actIMCToggleOne(\''+a.id+'\',this)" style="accent-color:var(--gold)"></td>'
       +'<td style="font-weight:600;min-width:170px;max-width:170px;word-break:break-word;white-space:normal"><div style="max-width:170px;overflow-wrap:break-word">'+(a.nombre||'—')+'</div></td>'
-      +'<td style="font-size:12px;color:var(--muted);min-width:190px;max-width:190px;word-break:break-word;white-space:normal">'+(a.proyecto||'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--muted);min-width:190px;max-width:190px;word-break:break-word;white-space:normal">'+(a.proyecto||'<span style="font-style:italic;color:rgba(255,255,255,.3)">Actividad Independiente</span>')+'</td>'
       +'<td><span title="'+(a.actividad||'')+'" class="actimc-act-link" data-actid="'+a.id+'" style="cursor:pointer;color:#fff;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.7)">'+(a.actividad||'—')+'</span></td>'
       +'<td><span style="color:'+pc+';font-weight:700;font-size:11px">'+(a.prioridad||'Media')+'</span></td>'
       +'<td style="font-size:13px;font-weight:500"><div style="line-height:1.2">'+fechaDia+'</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">'+fechaAnio+'</div></td>'
@@ -3257,7 +3334,7 @@ function openActDetailIMC(id){
   var emoji=estReal==='En proceso'?'🔵':(estReal==='Concluido'?'🟢':'🔴');
   document.getElementById('aimcdet-actividad').textContent=a.actividad||'—';
   document.getElementById('aimcdet-nombre').textContent=a.nombre||'—';
-  document.getElementById('aimcdet-proyecto').textContent=a.proyecto||'—';
+  document.getElementById('aimcdet-proyecto').textContent=a.proyecto||'Actividad Independiente';
   document.getElementById('aimcdet-prioridad').textContent=a.prioridad||'Media';
   var fd=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
   document.getElementById('aimcdet-fecha').textContent=fd?fd.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}):'—';
@@ -3294,15 +3371,15 @@ function _populateProyectoSelectIMC(nombre, current){
   var sel=document.getElementById('actimc-inp-proyecto');
   if(!sel) return;
   if(!nombre){
-    sel.innerHTML='<option value="">-- Selecciona un colaborador primero --</option>';
+    sel.innerHTML='<option value="" style="background:#1c2535;color:#fff">-- Selecciona un colaborador primero --</option>';
     return;
   }
   var proyectos=(state.imc&&state.imc.data?state.imc.data:[]).filter(function(p){
     return (p.responsable||'').trim().toLowerCase()===nombre.trim().toLowerCase();
   });
-  var opts='<option value="">-- Sin proyecto asociado --</option>';
+  var opts='<option value="" style="background:#1c2535;color:#fff">Actividad Independiente</option>';
   if(!proyectos.length){
-    opts='<option value="">-- Este colaborador no tiene proyectos IMC asignados --</option>';
+    opts='<option value="" style="background:#1c2535;color:#fff">Actividad Independiente (sin proyectos IMC asignados)</option>';
   } else {
     proyectos.forEach(function(p){
       opts+='<option value="'+p.nombre.replace(/"/g,'&quot;')+'" style="background:#1c2535;color:#fff"'+(p.nombre===current?' selected':'')+'>'+p.nombre+'</option>';
@@ -3397,7 +3474,7 @@ function exportActXLSXIMC(){
   var wb=XLSX.utils.book_new();
   var data=[['Nombre','Proyecto','Actividad','Prioridad','Fecha Fin','Estatus']];
   _actividadesIMC.slice().sort(function(a,b){return (a.fechaFin||'').localeCompare(b.fechaFin||'');})
-    .forEach(function(a){ data.push([a.nombre,a.proyecto||'',a.actividad,a.prioridad||'',a.fechaFin,_actIMCEstatusReal(a)]); });
+    .forEach(function(a){ data.push([a.nombre,a.proyecto||'Actividad Independiente',a.actividad,a.prioridad||'',a.fechaFin,_actIMCEstatusReal(a)]); });
   var ws=XLSX.utils.aoa_to_sheet(data);
   ws['!cols']=[{wch:22},{wch:30},{wch:55},{wch:12},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws,'Actividades IMC');
