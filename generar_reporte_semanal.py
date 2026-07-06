@@ -1,12 +1,19 @@
 """
 generar_reporte_semanal.py
 ──────────────────────────
-Genera cierre_base.pptx BAJO DEMANDA (ya no corre dentro del sync horario).
-Se dispara manualmente desde el botón "Generar Reporte Semanal" del dashboard,
-vía el workflow .github/workflows/reporte_semanal.yml (workflow_dispatch).
+Regenera SOLO la base de cierre_base.pptx (slides 1 y 2: KPIs + tabla IMC
+con datos actuales) BAJO DEMANDA — ya no corre dentro del sync horario.
 
-Requiere el secret GH_TOKEN (o el mismo PAT_TOKEN) con permisos de escritura
-sobre el repo, para poder subir cierre_base.pptx y limpiar eventualidades_imc.csv.
+La diapositiva 3 (eventualidades) NO se toca aquí: eso lo arma el propio
+navegador en exportCierreSemanal() usando localStorage (dti_eventualidades),
+que es la fuente de verdad real y siempre está más actualizada que cualquier
+copia en el repo.
+
+Se dispara desde el botón "📋 Reporte Semanal (pptx)" del módulo IMC, vía
+el workflow .github/workflows/reporte_semanal.yml (workflow_dispatch).
+
+Requiere el secret GH_TOKEN (o PAT_TOKEN) con permisos de escritura sobre
+el repo, para poder subir cierre_base.pptx actualizado.
 """
 import traceback as _tb
 import sys as _sys
@@ -201,105 +208,6 @@ try:
         z_out_s2.writestr(item,d)
     z_out_s2.close()
     pptx_bytes=buf_s2.getvalue()
-
-    # ── Modificar slide 3 con eventualidades del CSV ─────────────────────
-    try:
-        import zipfile as _zf, csv as _csv, io as _io2
-
-        ev_url='https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/eventualidades_imc.csv?t='+str(int(__import__('time').time()))
-        try:
-            with _ur.urlopen(ev_url) as _re2:
-                ev_content=_re2.read().decode('utf-8')
-        except:
-            ev_content=''
-
-        imc_nombres={p['nombre'].strip() for p in datos}
-
-        ev_list=[]
-        if ev_content.strip():
-            reader=_csv.DictReader(_io2.StringIO(ev_content))
-            for row in reader:
-                proy=(row.get('proyecto') or '').strip()
-                text=(row.get('eventualidad') or '').strip()
-                if proy and text and proy in imc_nombres:
-                    ev_list.append((proy, text))
-
-        if ev_content.strip():
-            csv_lines=['proyecto,eventualidad']
-            for proy,text in ev_list:
-                csv_lines.append('"'+proy.replace('"','""')+'","'+text.replace('"','""')+'"')
-            clean_csv='\n'.join(csv_lines)
-            if clean_csv!=ev_content.strip():
-                try:
-                    req_csv_get=_ur.Request(
-                        'https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/eventualidades_imc.csv',
-                        headers={'Authorization':f'token {GH_TOKEN}'})
-                    with _ur.urlopen(req_csv_get) as rc: csv_sha=json.loads(rc.read())['sha']
-                    req_csv_put=_ur.Request(
-                        'https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/eventualidades_imc.csv',
-                        data=json.dumps({'message':'reporte: limpiar CSV - solo proyectos IMC',
-                            'content':base64.b64encode(clean_csv.encode()).decode(),'sha':csv_sha}).encode(),
-                        method='PUT',headers={'Authorization':f'token {GH_TOKEN}','Content-Type':'application/json'})
-                    with _ur.urlopen(req_csv_put): pass
-                    print(f'✅ CSV limpiado: {len(ev_list)} eventualidades IMC válidas')
-                except Exception as _ecsv:
-                    print(f'⚠️ No se pudo limpiar CSV: {_ecsv}')
-
-        if ev_list:
-            zip_in=_zf.ZipFile(_io2.BytesIO(pptx_bytes))
-            s3_xml=zip_in.read('ppt/slides/slide3.xml').decode('utf-8')
-
-            BORDER=('<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL>'
-                    '<a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR>'
-                    '<a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT>'
-                    '<a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>')
-
-            def ev_cell(txt, align, sz, bold=False):
-                b=' b="1"' if bold else ''
-                safe=txt.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;').replace('"','&quot;')
-                return (f'<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p>'
-                        f'<a:pPr marL="0" algn="{align}" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr>'
-                        f'<a:r><a:rPr lang="es-MX" sz="{sz}"{b} u="none" strike="noStrike" kern="1200">'
-                        f'<a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/>'
-                        f'<a:latin typeface="Aptos (cuerpo)"/></a:rPr>'
-                        f'<a:t>{safe}</a:t></a:r></a:p></a:txBody>'
-                        f'<a:tcPr marL="6244" marR="6244" marT="6244" marB="0" anchor="ctr">{BORDER}<a:noFill/></a:tcPr></a:tc>')
-
-            tbl_hdr_m=re.search(r'<a:tbl>([\s\S]*?)<a:tr', s3_xml)
-            orig_hdr=tbl_hdr_m.group(1) if tbl_hdr_m else '<a:tblPr/><a:tblGrid/>'
-
-            hdr_row=('<a:tr h="520138">'
-                     +ev_cell('No','ctr',1100,True)
-                     +ev_cell('Proyecto','ctr',1100,True)
-                     +ev_cell('Eventualidades','ctr',1100,True)
-                     +'</a:tr>')
-            data_rows=''
-            for idx_ev,(proy,text) in enumerate(ev_list):
-                data_rows+=(f'<a:tr h="420000">'
-                            +ev_cell(str(idx_ev+1),'ctr',1000)
-                            +ev_cell(proy,'l',1000)
-                            +ev_cell(text,'l',1000)
-                            +'</a:tr>')
-
-            s3_xml=s3_xml.replace('con retraso','con atraso')
-            new_tbl=f'<a:tbl>{orig_hdr}{hdr_row}{data_rows}</a:tbl>'
-            s3_new=re.sub(r'<a:tbl>[\s\S]*?</a:tbl>', new_tbl, s3_xml)
-
-            buf2=_io2.BytesIO()
-            zip_out=_zf.ZipFile(buf2,'w',_zf.ZIP_DEFLATED)
-            for item in zip_in.infolist():
-                d=zip_in.read(item.filename)
-                if item.filename=='ppt/slides/slide3.xml':
-                    d=s3_new.encode('utf-8')
-                zip_out.writestr(item,d)
-            zip_out.close()
-            pptx_bytes=buf2.getvalue()
-            print(f"✅ Slide 3 con {len(ev_list)} eventualidades incluidas")
-        else:
-            print("ℹ️  Sin eventualidades en CSV — slide 3 sin modificar")
-    except Exception as _es3:
-        print(f"⚠️  Error en slide 3: {_es3}")
-        print(_tb.format_exc())
 
     # Subir al repo via API
     api_url='https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/cierre_base.pptx'
