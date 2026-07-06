@@ -492,7 +492,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="mod-title">Módulo <span>IMC</span></div>
       
     </div>
-    <div class="export-btns">
+    <div class="export-btns" id="imc-proyectos-btns">
       <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
@@ -586,6 +586,9 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <option value="En proceso">🔵 En proceso</option>
           <option value="Concluido">🟢 Concluido</option>
           <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+        <select id="actimc-f-colab" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
+          <option value="">👤 Todos los colaboradores</option>
         </select>
         <select id="actimc-f-prioridad" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
           <option value="">⚡ Todas las prioridades</option>
@@ -1074,12 +1077,8 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </select>
       </div>
     </div>
-    <label class="act-inp-lbl">ESTATUS</label>
-    <select id="actimc-inp-estatus" class="act-inp" style="margin-bottom:18px">
-      <option value="En proceso">🔵 En proceso</option>
-      <option value="Concluido">🟢 Concluido</option>
-    </select>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
+    <input type="hidden" id="actimc-inp-estatus" value="En proceso">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
       <button onclick="closeActModalIMC()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 18px;cursor:pointer;font-size:13px">Cancelar</button>
       <button onclick="saveActividadIMC()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
     </div>
@@ -3040,6 +3039,8 @@ function _saveActividadesIMC(){
 function switchIMCSubtab(tab){
   document.getElementById('imc-sub-proyectos').style.display = tab==='proyectos' ? '' : 'none';
   document.getElementById('imc-sub-actividades').style.display = tab==='actividades' ? '' : 'none';
+  var btnsProy=document.getElementById('imc-proyectos-btns');
+  if(btnsProy) btnsProy.style.display = tab==='proyectos' ? '' : 'none';
   var bp=document.getElementById('imc-subtab-proyectos'), ba=document.getElementById('imc-subtab-actividades');
   bp.style.borderBottomColor = tab==='proyectos' ? 'var(--gold)' : 'transparent';
   bp.style.opacity = tab==='proyectos' ? '1' : '.6';
@@ -3065,9 +3066,10 @@ function kpiActFilterIMC(val){
 }
 
 function renderActividadesIMC(){
-  var estEl=document.getElementById('actimc-f-estatus'), priEl=document.getElementById('actimc-f-prioridad'), qEl=document.getElementById('actimc-search');
+  var estEl=document.getElementById('actimc-f-estatus'), priEl=document.getElementById('actimc-f-prioridad'), colEl=document.getElementById('actimc-f-colab'), qEl=document.getElementById('actimc-search');
   var estF = estEl?estEl.value:'';
   var priF = priEl?priEl.value:'';
+  var colF = colEl?colEl.value:'';
   var q = qEl?(qEl.value||'').toLowerCase():'';
 
   var base = _actividadesIMC.map(function(a){
@@ -3083,10 +3085,20 @@ function renderActividadesIMC(){
   setTxt('actimc-k-total',total); setTxt('actimc-k-proc',proc); setTxt('actimc-k-conc',conc);
   setTxt('actimc-k-atr',atr); setTxt('actimc-k-personas',personas);
 
+  // Poblar filtro de colaborador con nombres únicos
+  if(colEl){
+    var nombresUnicos=[].concat(new Set(base.map(function(a){return a.nombre;}).filter(Boolean))).sort();
+    var curColab=colEl.value;
+    colEl.innerHTML='<option value="">👤 Todos los colaboradores</option>'+nombresUnicos.map(function(n){
+      return '<option value="'+n+'"'+(n===curColab?' selected':'')+'>'+n+'</option>';
+    }).join('');
+  }
+
   var list=base;
   if(_actIMCFiltro) list=list.filter(function(a){return a._estReal===_actIMCFiltro;});
   if(estF) list=list.filter(function(a){return a._estReal===estF;});
   if(priF) list=list.filter(function(a){return a.prioridad===priF;});
+  if(colF) list=list.filter(function(a){return a.nombre===colF;});
   if(q) list=list.filter(function(a){return (a.nombre||'').toLowerCase().includes(q)||(a.actividad||'').toLowerCase().includes(q);});
 
   _actIMCListaActual=list;
@@ -3124,7 +3136,7 @@ function renderActividadesIMC(){
     return '<tr>'
       +'<td><input type="checkbox" '+checked+' onchange="actIMCToggleOne(\''+a.id+'\',this)" style="accent-color:var(--gold)"></td>'
       +'<td style="font-weight:600;min-width:180px;max-width:180px;word-break:break-word;white-space:normal"><div style="max-width:180px;overflow-wrap:break-word">'+(a.nombre||'—')+'</div></td>'
-      +'<td><span title="'+(a.actividad||'')+'" style="color:#fff">'+(a.actividad||'—')+'</span></td>'
+      +'<td><span title="'+(a.actividad||'')+'" class="actimc-act-link" data-actid="'+a.id+'" style="cursor:pointer;color:#fff;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.7)">'+(a.actividad||'—')+'</span></td>'
       +'<td><span style="color:'+pc+';font-weight:700;font-size:11px">'+(a.prioridad||'Media')+'</span></td>'
       +'<td style="font-size:13px;font-weight:500"><div style="line-height:1.2">'+fechaDia+'</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">'+fechaAnio+'</div></td>'
       +'<td><span style="display:inline-flex;align-items:center;gap:5px;color:'+ec+';background:'+ec+'18;border:1px solid '+ec+'55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">'+emoji+' '+a._estReal+'</span></td>'
@@ -3140,6 +3152,15 @@ function renderActividadesIMC(){
         +'</div>'
       +'</div></td></tr>';
   }).join('');
+
+  // Delegación de clic para abrir el detalle al hacer clic en la actividad
+  if(!tbody._imcDelegated){
+    tbody._imcDelegated=true;
+    tbody.addEventListener('click',function(ev){
+      var link=ev.target.closest('.actimc-act-link');
+      if(link) openActDetailIMC(link.dataset.actid);
+    });
+  }
 
   var chkAll=document.getElementById('actimc-chk-all');
   if(chkAll) chkAll.checked = list.length>0 && list.every(function(a){return _actIMCSeleccionadas.has(a.id);});
@@ -3188,15 +3209,45 @@ function deleteActividadIMC(id){
   });
 }
 
+// ── Modal Detalle Actividad IMC (clic en la actividad) ──
+var _actDetailIdIMC=null;
+function openActDetailIMC(id){
+  var a=_actividadesIMC.find(function(x){return x.id===id;});
+  if(!a) return;
+  _actDetailIdIMC=id;
+  var estReal=_actIMCEstatusReal(a);
+  var estColor={'En proceso':'#6366f1','Concluido':'#22c55e','Atrasado':'#ef4444'}[estReal]||'#888';
+  var emoji=estReal==='En proceso'?'🔵':(estReal==='Concluido'?'🟢':'🔴');
+  document.getElementById('aimcdet-actividad').textContent=a.actividad||'—';
+  document.getElementById('aimcdet-nombre').textContent=a.nombre||'—';
+  document.getElementById('aimcdet-prioridad').textContent=a.prioridad||'Media';
+  var fd=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
+  document.getElementById('aimcdet-fecha').textContent=fd?fd.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  document.getElementById('aimcdet-estatus').innerHTML='<span style="color:'+estColor+';font-weight:700">'+emoji+' '+estReal+'</span>';
+  document.getElementById('actimc-detail-bg').style.display='flex';
+}
+function closeActDetailIMC(){ document.getElementById('actimc-detail-bg').style.display='none'; _actDetailIdIMC=null; }
+function editActFromDetailIMC(){
+  var id=_actDetailIdIMC;
+  closeActDetailIMC();
+  openActModalIMC(id);
+}
+function deleteActFromDetailIMC(){
+  var id=_actDetailIdIMC;
+  closeActDetailIMC();
+  deleteActividadIMC(id);
+}
+
 // ── Modal Nueva/Editar Actividad IMC ──
 function populateDestSelectIMC(){
   var sel=document.getElementById('actimc-inp-nombre-sel');
   if(!sel) return;
   var cur=document.getElementById('actimc-inp-nombre')?document.getElementById('actimc-inp-nombre').value:'';
-  sel.innerHTML='<option value="">-- Selecciona un integrante del equipo IMC --</option>';
+  sel.innerHTML='<option value="" style="background:#1c2535;color:#fff">-- Selecciona un integrante del equipo IMC --</option>';
   _directorioIMC.forEach(function(d){
     var opt=document.createElement('option');
     opt.value=d.nombre; opt.dataset.nombre=d.nombre; opt.dataset.email=d.email; opt.textContent=d.nombre;
+    opt.style.background='#1c2535'; opt.style.color='#fff';
     if(d.nombre===cur) opt.selected=true;
     sel.appendChild(opt);
   });
@@ -4275,6 +4326,43 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
           <button id="adet-btn-email" onclick="enviarActividadCorreo(_actDetailId)" style="border-radius:8px;padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid rgba(99,179,237,.4);background:rgba(99,179,237,.12);color:#63b3ed">&#128231; Enviar correo</button>
           <button onclick="editActFromDetail()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle Actividad IMC -->
+<div id="actimc-detail-bg" onclick="if(event.target===this)closeActDetailIMC()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;margin-bottom:4px">ACTIVIDAD IMC</div>
+        <div class="modal-nombre" id="aimcdet-actividad"></div>
+      </div>
+      <button class="modal-close" onclick="closeActDetailIMC()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="aimcdet-nombre">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="aimcdet-prioridad">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha l&#237;mite</div>
+          <div class="modal-field-value" id="aimcdet-fecha">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="aimcdet-estatus">&#8212;</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+        <button onclick="deleteActFromDetailIMC()" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <button onclick="editActFromDetailIMC()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
       </div>
     </div>
   </div>
