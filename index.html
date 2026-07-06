@@ -332,9 +332,6 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <button class="btn-sync" id="btn-sync" onclick="triggerSync()" title="Forzar una actualización inmediata desde Smartsheet">
       <span class="ico">🔄</span><span id="btn-sync-label">Actualizar Datos</span>
     </button>
-    <button class="btn-sync" id="btn-reporte" onclick="generarReporteSemanal()" title="Genera el PPTX de cierre semanal (IMC) con los datos actuales" style="margin-left:6px">
-      <span class="ico">📊</span><span id="btn-reporte-label">Generar Reporte Semanal</span>
-    </button>
     <input type="file" id="file-input" accept=".csv" onchange="loadCSV(event)" style="display:none">
   </div>
 </header>
@@ -2643,64 +2640,37 @@ function resetSyncButton(btn, label){
 
 const GH_WORKFLOW_REPORTE = 'reporte_semanal.yml';
 
-async function generarReporteSemanal(){
-  const btn = document.getElementById('btn-reporte');
-  const label = document.getElementById('btn-reporte-label');
-  if(btn.disabled) return;
-  btn.disabled = true;
-  btn.classList.add('loading');
-  label.textContent = 'Generando...';
-  const startedAt = new Date();
-
-  try{
-    const res = await fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok || data.ok === false){
-      throw new Error(data.message || ('HTTP ' + res.status));
-    }
-    showToast('⏳ Generando reporte semanal...', 'info');
-    pollReporteStatus(startedAt, btn, label);
-  }catch(err){
-    console.warn('generarReporteSemanal error:', err);
-    showToast('❌ No se pudo iniciar la generación del reporte.', 'error');
-    resetReporteButton(btn, label);
-  }
-}
-
-async function pollReporteStatus(startedAt, btn, label, attempt=0){
-  const MAX_ATTEMPTS = 24; // ~2 min
-  if(attempt >= MAX_ATTEMPTS){
-    showToast('⚠️ Está tardando más de lo esperado. Revisa GitHub Actions.', 'error');
-    resetReporteButton(btn, label);
-    return;
-  }
-  try{
-    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW_REPORTE}/runs?per_page=5`, {
-      headers: { 'Accept': 'application/vnd.github.v3+json' }
-    });
-    const data = await res.json();
-    const run = (data.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt - 5000);
-
-    if(run && run.status === 'completed'){
-      if(run.conclusion === 'success'){
-        showToast('✅ Reporte generado. Descargando cierre_base.pptx...', 'success');
-        window.open('https://raw.githubusercontent.com/'+GH_OWNER+'/'+GH_REPO+'/main/cierre_base.pptx?t='+Date.now(), '_blank');
-      }else{
-        showToast('❌ La generación terminó con errores (revisa GitHub Actions).', 'error');
-      }
-      resetReporteButton(btn, label);
+// Dispara reporte_semanal.yml (regenera cierre_base.pptx con datos IMC frescos) y espera a que termine.
+// Devuelve una Promise<boolean> (true = éxito). No crea ningún botón nuevo — lo usa exportCierreSemanal().
+function _dispararRegeneracionCierreBase(){
+  return new Promise(async (resolve)=>{
+    const startedAt = new Date();
+    try{
+      const res = await fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || data.ok === false) throw new Error(data.message || ('HTTP ' + res.status));
+    }catch(err){
+      console.warn('_dispararRegeneracionCierreBase error:', err);
+      resolve(false);
       return;
     }
-  }catch(err){
-    console.warn('pollReporteStatus error:', err);
-  }
-  setTimeout(()=>pollReporteStatus(startedAt, btn, label, attempt+1), 5000);
-}
-
-function resetReporteButton(btn, label){
-  btn.disabled = false;
-  btn.classList.remove('loading');
-  label.textContent = 'Generar Reporte Semanal';
+    const MAX_ATTEMPTS = 24; // ~2 min
+    for(let attempt=0; attempt<MAX_ATTEMPTS; attempt++){
+      await new Promise(r=>setTimeout(r, 5000));
+      try{
+        const res2 = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW_REPORTE}/runs?per_page=5`, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const data2 = await res2.json();
+        const run = (data2.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt - 5000);
+        if(run && run.status === 'completed'){
+          resolve(run.conclusion === 'success');
+          return;
+        }
+      }catch(err){ console.warn('poll cierre_base error:', err); }
+    }
+    resolve(false); // timeout
+  });
 }
 
 function openModal(p){
@@ -3074,6 +3044,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 async function exportCierreSemanal(){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
+  showToast('\u23f3 Actualizando datos IMC antes de generar el reporte...','info',8000);
+  var ok = await _dispararRegeneracionCierreBase();
+  if(!ok){
+    showToast('\u26a0\ufe0f No se pudo confirmar la actualización de datos, se usará la última versión disponible.','error',6000);
+  }
   showToast('\u23f3 Generando reporte...','info',8000);
   try{
     // Descargar el PPTX base (slide 1 y slide 2 ya correctos)
