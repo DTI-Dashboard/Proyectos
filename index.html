@@ -568,7 +568,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       </div>
       <div class="export-btns">
         <button class="btn-act-add" onclick="openActModalIMC(null)">➕ Nueva Actividad</button>
-        <button class="btn-pptx" id="actimc-bulk-btn" onclick="enviarSeleccionadasIMC()" disabled style="opacity:.5">📧 Enviar seleccionadas (0)</button>
+        <button class="btn-pptx" id="actimc-bulk-btn" onclick="enviarSeleccionadasIMC()" disabled style="opacity:.5">📧 Enviar por correo (0)</button>
         <button class="btn-xlsx" onclick="exportActXLSXIMC()">📗 Descargar Excel</button>
       </div>
     </div>
@@ -3322,7 +3322,7 @@ function _actIMCUpdateBulkBtn(){
   var btn=document.getElementById('actimc-bulk-btn');
   if(!btn) return;
   var n=_actIMCSeleccionadas.size;
-  btn.textContent='📧 Enviar seleccionadas ('+n+')';
+  btn.textContent='📧 Enviar por correo ('+n+')';
   btn.disabled = n===0;
   btn.style.opacity = n===0 ? '.5' : '1';
 }
@@ -3469,6 +3469,17 @@ function saveActividadIMC(){
 }
 
 // ── Envío masivo agrupado por persona (1 correo por integrante con TODAS sus actividades seleccionadas) ──
+function _semanaActualLabel(){
+  var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var d=new Date(); d.setHours(12,0,0,0);
+  var dow=d.getDay()||7; // lunes=1 ... domingo=7
+  var monday=new Date(d); monday.setDate(d.getDate()-(dow-1));
+  var friday=new Date(monday); friday.setDate(monday.getDate()+4);
+  if(monday.getMonth()===friday.getMonth()){
+    return 'Semana del '+monday.getDate()+' al '+friday.getDate()+' '+MESES[friday.getMonth()];
+  }
+  return 'Semana del '+monday.getDate()+' de '+MESES[monday.getMonth()]+' al '+friday.getDate()+' de '+MESES[friday.getMonth()];
+}
 function enviarSeleccionadasIMC(){
   var seleccionadas=_actividadesIMC.filter(function(a){return _actIMCSeleccionadas.has(a.id);});
   if(!seleccionadas.length){ showToast('Selecciona al menos una actividad','error'); return; }
@@ -3486,9 +3497,9 @@ function enviarSeleccionadasIMC(){
   var personas=Object.values(porPersona);
   if(!personas.length){ showToast('Ninguna de las seleccionadas tiene correo asignado','error'); return; }
 
+  var asunto='IMC || Actividades Semanales || '+_semanaActualLabel();
   var prioEmoji={'Alta':'🔴','Media':'🟡','Baja':'🟢'};
   personas.forEach(function(p,i){
-    var asunto='DTI IMC || Actividades Semanales Asignadas || '+personas.length+(personas.length===1?' actividad':' actividades');
     var cuerpo='Hola, '+p.nombre+'.\n\n📌 Se te han asignado las siguientes actividades:\n\n';
     p.actividades.forEach(function(a,idx){
       var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
@@ -4339,8 +4350,11 @@ function renderActividades(){
   const cnt=document.getElementById('act-count');
   if(cnt) cnt.textContent=filtered.length+' actividades';
 
-  // Actualizar checkboxes de colaboradores
-  const nms=[...new Set(_actividades.map(a=>a.nombre))].sort();
+  // Actualizar checkboxes de colaboradores (todos los del directorio + los que ya tengan actividad)
+  const nmsSet={};
+  _directorio.forEach(d=>{ if(d.nombre) nmsSet[d.nombre]=true; });
+  _actividades.forEach(a=>{ if(a.nombre) nmsSet[a.nombre]=true; });
+  const nms=Object.keys(nmsSet).sort();
   const nomPanel=document.getElementById('act-nombre-checks');
   if(nomPanel){
     const cur=_actFiltroNom;
