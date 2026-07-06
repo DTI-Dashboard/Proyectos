@@ -889,11 +889,19 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <div id="act-nombre-checks"></div>
         </div>
       </div>
-      <!-- Semana navegador -->
-      <div style="display:flex;align-items:center;gap:4px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:3px 6px;">
-        <button onclick="actNavSemana(-1)" title="Semana anterior" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">‹</button>
-        <span id="act-semana-label" style="font-size:12px;color:#fff;min-width:180px;text-align:center;cursor:pointer;" onclick="actNavSemanaHoy()" title="Ir a semana actual">📋 Todas las actividades</span>
-        <button onclick="actNavSemana(1)" title="Semana siguiente" style="background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;">›</button>
+      <!-- Semana (dinámico, solo semanas con actividades) -->
+      <select id="act-f-semana" onchange="_actSemana=this.value; renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;max-width:230px">
+        <option value="">📅 Todas las fechas</option>
+      </select>
+      <!-- Multi-select Mes -->
+      <div class="act-multi-wrap">
+        <button class="act-multi-btn" id="act-mes-btn" onclick="toggleActMesPanel()">🗓️ Todos los meses ▾</button>
+        <div class="act-multi-panel" id="act-mes-panel">
+          <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+            <input type="checkbox" id="act-mes-todos" checked onchange="actMesSelTodos(this)" style="accent-color:var(--gold)"> ✓ Todos los meses
+          </label>
+          <div id="act-mes-checks"></div>
+        </div>
       </div>
       <!-- Prioridad -->
       <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px">
@@ -3260,10 +3268,6 @@ function renderActividadesIMC(){
           +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">EDITAR</span>'
         +'</div>'
         +listoBtn
-        +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
-          +'<button onclick="deleteActividadIMC(\''+a.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Eliminar">&#128465;</button>'
-          +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">BORRAR</span>'
-        +'</div>'
       +'</div></td></tr>';
   }).join('');
 
@@ -3815,6 +3819,7 @@ function exportGanttPDF(tab){
 // ════════════════════════════════════════════════
 let _actividades = [];
 let _actSemana   = ''; // ''=todas, 'YYYY-Wnn'=semana especifica
+let _actMesesSel = []; // filtro de meses: [] = todos, ['__ninguno__'] = ninguno, o array de 'YYYY-MM'
 
 function _isoWeek(date){
   const d=new Date(date); d.setHours(12);
@@ -4096,6 +4101,34 @@ function actNavSemanaHoy(){
   renderActividades();
 }
 
+function toggleActMesPanel(){
+  var p=document.getElementById('act-mes-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+function actMesSelTodos(chk){
+  _actMesesSel = chk.checked ? [] : ['__ninguno__'];
+  renderActividades();
+}
+function actMesCheck(){
+  var checks=[].slice.call(document.querySelectorAll('#act-mes-checks input[type=checkbox]'));
+  var total=checks.length;
+  var checked=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  if(checked.length===total) _actMesesSel=[];
+  else if(checked.length===0) _actMesesSel=['__ninguno__'];
+  else _actMesesSel=checked;
+  renderActividades();
+}
+// Cerrar el panel de meses al hacer clic afuera
+document.addEventListener('click', function(e){
+  var wrap=document.getElementById('act-mes-panel');
+  var btn=document.getElementById('act-mes-btn');
+  if(!wrap || !btn) return;
+  if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
+    wrap.style.display='none';
+  }
+});
+
 // ── Actividades: multi-select filtros, sorting, validación fecha ──
 var _notaActId=null;
 let _actFiltroEst=[], _actFiltroNom=[], _actSortCol='fechaFin', _actSortDir=1;
@@ -4248,6 +4281,8 @@ function renderActividades(){
     if(fEst.length && !fEst.includes(a.estatus)) return false;
     if(fNom.length && (fNom[0]==='__ninguno__'||!fNom.includes(a.nombre))) return false;
     if(fPrio && a.prioridad!==fPrio) return false;
+    if(_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__') return false;
+    if(_actMesesSel.length && (!a.fechaFin || _actMesesSel.indexOf(a.fechaFin.slice(0,7))===-1)) return false;
     if(fSrch && !`${a.nombre} ${a.actividad} ${a.area}`.toLowerCase().includes(fSrch)) return false;
     return true;
   });
@@ -4279,13 +4314,42 @@ function renderActividades(){
     </label>`).join('');
   }
 
-  // Actualizar label del navegador de semanas
-  const wLabel = document.getElementById('act-semana-label');
-  if(wLabel){
-    wLabel.textContent = _actSemana ? _weekLabel(_actSemana) : '📋 Todas las actividades';
-    wLabel.title = _actSemana ? 'Clic para ver todas' : 'Clic para ir a semana actual';
-    // Resaltar en dorado si hay semana activa
-    wLabel.style.color = _actSemana ? 'var(--gold)' : '#fff';
+  // Poblar select de semana: solo semanas (lunes-viernes) que realmente tienen actividades
+  const semSel=document.getElementById('act-f-semana');
+  if(semSel){
+    const semanasSet={};
+    _actividades.forEach(a=>{ if(a.fechaFin) semanasSet[_isoWeek(new Date(a.fechaFin+'T12:00:00'))]=true; });
+    const semanasUnicas=Object.keys(semanasSet).sort();
+    const curSem=_actSemana;
+    semSel.innerHTML='<option value="">📅 Todas las fechas</option>'+semanasUnicas.map(iso=>
+      `<option value="${iso}" ${iso===curSem?'selected':''}>${_weekLabel(iso)}</option>`
+    ).join('');
+  }
+
+  // Poblar filtro de mes (multi-select): solo meses que tienen actividades
+  const mesPanel=document.getElementById('act-mes-checks');
+  if(mesPanel){
+    const mesesSet={};
+    _actividades.forEach(a=>{ if(a.fechaFin) mesesSet[a.fechaFin.slice(0,7)]=true; });
+    const mesesUnicos=Object.keys(mesesSet).sort();
+    const MESES_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const ninguno2=_actMesesSel.length===1 && _actMesesSel[0]==='__ninguno__';
+    const todosSel2=_actMesesSel.length===0 && !ninguno2;
+    mesPanel.innerHTML=mesesUnicos.map(mk=>{
+      const parts=mk.split('-');
+      let lbl=MESES_ES[parseInt(parts[1],10)-1]+' '+parts[0];
+      lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+      const checked = todosSel2 || (!ninguno2 && _actMesesSel.indexOf(mk)!==-1);
+      return `<label class="act-multi-lbl"><input type="checkbox" value="${mk}" ${checked?'checked':''} onchange="actMesCheck()" style="accent-color:var(--gold)"> ${lbl}</label>`;
+    }).join('');
+    const todosChk2=document.getElementById('act-mes-todos');
+    if(todosChk2) todosChk2.checked=todosSel2;
+    const mesBtn=document.getElementById('act-mes-btn');
+    if(mesBtn){
+      if(ninguno2) mesBtn.textContent='🗓️ Ningún mes ▾';
+      else if(todosSel2) mesBtn.textContent='🗓️ Todos los meses ▾';
+      else mesBtn.textContent='🗓️ '+_actMesesSel.length+' mes(es) ▾';
+    }
   }
 
   // Estatus automático: si ya pasó la fecha y no está concluido → Atrasado
