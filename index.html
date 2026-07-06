@@ -1257,6 +1257,11 @@ function _loadEventualidades(){
   catch(e){ _eventualidades={}; }
 }
 var _directorio=[];
+let _directorioIMC=[];
+let _actividadesIMC=[];
+let _actIMCFiltro='';   // filtro activo por KPI ('', 'En proceso', 'Concluido', 'Atrasado')
+let _actIMCSeleccionadas=new Set();
+let _actIMCListaActual=[]; // lista actualmente visible (post-filtro), para "seleccionar todo"
 _loadEventualidades();
 _loadDirectorio();
 renderDirectorio();
@@ -2947,7 +2952,6 @@ function deleteDirEntry(id){
 // ══════════════════════════════════════════════════════════════════════
 
 // ── Directorio IMC (equipo IMC, separado del directorio general) ──
-let _directorioIMC=[];
 function _loadDirectorioIMC(){
   try{ _directorioIMC=JSON.parse(localStorage.getItem('dti_directorio_imc')||'[]'); }catch(e){ _directorioIMC=[]; }
 }
@@ -3017,11 +3021,6 @@ function deleteDirEntryIMC(id){
 }
 
 // ── Datos de actividades IMC ──
-let _actividadesIMC=[];
-let _actIMCFiltro='';   // filtro activo por KPI ('', 'En proceso', 'Concluido', 'Atrasado')
-let _actIMCSeleccionadas=new Set();
-let _actIMCListaActual=[]; // lista actualmente visible (post-filtro), para "seleccionar todo"
-
 function _loadActividadesIMC(){
   try{ _actividadesIMC=JSON.parse(localStorage.getItem('dti_actividades_imc')||'[]'); }catch(e){ _actividadesIMC=[]; }
 }
