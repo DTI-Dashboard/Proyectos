@@ -3501,28 +3501,34 @@ function enviarSeleccionadasIMC(){
 
 function _actIMCBuildCorreoTexto(p, asunto){
   var prioEmoji={'Alta':'🔴','Media':'🟡','Baja':'🟢'};
+  var estEmoji={'En proceso':'🔵','Concluido':'🟢','Atrasado':'🔴'};
   var cuerpo='';
   p.actividades.forEach(function(a,idx){
     var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
     var proyLinea=a.proyecto?('\n   📁 Proyecto: '+a.proyecto):'';
-    cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'\n\n';
+    var estReal=_actIMCEstatusReal(a);
+    cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'   '+(estEmoji[estReal]||'')+' '+estReal+'\n\n';
   });
   return cuerpo;
 }
 
 function _actIMCBuildCorreoHTML(p){
   var prioColor={'Alta':'#c0392b','Media':'#b8790a','Baja':'#1e8a4c'};
+  var estColor={'En proceso':'#2563eb','Concluido':'#1e8a4c','Atrasado':'#c0392b'};
   var esc=function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var FONT='font-family:Arial,Helvetica,sans-serif;font-size:12px';
   var filas=p.actividades.map(function(a,idx){
     var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
     var pc=prioColor[a.prioridad]||'#666';
+    var estReal=_actIMCEstatusReal(a);
+    var ec=estColor[estReal]||'#666';
     var bg=idx%2===0?'#ffffff':'#f7f8fc';
     return '<tr style="background:'+bg+'">'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#1a2340;font-weight:bold">'+esc(a.actividad)+'</td>'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:'+pc+';font-weight:bold;white-space:nowrap">'+esc(a.prioridad||'Media')+'</td>'
       +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444;white-space:nowrap">'+f+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:'+ec+';font-weight:bold;white-space:nowrap">'+esc(estReal)+'</td>'
       +'</tr>';
   }).join('');
   return ''
@@ -3534,6 +3540,7 @@ function _actIMCBuildCorreoHTML(p){
             +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Actividad</th>'
             +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Prioridad</th>'
             +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Fecha límite</th>'
+            +'<th align="left" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold">Estatus</th>'
           +'</tr>'
           +filas
         +'</table>'
