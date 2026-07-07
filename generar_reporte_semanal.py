@@ -170,7 +170,7 @@ try:
     atr=sum(1 for p in datos if sc(p)=='Atrasado')
     pcr=sum(1 for p in datos if p['real']>=90 and sc(p)!='Terminado')
     stb=sum(1 for p in datos if sc(p)=='Stand By')
-    kpis=[('Total de proyectos',tot),('Terminado',ter),('A tiempo',ati),('En riesgo\nde atraso',rie),('Atrasados',atr),('Por cerrar',pcr),('Stand By',stb)]
+    kpis=[('Total de proyectos',tot),('Terminado',ter),('A tiempo',ati),('En riesgo de atraso',rie),('Atrasados',atr),('Por cerrar',pcr),('Stand By',stb)]
     kw=1.345; kh=0.62; ky=0.62; kg=0.055; ksx=0.08
     for ii,(lbl,val) in enumerate(kpis):
         x=ksx+ii*(kw+kg)
@@ -194,7 +194,7 @@ try:
     r2.font.size=Pt(8.5); r2.font.name='Calibri'; r2.font.color.rgb=GRAY
     colW=[I(0.83),I(2.70),I(0.73),I(0.73),I(0.58),I(0.65),I(2.42),I(0.92)]
     colW_in=[0.83,2.70,0.73,0.73,0.58,0.65,2.42,0.92]
-    TBL_X=0.08; TBL_Y=1.30; HDR_H=0.24; ROW_H=0.235
+    TBL_X=0.08; TBL_Y=1.30; HDR_H=0.22; ROW_H=0.205
     tblW=sum(colW); nrows=len(datos)+1
     tblS=s2.shapes.add_table(nrows,8,I(TBL_X),I(TBL_Y),tblW,I(HDR_H+len(datos)*ROW_H))
     tbl=tblS.table
