@@ -1111,14 +1111,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <input type="text" id="costos-inp-proveedor" oninput="_costosPreview()" placeholder="Ej. Microsoft, AWS..." style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
         <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Moneda</label>
-          <select id="costos-inp-moneda" onchange="_costosPreview()" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px">
-            <option value="MXN">MXN — Peso mexicano</option>
-            <option value="USD">USD — Dólar</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Próxima renovación</label>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Término de contrato</label>
           <input type="date" id="costos-inp-renovacion" oninput="_costosPreview()" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
@@ -1128,10 +1121,6 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         <div>
           <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo de implementación</label>
           <input type="number" id="costos-inp-implementacion" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Capacitación</label>
-          <input type="number" id="costos-inp-capacitacion" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
 
@@ -4151,13 +4140,13 @@ function closeEvModal(){
 // ══════════════════════════════════════════════════════════════════════
 // Campos: unicos (se cuentan solo en el Año 1), recurrentes (se cuentan cada año),
 // mensualidad (se anualiza x12), adicionales (se suma directo), y metadata (no son dinero).
-const COSTOS_CAMPOS_UNICOS=['costo_implementacion','capacitacion'];
-const COSTOS_ETQ_UNICOS={costo_implementacion:'Costo de implementación',capacitacion:'Capacitación'};
+const COSTOS_CAMPOS_UNICOS=['costo_implementacion'];
+const COSTOS_ETQ_UNICOS={costo_implementacion:'Costo de implementación'};
 const COSTOS_CAMPOS_RECURRENTES=['costo_licencias','mantenimiento'];
 const COSTOS_ETQ_RECURRENTES={costo_licencias:'Costo por licencias',mantenimiento:'Mantenimiento'};
-const COSTOS_CAMPOS_TODOS=['costo_implementacion','capacitacion','mensualidad','costo_licencias','num_licencias','mantenimiento','adicionales'];
-const COSTOS_CAMPOS_META=['proveedor','moneda','proxima_renovacion'];
-const COSTOS_CSV_HEADER='proyecto,proveedor,moneda,costo_implementacion,capacitacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,proxima_renovacion,notas';
+const COSTOS_CAMPOS_TODOS=['costo_implementacion','mensualidad','costo_licencias','num_licencias','mantenimiento','adicionales'];
+const COSTOS_CAMPOS_META=['proveedor','termino_contrato'];
+const COSTOS_CSV_HEADER='proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,termino_contrato,notas';
 
 function _loadCostosProyectos(){
   try{ _costosProyectos=JSON.parse(localStorage.getItem('dti_costos_proyectos')||'{}'); }catch(e){ _costosProyectos={}; }
@@ -4193,7 +4182,7 @@ function _saveCostosProyectos(){
 async function _backupCostosProyectosGitHub(){
   try{
     const esc=s=>String(s||'').replace(/"/g,'""');
-    const campos=['proveedor','moneda','costo_implementacion','capacitacion','mensualidad','costo_licencias','num_licencias','mantenimiento','adicionales','proxima_renovacion','notas'];
+    const campos=['proveedor','costo_implementacion','mensualidad','costo_licencias','num_licencias','mantenimiento','adicionales','termino_contrato','notas'];
     const rows=Object.entries(_costosProyectos).map(([nombre,c])=>
       '"'+esc(nombre)+'"'+campos.map(k=>',"'+esc(c[k])+'"').join('')
     );
@@ -4204,15 +4193,13 @@ async function _backupCostosProyectosGitHub(){
     else console.error('❌ Backup costos falló:',res.status,JSON.stringify(d));
   }catch(e){ console.error('❌ Backup costos error:',e); }
 }
-function _fmtMoney(v,moneda){
+function _fmtMoney(v){
   const n=parseFloat(v);
   if(isNaN(n)) return null;
-  const simbolo=(moneda==='USD')?'US$':'$';
-  return simbolo+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function _costosCalcular(c){
   // Devuelve: unicos[], recurrentes[], adicionales, anualidad, costoRecurrenteAnual, costoTotalAno1, tieneAlgo
-  const moneda=c.moneda||'MXN';
   const unicos=[]; let tieneAlgo=false;
   COSTOS_CAMPOS_UNICOS.forEach(k=>{
     const n=parseFloat(c[k]);
@@ -4229,7 +4216,7 @@ function _costosCalcular(c){
     if(k==='costo_licencias'){
       const numLic=parseFloat(c.num_licencias);
       if(!isNaN(numLic) && numLic>0){
-        lbl+=' ('+numLic+' × '+_fmtMoney(n/numLic,moneda)+' c/u)';
+        lbl+=' ('+numLic+' × '+_fmtMoney(n/numLic)+' c/u)';
       }
     }
     recurrentes.push({lbl,val:n});
@@ -4244,7 +4231,7 @@ function _costosCalcular(c){
   const costoRecurrenteAnual=(anualidad||0)+recurrentes.reduce((s,f)=>s+f.val,0);
   const costoTotalAno1=costoRecurrenteAnual+unicos.reduce((s,f)=>s+f.val,0)+(adicionales||0);
 
-  return {unicos,recurrentes,mensualidad:isNaN(mensu)?null:mensu,anualidad,adicionales,costoRecurrenteAnual,costoTotalAno1,tieneAlgo,moneda};
+  return {unicos,recurrentes,mensualidad:isNaN(mensu)?null:mensu,anualidad,adicionales,costoRecurrenteAnual,costoTotalAno1,tieneAlgo};
 }
 
 function openCostosModal(){
@@ -4262,13 +4249,12 @@ function openCostosModal(){
   } else {
     vacio.style.display='none';
     contenido.style.display='block';
-    const m=calc.moneda;
 
-    // Metadata (proveedor, moneda, proxima renovacion) — solo chips de lo que exista
+    // Metadata (proveedor, termino de contrato) — solo chips de lo que exista
     const metaBox=document.getElementById('costos-meta');
     const metaChips=[];
     if(c.proveedor && c.proveedor.trim()) metaChips.push('🏢 '+c.proveedor.trim());
-    if(c.proxima_renovacion) metaChips.push('🔄 Renueva: '+c.proxima_renovacion);
+    if(c.termino_contrato) metaChips.push('📆 Término de contrato: '+c.termino_contrato);
     if(metaChips.length){
       metaBox.style.display='flex';
       metaBox.innerHTML=metaChips.map(t=>'<span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;font-size:12px;color:rgba(255,255,255,.75)">'+t+'</span>').join('');
@@ -4278,7 +4264,7 @@ function openCostosModal(){
     if(calc.unicos.length){
       secUnicos.style.display='block';
       document.getElementById('costos-filas-unicos').innerHTML=calc.unicos.map(f=>
-        '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val,m)+'</span></div>'
+        '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>'
       ).join('');
     } else { secUnicos.style.display='none'; }
 
@@ -4286,23 +4272,23 @@ function openCostosModal(){
     if(calc.recurrentes.length){
       secRec.style.display='block';
       document.getElementById('costos-filas-recurrentes').innerHTML=calc.recurrentes.map(f=>
-        '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val,m)+'</span></div>'
+        '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>'
       ).join('');
     } else { secRec.style.display='none'; }
 
     const filaAdic=document.getElementById('costos-fila-adicionales-wrap');
     if(calc.adicionales!==null){
       filaAdic.style.display='block';
-      document.getElementById('costos-val-adicionales').textContent=_fmtMoney(calc.adicionales,m);
+      document.getElementById('costos-val-adicionales').textContent=_fmtMoney(calc.adicionales);
     } else { filaAdic.style.display='none'; }
 
     const filaAnualidad=document.getElementById('costos-fila-anualidad');
     if(calc.anualidad!==null){
       filaAnualidad.style.display='flex';
-      document.getElementById('costos-val-anualidad').textContent=_fmtMoney(calc.anualidad,m);
+      document.getElementById('costos-val-anualidad').textContent=_fmtMoney(calc.anualidad);
     } else { filaAnualidad.style.display='none'; }
-    document.getElementById('costos-val-recurrente').textContent=_fmtMoney(calc.costoRecurrenteAnual,m);
-    document.getElementById('costos-val-total').textContent=_fmtMoney(calc.costoTotalAno1,m);
+    document.getElementById('costos-val-recurrente').textContent=_fmtMoney(calc.costoRecurrenteAnual);
+    document.getElementById('costos-val-total').textContent=_fmtMoney(calc.costoTotalAno1);
 
     const filaNotas=document.getElementById('costos-fila-notas');
     if(c.notas && c.notas.trim()){
@@ -4353,10 +4339,8 @@ function onCostosProyectoChange(){
 
   const c=nombre?(_costosProyectos[nombre]||{}):{};
   document.getElementById('costos-inp-proveedor').value=c.proveedor||'';
-  document.getElementById('costos-inp-moneda').value=c.moneda||'MXN';
-  document.getElementById('costos-inp-renovacion').value=c.proxima_renovacion||'';
+  document.getElementById('costos-inp-renovacion').value=c.termino_contrato||'';
   document.getElementById('costos-inp-implementacion').value=c.costo_implementacion||'';
-  document.getElementById('costos-inp-capacitacion').value=c.capacitacion||'';
   document.getElementById('costos-inp-mensualidad').value=c.mensualidad||'';
   document.getElementById('costos-inp-licencias').value=c.costo_licencias||'';
   document.getElementById('costos-inp-numlicencias').value=c.num_licencias||'';
@@ -4369,10 +4353,8 @@ function onCostosProyectoChange(){
 function _costosLeerForm(){
   return {
     proveedor:document.getElementById('costos-inp-proveedor').value.trim(),
-    moneda:document.getElementById('costos-inp-moneda').value,
-    proxima_renovacion:document.getElementById('costos-inp-renovacion').value,
+    termino_contrato:document.getElementById('costos-inp-renovacion').value,
     costo_implementacion:document.getElementById('costos-inp-implementacion').value.trim(),
-    capacitacion:document.getElementById('costos-inp-capacitacion').value.trim(),
     mensualidad:document.getElementById('costos-inp-mensualidad').value.trim(),
     costo_licencias:document.getElementById('costos-inp-licencias').value.trim(),
     num_licencias:document.getElementById('costos-inp-numlicencias').value.trim(),
@@ -4391,10 +4373,10 @@ function _costosPreview(){
   const val=document.getElementById('costos-preview-anualidad-val');
   if(calc.anualidad!==null){
     lbl.style.display='inline';
-    val.textContent=_fmtMoney(calc.anualidad,c.moneda);
+    val.textContent=_fmtMoney(calc.anualidad);
   } else { lbl.style.display='none'; val.textContent=''; }
-  document.getElementById('costos-preview-recurrente-val').textContent=_fmtMoney(calc.costoRecurrenteAnual,c.moneda);
-  document.getElementById('costos-preview-total-val').textContent=_fmtMoney(calc.costoTotalAno1,c.moneda);
+  document.getElementById('costos-preview-recurrente-val').textContent=_fmtMoney(calc.costoRecurrenteAnual);
+  document.getElementById('costos-preview-total-val').textContent=_fmtMoney(calc.costoTotalAno1);
 }
 function guardarCostosProyecto(){
   const nombre=document.getElementById('costos-select-proyecto').value;
@@ -4433,9 +4415,9 @@ function renderCostosTabla(){
     return '<tr style="border-top:1px solid var(--border)">'
       +'<td style="padding:9px 14px;font-weight:600;max-width:280px">'+nombre+'</td>'
       +'<td style="padding:9px 14px;color:var(--muted)">'+(c.proveedor||'—')+'</td>'
-      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+(isNaN(mensu)?'—':_fmtMoney(mensu,c.moneda))+'</td>'
-      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+_fmtMoney(calc.costoRecurrenteAnual,c.moneda)+'</td>'
-      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:var(--gold);font-weight:700">'+_fmtMoney(calc.costoTotalAno1,c.moneda)+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+(isNaN(mensu)?'—':_fmtMoney(mensu))+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+_fmtMoney(calc.costoRecurrenteAnual)+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:var(--gold);font-weight:700">'+_fmtMoney(calc.costoTotalAno1)+'</td>'
       +'<td style="padding:9px 14px;white-space:nowrap"><button onclick="_costosEditarDesdeTabla(\''+nombre.replace(/'/g,"\\'")+'\')" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2);color:#63b3ed;border-radius:5px;padding:4px 9px;cursor:pointer;font-size:12px" title="Editar">&#9998;</button></td>'
       +'</tr>';
   }).join('');
@@ -4475,15 +4457,15 @@ function descargarPlantillaCostosCSV(){
     return;
   }
   const esc=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
-  const header='direccion,proyecto,proveedor,moneda,costo_implementacion,capacitacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,proxima_renovacion,notas';
+  const header='direccion,proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,termino_contrato,notas';
   const rows=proyectos
     .slice()
     .sort((a,b)=>a.direccion.localeCompare(b.direccion)||a.nombre.localeCompare(b.nombre))
     .map(p=>{
       const c=_costosProyectos[p.nombre]||{}; // si ya tiene datos capturados, se incluyen para no perderlos
-      return [p.direccion,p.nombre,c.proveedor||'',c.moneda||'MXN',c.costo_implementacion||'',c.capacitacion||'',
+      return [p.direccion,p.nombre,c.proveedor||'',c.costo_implementacion||'',
         c.mensualidad||'',c.costo_licencias||'',c.num_licencias||'',c.mantenimiento||'',c.adicionales||'',
-        c.proxima_renovacion||'',c.notas||''].map(esc).join(',');
+        c.termino_contrato||'',c.notas||''].map(esc).join(',');
     });
   const csv=header+'\n'+rows.join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
