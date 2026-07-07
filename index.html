@@ -1116,27 +1116,27 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </div>
       </div>
 
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:8px">Costos únicos</div>
       <div id="costos-form-unicos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;opacity:.4;pointer-events:none">
         <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo de implementación</label>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo de implementación / Desarrollos</label>
           <input type="number" id="costos-inp-implementacion" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
 
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:8px">Costos recurrentes</div>
       <div id="costos-form-campos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px;opacity:.4;pointer-events:none">
         <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Mensualidad</label>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo Recurrente Mensual</label>
           <input type="number" id="costos-inp-mensualidad" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo por licencias</label>
-          <input type="number" id="costos-inp-licencias" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Número de licencias</label>
-          <input type="number" id="costos-inp-numlicencias" oninput="_costosPreview()" placeholder="Ej. 25" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo por licencias</label>
+            <input type="number" id="costos-inp-licencias" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Número de licencias</label>
+            <input type="number" id="costos-inp-numlicencias" oninput="_costosPreview()" placeholder="Ej. 25" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+          </div>
         </div>
         <div>
           <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Mantenimiento (anual)</label>
@@ -1154,8 +1154,8 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         <textarea id="costos-inp-notas" oninput="_costosPreview()" rows="2" placeholder="Notas o contexto adicional sobre estos costos..." style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box;resize:vertical"></textarea>
       </div>
       <div id="costos-preview" style="display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:13px">
-        <div style="display:flex;justify-content:space-between;color:var(--muted)"><span id="costos-preview-anualidad-lbl" style="display:none">Anualidad (Mensualidad × 12)</span><span id="costos-preview-anualidad-val" style="font-family:'JetBrains Mono',monospace"></span></div>
-        <div style="display:flex;justify-content:space-between;color:var(--gold);font-weight:800;margin-top:4px"><span>Costo Total</span><span id="costos-preview-total-val" style="font-family:'JetBrains Mono',monospace"></span></div>
+        <div id="costos-preview-mensu-row" style="display:none;justify-content:space-between;color:var(--gold);font-weight:800"><span>Costo Recurrente Mensual</span><span id="costos-preview-mensu-val" style="font-family:'JetBrains Mono',monospace"></span></div>
+        <div style="display:flex;justify-content:space-between;color:var(--muted);margin-top:4px"><span id="costos-preview-anualidad-lbl" style="display:none">Anualidad (× 12)</span><span id="costos-preview-anualidad-val" style="font-family:'JetBrains Mono',monospace"></span></div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button id="costos-btn-eliminar" onclick="eliminarCostosProyecto()" style="display:none;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer">🗑 Eliminar</button>
@@ -1168,8 +1168,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
           <th style="text-align:left;padding:10px 14px">Proyecto</th>
           <th style="text-align:left;padding:10px 14px;width:110px">Proveedor</th>
-          <th style="text-align:right;padding:10px 14px;width:110px">Mensualidad</th>
-          <th style="text-align:right;padding:10px 14px;width:120px">Costo Total</th>
+          <th style="text-align:right;padding:10px 14px;width:150px">Costo Recurrente Mensual</th>
           <th style="text-align:left;padding:10px 14px;width:80px">Acciones</th>
         </tr></thead>
         <tbody id="costos-tbody"></tbody>
@@ -1383,17 +1382,11 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div id="costos-meta" style="display:none;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
 
       <div id="costos-sec-unicos" style="display:none;margin-bottom:14px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:6px">Costos Únicos</div>
         <div id="costos-filas-unicos" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
 
       <div id="costos-sec-recurrentes" style="display:none;margin-bottom:14px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:6px">Costos Recurrentes (anuales)</div>
         <div id="costos-filas-recurrentes" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div id="costos-fila-numlicencias" style="display:none;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.6);margin-top:8px">
-          <span>Número de licencias</span>
-          <span id="costos-val-numlicencias" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
-        </div>
       </div>
 
       <div id="costos-fila-adicionales-wrap" style="display:none;margin-bottom:14px">
@@ -1405,16 +1398,12 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 
       <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:14px;display:flex;flex-direction:column;gap:10px">
         <div id="costos-fila-mensualidad" style="display:none;flex-direction:column;align-items:center;text-align:center;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:12px 10px;margin-bottom:2px">
-          <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold);text-transform:uppercase">Mensualidad</span>
+          <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold);text-transform:uppercase">Costo Recurrente Mensual</span>
           <span id="costos-val-mensualidad" style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:26px;color:var(--gold);margin-top:2px"></span>
         </div>
         <div id="costos-fila-anualidad" style="display:none;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5)">
-          <span>Anualidad <span style="font-size:11px;color:rgba(255,255,255,.35)">(Mensualidad × 12)</span></span>
+          <span>Anualidad <span style="font-size:11px;color:rgba(255,255,255,.35)">(× 12)</span></span>
           <span id="costos-val-anualidad" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5)">
-          <span>Costo Total</span>
-          <span id="costos-val-total" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
         </div>
       </div>
       <div id="costos-fila-notas" style="display:none;margin-top:14px;background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px">
@@ -4143,7 +4132,7 @@ function closeEvModal(){
 // Campos: unicos (se cuentan solo en el Año 1), recurrentes (se cuentan cada año),
 // mensualidad (se anualiza x12), adicionales (se suma directo), y metadata (no son dinero).
 const COSTOS_CAMPOS_UNICOS=['costo_implementacion'];
-const COSTOS_ETQ_UNICOS={costo_implementacion:'Costo de implementación'};
+const COSTOS_ETQ_UNICOS={costo_implementacion:'Costo de implementación / Desarrollos'};
 const COSTOS_CAMPOS_RECURRENTES=['costo_licencias','mantenimiento'];
 const COSTOS_ETQ_RECURRENTES={costo_licencias:'Costo por licencias',mantenimiento:'Mantenimiento'};
 const COSTOS_CAMPOS_TODOS=['costo_implementacion','mensualidad','costo_licencias','mantenimiento','adicionales'];
@@ -4271,14 +4260,19 @@ function openCostosModal(){
     const secRec=document.getElementById('costos-sec-recurrentes');
     if(calc.recurrentes.length || calc.licenciasInfo){
       secRec.style.display='block';
-      document.getElementById('costos-filas-recurrentes').innerHTML=calc.recurrentes.map(f=>
-        '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>'
-      ).join('');
-      const filaLic=document.getElementById('costos-fila-numlicencias');
-      if(calc.licenciasInfo){
-        filaLic.style.display='flex';
-        document.getElementById('costos-val-numlicencias').textContent=calc.licenciasInfo;
-      } else { filaLic.style.display='none'; }
+      let recHtml='';
+      let licInsertado=false;
+      calc.recurrentes.forEach(f=>{
+        recHtml+='<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>';
+        if(f.lbl==='Costo por licencias' && calc.licenciasInfo!==null){
+          recHtml+='<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5);margin:-2px 0 2px"><span>Número de licencias</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+calc.licenciasInfo+'</span></div>';
+          licInsertado=true;
+        }
+      });
+      if(calc.licenciasInfo!==null && !licInsertado){
+        recHtml+='<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>Número de licencias</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+calc.licenciasInfo+'</span></div>';
+      }
+      document.getElementById('costos-filas-recurrentes').innerHTML=recHtml;
     } else { secRec.style.display='none'; }
 
     const filaAdic=document.getElementById('costos-fila-adicionales-wrap');
@@ -4297,7 +4291,6 @@ function openCostosModal(){
       filaAnualidad.style.display='flex';
       document.getElementById('costos-val-anualidad').textContent=_fmtMoney(calc.anualidad);
     } else { filaAnualidad.style.display='none'; }
-    document.getElementById('costos-val-total').textContent=_fmtMoney(calc.costoTotal);
 
     const filaNotas=document.getElementById('costos-fila-notas');
     if(c.notas && c.notas.trim()){
@@ -4378,13 +4371,17 @@ function _costosPreview(){
   const preview=document.getElementById('costos-preview');
   if(!calc.tieneAlgo){ preview.style.display='none'; return; }
   preview.style.display='block';
+  const mensuRow=document.getElementById('costos-preview-mensu-row');
+  if(calc.mensualidad!==null){
+    mensuRow.style.display='flex';
+    document.getElementById('costos-preview-mensu-val').textContent=_fmtMoney(calc.mensualidad);
+  } else { mensuRow.style.display='none'; }
   const lbl=document.getElementById('costos-preview-anualidad-lbl');
   const val=document.getElementById('costos-preview-anualidad-val');
   if(calc.anualidad!==null){
     lbl.style.display='inline';
     val.textContent=_fmtMoney(calc.anualidad);
   } else { lbl.style.display='none'; val.textContent=''; }
-  document.getElementById('costos-preview-total-val').textContent=_fmtMoney(calc.costoTotal);
 }
 function guardarCostosProyecto(){
   const nombre=document.getElementById('costos-select-proyecto').value;
@@ -4423,8 +4420,7 @@ function renderCostosTabla(){
     return '<tr style="border-top:1px solid var(--border)">'
       +'<td style="padding:9px 14px;font-weight:600;max-width:280px">'+nombre+'</td>'
       +'<td style="padding:9px 14px;color:var(--muted)">'+(c.proveedor||'—')+'</td>'
-      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+(isNaN(mensu)?'—':_fmtMoney(mensu))+'</td>'
-      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:var(--gold);font-weight:700">'+_fmtMoney(calc.costoTotal)+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:var(--gold);font-weight:700">'+(isNaN(mensu)?'—':_fmtMoney(mensu))+'</td>'
       +'<td style="padding:9px 14px;white-space:nowrap"><button onclick="_costosEditarDesdeTabla(\''+nombre.replace(/'/g,"\\'")+'\')" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2);color:#63b3ed;border-radius:5px;padding:4px 9px;cursor:pointer;font-size:12px" title="Editar">&#9998;</button></td>'
       +'</tr>';
   }).join('');
