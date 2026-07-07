@@ -313,6 +313,59 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 .nota-btn-save{background:var(--gold);color:#1A2340;}
 .nota-btn-del{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)!important;}
 .nota-btn-cancel{background:rgba(255,255,255,.08);color:var(--text);}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (<=900px) y Móvil (<=560px)
+   ══════════════════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .main{padding:16px 14px;}
+  .topbar{padding:0 14px;height:auto;min-height:54px;flex-wrap:wrap;}
+  .brand-sub{display:none;}
+  .topbar-right{gap:8px;flex-wrap:wrap;padding:8px 0;}
+  .date-chip{font-size:10px;padding:4px 9px;}
+  .tabs{padding:0 10px;}
+  .tab{padding:11px 13px;font-size:12px;}
+  .kpi-strip{grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;}
+  .kpi{padding:12px 10px;}
+  .kpi-val{font-size:22px;}
+  .kpi-lbl{font-size:9px;}
+  .kpi-sub{font-size:10px;}
+  .mod-header{flex-direction:column;align-items:stretch;}
+  .export-btns{width:100%;}
+  .export-btns button{flex:1;justify-content:center;font-size:11px;padding:9px 10px;}
+  .filters{gap:6px;}
+  .search-box{width:100%;margin-left:0;}
+  .act-week-nav{padding:10px 12px;}
+  .act-filters-row{width:100%;}
+  .act-filters-row select,.act-filters-row input{flex:1 1 auto;min-width:0;}
+  .modal-box{width:94%;max-width:94vw;}
+  .imc-subtabs{overflow-x:auto;flex-wrap:nowrap;}
+  .imc-subtab{white-space:nowrap;}
+}
+
+@media(max-width:560px){
+  .brand-name{font-size:13px;}
+  .brand-logo{width:28px;height:28px;font-size:11px;}
+  .topbar-right .btn-sync span:not(.ico){display:none;}
+  .tabs{gap:2px;}
+  .tab{padding:10px 10px;font-size:11px;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .card-head{flex-wrap:wrap;gap:8px;}
+  .card-title{font-size:12px;}
+  .tbl{font-size:11.5px;}
+  .tbl th,.tbl td{padding:8px 9px;}
+  .prog-wrap{min-width:100px;}
+  .filter-btn{font-size:10px;padding:5px 9px;}
+  .act-multi-btn{font-size:11px;padding:5px 8px;}
+  .modal-header{padding:14px 16px;}
+  .modal-body{padding:16px !important;}
+  .dti-modal-box{width:92%;max-width:92vw;}
+}
+
+/* Tablas: scroll horizontal en vez de comprimir columnas en pantallas chicas */
+@media(max-width:900px){
+  .card > div[style*="overflow-x"]{-webkit-overflow-scrolling:touch;}
+}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
