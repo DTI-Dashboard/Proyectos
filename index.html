@@ -2991,10 +2991,69 @@ function deleteDirEntry(id){
 // ── Directorio IMC (equipo IMC, separado del directorio general) ──
 function _loadDirectorioIMC(){
   try{ _directorioIMC=JSON.parse(localStorage.getItem('dti_directorio_imc')||'[]'); }catch(e){ _directorioIMC=[]; }
+  _syncDirectorioIMCFromGitHub();
 }
+async function _syncDirectorioIMCFromGitHub(){
+  try{
+    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/directorio_imc.csv?t='+Date.now());
+    if(!res.ok) return; // el archivo aun no existe la primera vez, no pasa nada
+    const text=await res.text();
+    const repoRows=_csvGenericParse(text);
+    if(!repoRows.length) return;
+    const repoMap={};
+    repoRows.forEach(d=>{ if(d.id) repoMap[d.id]={id:d.id,nombre:d.nombre||'',email:d.email||''}; });
+    // Local puede tener integrantes agregados que aun no se han respaldado; se preservan
+    _directorioIMC.forEach(ld=>{ if(!repoMap[ld.id]) repoMap[ld.id]=ld; });
+    _directorioIMC=Object.values(repoMap);
+    localStorage.setItem('dti_directorio_imc', JSON.stringify(_directorioIMC));
+    renderDirectorioIMC();
+  }catch(e){ console.warn('Sync directorio IMC desde GitHub falló:', e); }
+}
+let _backupDirIMCTimer=null;
 function _saveDirectorioIMC(){
   localStorage.setItem('dti_directorio_imc',JSON.stringify(_directorioIMC));
   renderDirectorioIMC();
+  clearTimeout(_backupDirIMCTimer);
+  _backupDirIMCTimer=setTimeout(()=>_backupDirectorioIMCGitHub(), 1500);
+}
+async function _backupDirectorioIMCGitHub(){
+  try{
+    const csv=_dirIMCToCSV(_directorioIMC);
+    const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'directorio_imc.csv',content:csv})});
+    const d=await res.json().catch(()=>({}));
+    if(res.ok && d.ok) console.log('✅ Directorio IMC respaldado en GitHub');
+    else console.error('❌ Backup directorio IMC falló:', res.status, JSON.stringify(d));
+  }catch(e){ console.error('❌ Backup directorio IMC error:', e); }
+}
+function _dirIMCToCSV(dirs){
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const header='id,nombre,email';
+  const rows=dirs.map(d=>`"${esc(d.id)}","${esc(d.nombre)}","${esc(d.email)}"`);
+  return header+'\n'+rows.join('\n');
+}
+// Parser generico de CSV (mismo patron que loadCSV), reutilizado por IMC
+function _csvGenericParse(text){
+  text=(text||'').replace(/^\uFEFF/,'');
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2) return [];
+  function parseLine(line){
+    const result=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){ inQ=!inQ; }
+      else if(ch===','&&!inQ){ result.push(cur); cur=''; }
+      else cur+=ch;
+    }
+    result.push(cur);
+    return result;
+  }
+  const headers=parseLine(lines[0]).map(h=>h.trim());
+  return lines.slice(1).filter(l=>l.trim()).map(l=>{
+    const vals=parseLine(l);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    return obj;
+  });
 }
 function renderDirectorioIMC(){
   var tbody=document.getElementById('dirimc-tbody');
@@ -3060,9 +3119,53 @@ function deleteDirEntryIMC(id){
 // ── Datos de actividades IMC ──
 function _loadActividadesIMC(){
   try{ _actividadesIMC=JSON.parse(localStorage.getItem('dti_actividades_imc')||'[]'); }catch(e){ _actividadesIMC=[]; }
+  _syncActividadesIMCFromGitHub();
 }
+async function _syncActividadesIMCFromGitHub(){
+  try{
+    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/actividades_imc.csv?t='+Date.now());
+    if(!res.ok) return; // el archivo aun no existe la primera vez, no pasa nada
+    const text=await res.text();
+    const repoRows=_csvGenericParse(text).map(r=>({
+      id:r.id, nombre:r.nombre||'', email:r.email||'', proyecto:r.proyecto||'',
+      actividad:r.actividad||'', fechaFin:r.fechaFin||'', prioridad:r.prioridad||'',
+      estatus:r.estatus||'', createdAt:r.createdAt||'', updatedAt:r.updatedAt||''
+    })).filter(r=>r.id);
+    if(!repoRows.length) return;
+    const repoMap={};
+    repoRows.forEach(a=>{ repoMap[a.id]=a; });
+    // Preservar actividades locales mas recientes que las del repo (ultima escritura gana)
+    _actividadesIMC.forEach(la=>{
+      if(!repoMap[la.id] || new Date(la.updatedAt||la.createdAt||0) > new Date((repoMap[la.id]||{}).updatedAt||(repoMap[la.id]||{}).createdAt||0)){
+        repoMap[la.id]=la;
+      }
+    });
+    _actividadesIMC=Object.values(repoMap);
+    localStorage.setItem('dti_actividades_imc', JSON.stringify(_actividadesIMC));
+    var sub=document.getElementById('imc-sub-actividades');
+    if(sub && sub.style.display!=='none') renderActividadesIMC();
+  }catch(e){ console.warn('Sync actividades IMC desde GitHub falló:', e); }
+}
+let _backupActIMCTimer=null;
 function _saveActividadesIMC(){
   localStorage.setItem('dti_actividades_imc',JSON.stringify(_actividadesIMC));
+  clearTimeout(_backupActIMCTimer);
+  _backupActIMCTimer=setTimeout(()=>_backupActividadesIMCGitHub(), 1500);
+}
+async function _backupActividadesIMCGitHub(){
+  try{
+    const csv=_actIMCToCSV(_actividadesIMC);
+    const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'actividades_imc.csv',content:csv})});
+    const d=await res.json().catch(()=>({}));
+    if(res.ok && d.ok) console.log('✅ Actividades IMC respaldadas en GitHub');
+    else console.error('❌ Backup actividades IMC falló:', res.status, JSON.stringify(d));
+  }catch(e){ console.error('❌ Backup actividades IMC error:', e); }
+}
+function _actIMCToCSV(acts){
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const header='id,nombre,email,proyecto,actividad,fechaFin,prioridad,estatus,createdAt,updatedAt';
+  const rows=acts.map(a=>`"${esc(a.id)}","${esc(a.nombre)}","${esc(a.email)}","${esc(a.proyecto||'')}","${esc(a.actividad)}","${esc(a.fechaFin||'')}","${esc(a.prioridad||'')}","${esc(a.estatus||'')}","${esc(a.createdAt||'')}","${esc(a.updatedAt||'')}"`);
+  return header+'\n'+rows.join('\n');
 }
 
 function toggleActMesPanelIMC(){
@@ -3336,6 +3439,7 @@ function actIMCMarcarConcluido(id){
     btnOk:'Sí, concluir',
     onOk:function(){
       a.estatus='Concluido';
+      a.updatedAt=new Date().toISOString();
       _saveActividadesIMC();
       renderActividadesIMC();
       showToast('Actividad marcada como concluida','success');
@@ -3453,7 +3557,7 @@ function saveActividadIMC(){
   var prioridad=document.getElementById('actimc-inp-prioridad').value;
   var estatus=document.getElementById('actimc-inp-estatus').value;
   if(!nombre||!actividad||!fechaFin){ showToast('Completa colaborador, actividad y fecha límite','error'); return; }
-  var obj={nombre:nombre,email:email,proyecto:proyecto,actividad:actividad,fechaFin:fechaFin,prioridad:prioridad,estatus:estatus};
+  var obj={nombre:nombre,email:email,proyecto:proyecto,actividad:actividad,fechaFin:fechaFin,prioridad:prioridad,estatus:estatus,updatedAt:new Date().toISOString()};
   if(id){
     var idx=_actividadesIMC.findIndex(function(x){return x.id===id;});
     if(idx>=0) _actividadesIMC[idx]=Object.assign({},_actividadesIMC[idx],obj);
