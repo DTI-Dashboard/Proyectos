@@ -3580,7 +3580,7 @@ function _actIMCProcesarSiguienteEnvio(){
   var idx=_actIMCColaIdx, total=_actIMCColaEnvio.length;
   var esUltimo=idx===total-1;
   var msg = copiado
-    ? 'Se abrió el correo para <strong>'+p.nombre+'</strong> con el saludo y cierre ya escritos, y copiamos la tabla al portapapeles.<br><br>Haz clic en el <strong>espacio en blanco entre esas dos líneas</strong> y pega con <strong>Ctrl+V</strong> (Cmd+V en Mac).'
+    ? 'Se abrió el correo para mandarle las actividades a <strong>'+p.nombre+'</strong>'
     : 'Se abrió el correo para <strong>'+p.nombre+'</strong>, pero el navegador no permitió copiar la tabla con formato — copia manualmente el detalle desde la actividad.';
 
   if(_actIMCColaOv) _actIMCColaOv.remove();
@@ -3591,12 +3591,10 @@ function _actIMCProcesarSiguienteEnvio(){
     +'<div class="dti-modal-title">Correo '+(idx+1)+' de '+total+'</div>'
     +'<div class="dti-modal-msg">'+msg+'</div>'
     +'<div class="dti-modal-btns">'
-      +'<button class="dti-modal-btn cancel" id="aimc-cola-cancelar">Cancelar envíos</button>'
-      +'<button class="dti-modal-btn ok-success" id="aimc-cola-siguiente">'+(esUltimo?'Finalizar ✓':'Ya pegué, siguiente ▶')+'</button>'
+      +'<button class="dti-modal-btn ok-success" id="aimc-cola-siguiente">'+(esUltimo?'De acuerdo':'Ya pegué, siguiente ▶')+'</button>'
     +'</div></div>';
   document.body.appendChild(ov);
   _actIMCColaOv=ov;
-  ov.querySelector('#aimc-cola-cancelar').onclick=function(){ ov.remove(); _actIMCColaOv=null; showToast('Envío cancelado','error'); };
   ov.querySelector('#aimc-cola-siguiente').onclick=function(){ _actIMCColaIdx++; _actIMCProcesarSiguienteEnvio(); };
 }
 
