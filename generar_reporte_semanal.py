@@ -94,7 +94,7 @@ try:
         return 'Atrasado'
 
     def cell_txt(cell, text, sz=9, bold=False, color=None, align=PP_ALIGN.LEFT):
-        tf=cell.text_frame; tf.word_wrap=True; tf.clear()
+        tf=cell.text_frame; tf.word_wrap=False; tf.clear()
         p=tf.paragraphs[0]; p.alignment=align
         r=p.add_run(); r.text=str(text)
         r.font.size=Pt(sz); r.font.bold=bold; r.font.name='Calibri'
@@ -210,7 +210,8 @@ try:
         tbl.rows[ri+1].height=I(ROW_H)
         s=sc(p); sc_c=sem_col.get(s,RGBColor(0x88,0x88,0x88))
         bg=RGBColor(0xF5,0xF7,0xFA) if ri%2==0 else WHITE
-        vals=[p['tipo'],p['nombre'],p['inicio'],p['fin'],f"{p['real']}%",f"{p['esp']}%",'',sem_txt.get(s,s)]
+        nombre_corto = p['nombre'] if len(p['nombre'])<=48 else p['nombre'][:46]+'…'
+        vals=[p['tipo'],nombre_corto,p['inicio'],p['fin'],f"{p['real']}%",f"{p['esp']}%",'',sem_txt.get(s,s)]
         aligns=[PP_ALIGN.CENTER,PP_ALIGN.LEFT,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.RIGHT,PP_ALIGN.CENTER]
         colors=[NAVY,NAVY,GRAY,GRAY,NAVY,GRAY,sc_c,sc_c]; bolds=[True,False,False,False,True,False,True,True]
         for ci2,(v,al,co,bo) in enumerate(zip(vals,aligns,colors,bolds)):
