@@ -1135,12 +1135,8 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <input type="number" id="costos-inp-licencias" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
         <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">No. licencias con costo</label>
-          <input type="number" id="costos-inp-lic-con-costo" oninput="_costosPreview()" placeholder="Ej. 10" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">No. licencias sin costo</label>
-          <input type="number" id="costos-inp-lic-sin-costo" oninput="_costosPreview()" placeholder="Ej. 5" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Número de licencias</label>
+          <input type="number" id="costos-inp-numlicencias" oninput="_costosPreview()" placeholder="Ej. 25" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
         </div>
         <div>
           <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Mantenimiento (anual)</label>
@@ -1394,6 +1390,10 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div id="costos-sec-recurrentes" style="display:none;margin-bottom:14px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:6px">Costos Recurrentes (anuales)</div>
         <div id="costos-filas-recurrentes" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div id="costos-fila-numlicencias" style="display:none;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.6);margin-top:8px">
+          <span>Número de licencias</span>
+          <span id="costos-val-numlicencias" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
+        </div>
       </div>
 
       <div id="costos-fila-adicionales-wrap" style="display:none;margin-bottom:14px">
@@ -1403,18 +1403,18 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </div>
       </div>
 
-      <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:12px;display:flex;flex-direction:column;gap:8px">
-        <div id="costos-fila-mensualidad" style="display:none;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)">
-          <span>Mensualidad</span>
-          <span id="costos-val-mensualidad" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
+      <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:14px;display:flex;flex-direction:column;gap:10px">
+        <div id="costos-fila-mensualidad" style="display:none;flex-direction:column;align-items:center;text-align:center;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:12px 10px;margin-bottom:2px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold);text-transform:uppercase">Mensualidad</span>
+          <span id="costos-val-mensualidad" style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:26px;color:var(--gold);margin-top:2px"></span>
         </div>
-        <div id="costos-fila-anualidad" style="display:none;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.75)">
-          <span>Anualidad <span style="font-size:11px;color:rgba(255,255,255,.4)">(Mensualidad × 12)</span></span>
-          <span id="costos-val-anualidad" style="font-family:'JetBrains Mono',monospace;font-weight:700"></span>
+        <div id="costos-fila-anualidad" style="display:none;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5)">
+          <span>Anualidad <span style="font-size:11px;color:rgba(255,255,255,.35)">(Mensualidad × 12)</span></span>
+          <span id="costos-val-anualidad" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:16px;color:var(--gold);font-weight:800;margin-top:2px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5)">
           <span>Costo Total</span>
-          <span id="costos-val-total" style="font-family:'JetBrains Mono',monospace"></span>
+          <span id="costos-val-total" style="font-family:'JetBrains Mono',monospace;font-weight:600"></span>
         </div>
       </div>
       <div id="costos-fila-notas" style="display:none;margin-top:14px;background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px">
@@ -4147,8 +4147,8 @@ const COSTOS_ETQ_UNICOS={costo_implementacion:'Costo de implementación'};
 const COSTOS_CAMPOS_RECURRENTES=['costo_licencias','mantenimiento'];
 const COSTOS_ETQ_RECURRENTES={costo_licencias:'Costo por licencias',mantenimiento:'Mantenimiento'};
 const COSTOS_CAMPOS_TODOS=['costo_implementacion','mensualidad','costo_licencias','mantenimiento','adicionales'];
-const COSTOS_CAMPOS_META=['proveedor','termino_contrato','num_lic_con_costo','num_lic_sin_costo'];
-const COSTOS_CSV_HEADER='proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,mantenimiento,adicionales,num_lic_con_costo,num_lic_sin_costo,termino_contrato,notas';
+const COSTOS_CAMPOS_META=['proveedor','termino_contrato','num_licencias'];
+const COSTOS_CSV_HEADER='proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,mantenimiento,adicionales,num_licencias,termino_contrato,notas';
 
 function _loadCostosProyectos(){
   try{ _costosProyectos=JSON.parse(localStorage.getItem('dti_costos_proyectos')||'{}'); }catch(e){ _costosProyectos={}; }
@@ -4184,7 +4184,7 @@ function _saveCostosProyectos(){
 async function _backupCostosProyectosGitHub(){
   try{
     const esc=s=>String(s||'').replace(/"/g,'""');
-    const campos=['proveedor','costo_implementacion','mensualidad','costo_licencias','mantenimiento','adicionales','num_lic_con_costo','num_lic_sin_costo','termino_contrato','notas'];
+    const campos=['proveedor','costo_implementacion','mensualidad','costo_licencias','mantenimiento','adicionales','num_licencias','termino_contrato','notas'];
     const rows=Object.entries(_costosProyectos).map(([nombre,c])=>
       '"'+esc(nombre)+'"'+campos.map(k=>',"'+esc(c[k])+'"').join('')
     );
@@ -4209,6 +4209,12 @@ function _costosCalcular(c){
     tieneAlgo=true;
     unicos.push({lbl:COSTOS_ETQ_UNICOS[k],val:n});
   });
+
+  // Numero de licencias: solo informativo, no participa en ningun calculo de dinero
+  const numLic=parseFloat(c.num_licencias);
+  const licenciasInfo=(!isNaN(numLic) && numLic>0)?numLic:null;
+  if(licenciasInfo!==null) tieneAlgo=true;
+
   const recurrentes=[];
   COSTOS_CAMPOS_RECURRENTES.forEach(k=>{
     const n=parseFloat(c[k]);
@@ -4222,15 +4228,6 @@ function _costosCalcular(c){
   const adic=parseFloat(c.adicionales);
   const adicionales=isNaN(adic)?null:adic;
   if(adicionales!==null) tieneAlgo=true;
-
-  // Conteo de licencias: solo informativo, no participa en ningun calculo de dinero
-  const licConCosto=parseFloat(c.num_lic_con_costo);
-  const licSinCosto=parseFloat(c.num_lic_sin_costo);
-  let licenciasInfo=null;
-  const licPartes=[];
-  if(!isNaN(licConCosto) && licConCosto>0) licPartes.push(licConCosto+' con costo');
-  if(!isNaN(licSinCosto) && licSinCosto>0) licPartes.push(licSinCosto+' sin costo');
-  if(licPartes.length){ licenciasInfo=licPartes.join(' · '); tieneAlgo=true; }
 
   const costoTotal=(anualidad||0)+recurrentes.reduce((s,f)=>s+f.val,0)+unicos.reduce((s,f)=>s+f.val,0)+(adicionales||0);
 
@@ -4253,12 +4250,11 @@ function openCostosModal(){
     vacio.style.display='none';
     contenido.style.display='block';
 
-    // Metadata (proveedor, termino de contrato, conteo de licencias) — solo chips de lo que exista
+    // Metadata (proveedor, termino de contrato) — solo chips de lo que exista
     const metaBox=document.getElementById('costos-meta');
     const metaChips=[];
     if(c.proveedor && c.proveedor.trim()) metaChips.push('🏢 '+c.proveedor.trim());
     if(c.termino_contrato) metaChips.push('📆 Término de contrato: '+c.termino_contrato);
-    if(calc.licenciasInfo) metaChips.push('🔢 Licencias: '+calc.licenciasInfo);
     if(metaChips.length){
       metaBox.style.display='flex';
       metaBox.innerHTML=metaChips.map(t=>'<span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;font-size:12px;color:rgba(255,255,255,.75)">'+t+'</span>').join('');
@@ -4273,11 +4269,16 @@ function openCostosModal(){
     } else { secUnicos.style.display='none'; }
 
     const secRec=document.getElementById('costos-sec-recurrentes');
-    if(calc.recurrentes.length){
+    if(calc.recurrentes.length || calc.licenciasInfo){
       secRec.style.display='block';
       document.getElementById('costos-filas-recurrentes').innerHTML=calc.recurrentes.map(f=>
         '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>'
       ).join('');
+      const filaLic=document.getElementById('costos-fila-numlicencias');
+      if(calc.licenciasInfo){
+        filaLic.style.display='flex';
+        document.getElementById('costos-val-numlicencias').textContent=calc.licenciasInfo;
+      } else { filaLic.style.display='none'; }
     } else { secRec.style.display='none'; }
 
     const filaAdic=document.getElementById('costos-fila-adicionales-wrap');
@@ -4351,8 +4352,7 @@ function onCostosProyectoChange(){
   document.getElementById('costos-inp-implementacion').value=c.costo_implementacion||'';
   document.getElementById('costos-inp-mensualidad').value=c.mensualidad||'';
   document.getElementById('costos-inp-licencias').value=c.costo_licencias||'';
-  document.getElementById('costos-inp-lic-con-costo').value=c.num_lic_con_costo||'';
-  document.getElementById('costos-inp-lic-sin-costo').value=c.num_lic_sin_costo||'';
+  document.getElementById('costos-inp-numlicencias').value=c.num_licencias||'';
   document.getElementById('costos-inp-mantenimiento').value=c.mantenimiento||'';
   document.getElementById('costos-inp-adicionales').value=c.adicionales||'';
   document.getElementById('costos-inp-notas').value=c.notas||'';
@@ -4366,8 +4366,7 @@ function _costosLeerForm(){
     costo_implementacion:document.getElementById('costos-inp-implementacion').value.trim(),
     mensualidad:document.getElementById('costos-inp-mensualidad').value.trim(),
     costo_licencias:document.getElementById('costos-inp-licencias').value.trim(),
-    num_lic_con_costo:document.getElementById('costos-inp-lic-con-costo').value.trim(),
-    num_lic_sin_costo:document.getElementById('costos-inp-lic-sin-costo').value.trim(),
+    num_licencias:document.getElementById('costos-inp-numlicencias').value.trim(),
     mantenimiento:document.getElementById('costos-inp-mantenimiento').value.trim(),
     adicionales:document.getElementById('costos-inp-adicionales').value.trim(),
     notas:document.getElementById('costos-inp-notas').value.trim()
@@ -4465,14 +4464,14 @@ function descargarPlantillaCostosCSV(){
     return;
   }
   const esc=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
-  const header='direccion,proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,num_lic_con_costo,num_lic_sin_costo,mantenimiento,adicionales,termino_contrato,notas';
+  const header='direccion,proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,termino_contrato,notas';
   const rows=proyectos
     .slice()
     .sort((a,b)=>a.direccion.localeCompare(b.direccion)||a.nombre.localeCompare(b.nombre))
     .map(p=>{
       const c=_costosProyectos[p.nombre]||{}; // si ya tiene datos capturados, se incluyen para no perderlos
       return [p.direccion,p.nombre,c.proveedor||'',c.costo_implementacion||'',
-        c.mensualidad||'',c.costo_licencias||'',c.num_lic_con_costo||'',c.num_lic_sin_costo||'',c.mantenimiento||'',c.adicionales||'',
+        c.mensualidad||'',c.costo_licencias||'',c.num_licencias||'',c.mantenimiento||'',c.adicionales||'',
         c.termino_contrato||'',c.notas||''].map(esc).join(',');
     });
   const csv=header+'\n'+rows.join('\n');
