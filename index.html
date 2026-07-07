@@ -636,25 +636,25 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="act-week-nav">
       <div class="act-filters-row">
-        <select id="actimc-f-estatus" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+        <select id="actimc-f-estatus" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">🔵 Todos los estatus</option>
           <option value="En proceso">🔵 En proceso</option>
           <option value="Concluido">🟢 Concluido</option>
           <option value="Atrasado">🔴 Atrasado</option>
         </select>
-        <select id="actimc-f-colab" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+        <select id="actimc-f-colab" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">👤 Todos los colaboradores</option>
         </select>
-        <select id="actimc-f-proyecto" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+        <select id="actimc-f-proyecto" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">📁 Todos los proyectos</option>
         </select>
-        <select id="actimc-f-prioridad" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+        <select id="actimc-f-prioridad" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">⚡ Todas las prioridades</option>
           <option value="Alta">🔴 Alta</option>
           <option value="Media">🟡 Media</option>
           <option value="Baja">🟢 Baja</option>
         </select>
-        <select id="actimc-f-semana" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+        <select id="actimc-f-semana" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">📅 Todas las fechas</option>
         </select>
         <div class="act-multi-wrap">
@@ -935,11 +935,11 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </div>
       </div>
       <!-- Colaborador (select simple, misma logica que IMC) -->
-      <select id="act-f-colab" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+      <select id="act-f-colab" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
         <option value="">👤 Todos los colaboradores</option>
       </select>
       <!-- Semana (dinámico, solo semanas con actividades) -->
-      <select id="act-f-semana" onchange="_actSemana=this.value; renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+      <select id="act-f-semana" onchange="_actSemana=this.value; renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
         <option value="">📅 Todas las fechas</option>
       </select>
       <!-- Multi-select Mes -->
@@ -953,7 +953,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         </div>
       </div>
       <!-- Prioridad -->
-      <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+      <select id="act-f-prioridad" onchange="renderActividades()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
         <option value="">⚡ Todas las prioridades</option>
         <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
         <option value="Media" style="background:#1c2535;color:#f59e0b">🟡 Media</option>
