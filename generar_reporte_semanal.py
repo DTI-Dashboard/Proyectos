@@ -93,14 +93,23 @@ try:
         if 'stand' in s: return 'Stand By'
         return 'Atrasado'
 
-    def cell_txt(cell, text, sz=9, bold=False, color=None, align=PP_ALIGN.LEFT):
-        tf=cell.text_frame; tf.word_wrap=False; tf.clear()
-        cell.margin_top=0; cell.margin_bottom=0; cell.margin_left=Pt(3); cell.margin_right=Pt(3)
-        cell.vertical_anchor=MSO_ANCHOR.MIDDLE
-        p=tf.paragraphs[0]; p.alignment=align
-        r=p.add_run(); r.text=str(text)
-        r.font.size=Pt(sz); r.font.bold=bold; r.font.name='Calibri'
-        if color: r.font.color.rgb=color
+    def add_cell_text(slide, x, y, w, h, text, sz=7, bold=False, color=None, align=PP_ALIGN.CENTER):
+        tb = slide.shapes.add_textbox(I(x+0.02), I(y), I(w-0.04), I(h))
+        tf = tb.text_frame
+        tf.word_wrap = False
+        tf.margin_left=0; tf.margin_right=0; tf.margin_top=0; tf.margin_bottom=0
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = tf.paragraphs[0]; p.alignment = align
+        r = p.add_run(); r.text = str(text)
+        r.font.size = Pt(sz); r.font.bold = bold; r.font.name = 'Calibri'
+        if color: r.font.color.rgb = color
+
+    def add_row_bg(slide, x, y, w, h, color):
+        rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, I(x), I(y), I(w), I(h))
+        rect.fill.solid(); rect.fill.fore_color.rgb = color
+        rect.line.fill.background()
+        rect.shadow.inherit = False
+        return rect
 
     def add_outer_shadow(shape, color_hex, blur_pt=6, dist_pt=1.5, alpha_pct=55, direction_deg=90):
         """Sombra exterior del MISMO color de la barra (no gris)."""
@@ -192,35 +201,40 @@ try:
     p2=tx2.text_frame.paragraphs[0]; p2.alignment=PP_ALIGN.CENTER
     r2=p2.add_run(); r2.text=f'Cierre semanal del {rango}'
     r2.font.size=Pt(8.5); r2.font.name='Calibri'; r2.font.color.rgb=GRAY
-    colW=[I(0.83),I(2.70),I(0.73),I(0.73),I(0.58),I(0.65),I(2.42),I(0.92)]
     colW_in=[0.83,2.70,0.73,0.73,0.58,0.65,2.42,0.92]
     TBL_X=0.08; TBL_Y=1.30; HDR_H=0.22; ROW_H=0.205
-    tblW=sum(colW); nrows=len(datos)+1
-    tblS=s2.shapes.add_table(nrows,8,I(TBL_X),I(TBL_Y),tblW,I(HDR_H+len(datos)*ROW_H))
-    tbl=tblS.table
-    for ci,w in enumerate(colW): tbl.columns[ci].width=w
-    tbl.rows[0].height=I(HDR_H)
+    col_x=[TBL_X]
+    for w in colW_in[:-1]:
+        col_x.append(col_x[-1]+w)
+    tblW=sum(colW_in)
+
+    # Encabezado
+    add_row_bg(s2, TBL_X, TBL_Y, tblW, HDR_H, GOLD)
     hdrs=['TIPO','PROYECTO','INICIO','FIN','% REAL','% ESPERADO','BARRA DE AVANCE','SEMÁFORO']
     for ci,h in enumerate(hdrs):
-        cell=tbl.cell(0,ci)
-        cell_txt(cell,h,sz=7,bold=True,color=NAVY,align=PP_ALIGN.CENTER)
-        cell.fill.solid(); cell.fill.fore_color.rgb=GOLD
-    bar_col_x = TBL_X + sum(colW_in[0:6])
-    bar_w = 1.85  # ancho del track, dejando espacio a la derecha para el %
-    bar_h = ROW_H * 0.55
+        add_cell_text(s2, col_x[ci], TBL_Y, colW_in[ci], HDR_H, h, sz=7, bold=True, color=NAVY, align=PP_ALIGN.CENTER)
+
+    bar_w=1.85  # ancho del track, dejando espacio a la derecha para el %
+    bar_h=ROW_H*0.55
     for ri,p in enumerate(datos):
-        tbl.rows[ri+1].height=I(ROW_H)
         s=sc(p); sc_c=sem_col.get(s,RGBColor(0x88,0x88,0x88))
         bg=RGBColor(0xF5,0xF7,0xFA) if ri%2==0 else WHITE
-        nombre_corto = p['nombre'] if len(p['nombre'])<=48 else p['nombre'][:46]+'…'
-        vals=[p['tipo'],nombre_corto,p['inicio'],p['fin'],f"{p['real']}%",f"{p['esp']}%",'',sem_txt.get(s,s)]
-        aligns=[PP_ALIGN.CENTER,PP_ALIGN.LEFT,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.RIGHT,PP_ALIGN.CENTER]
-        colors=[NAVY,NAVY,GRAY,GRAY,NAVY,GRAY,sc_c,sc_c]; bolds=[True,False,False,False,True,False,True,True]
-        for ci2,(v,al,co,bo) in enumerate(zip(vals,aligns,colors,bolds)):
-            cell=tbl.cell(ri+1,ci2); cell_txt(cell,v,sz=7,bold=bo,color=co,align=al)
-            cell.fill.solid(); cell.fill.fore_color.rgb=bg
-        bar_row_y = TBL_Y + HDR_H + ri*ROW_H + (ROW_H - bar_h)/2
-        draw_bar(s2, bar_col_x + 0.05, bar_row_y, bar_w, bar_h, p['real'], sem_hex.get(s,'888888'))
+        row_y=TBL_Y+HDR_H+ri*ROW_H
+        add_row_bg(s2, TBL_X, row_y, tblW, ROW_H, bg)
+        nombre_corto=p['nombre'] if len(p['nombre'])<=48 else p['nombre'][:46]+'…'
+        celdas=[
+            (0,p['tipo'],PP_ALIGN.CENTER,NAVY,True),
+            (1,nombre_corto,PP_ALIGN.LEFT,NAVY,False),
+            (2,p['inicio'],PP_ALIGN.CENTER,GRAY,False),
+            (3,p['fin'],PP_ALIGN.CENTER,GRAY,False),
+            (4,f"{p['real']}%",PP_ALIGN.CENTER,NAVY,True),
+            (5,f"{p['esp']}%",PP_ALIGN.CENTER,GRAY,False),
+            (7,sem_txt.get(s,s),PP_ALIGN.CENTER,sc_c,True),
+        ]
+        for ci,v,al,co,bo in celdas:
+            add_cell_text(s2, col_x[ci], row_y, colW_in[ci], ROW_H, v, sz=7, bold=bo, color=co, align=al)
+        bar_row_y=row_y+(ROW_H-bar_h)/2
+        draw_bar(s2, col_x[6]+0.05, bar_row_y, bar_w, bar_h, p['real'], sem_hex.get(s,'888888'))
 
     # Guardar PPTX con slide2 usando slideLayout17 (mismo fondo que slide3)
     buf=io.BytesIO(); prs.save(buf); buf.seek(0)
