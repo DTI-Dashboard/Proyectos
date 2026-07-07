@@ -42,7 +42,7 @@ try:
     from pptx import Presentation
     from pptx.util import Inches as I, Pt
     from pptx.dml.color import RGBColor
-    from pptx.enum.text import PP_ALIGN
+    from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.enum.dml import MSO_PATTERN_TYPE
     from pptx.oxml.ns import qn
@@ -95,6 +95,8 @@ try:
 
     def cell_txt(cell, text, sz=9, bold=False, color=None, align=PP_ALIGN.LEFT):
         tf=cell.text_frame; tf.word_wrap=False; tf.clear()
+        cell.margin_top=0; cell.margin_bottom=0; cell.margin_left=Pt(3); cell.margin_right=Pt(3)
+        cell.vertical_anchor=MSO_ANCHOR.MIDDLE
         p=tf.paragraphs[0]; p.alignment=align
         r=p.add_run(); r.text=str(text)
         r.font.size=Pt(sz); r.font.bold=bold; r.font.name='Calibri'
@@ -192,7 +194,7 @@ try:
     r2.font.size=Pt(8.5); r2.font.name='Calibri'; r2.font.color.rgb=GRAY
     colW=[I(0.83),I(2.70),I(0.73),I(0.73),I(0.58),I(0.65),I(2.42),I(0.92)]
     colW_in=[0.83,2.70,0.73,0.73,0.58,0.65,2.42,0.92]
-    TBL_X=0.08; TBL_Y=1.30; HDR_H=0.22; ROW_H=0.215
+    TBL_X=0.08; TBL_Y=1.30; HDR_H=0.24; ROW_H=0.235
     tblW=sum(colW); nrows=len(datos)+1
     tblS=s2.shapes.add_table(nrows,8,I(TBL_X),I(TBL_Y),tblW,I(HDR_H+len(datos)*ROW_H))
     tbl=tblS.table
