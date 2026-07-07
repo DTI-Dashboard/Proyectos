@@ -3966,6 +3966,10 @@ async function exportCierreSemanal(){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
   var rangoHoy=_rangoCierreSemanalHoy();
+  // Disparar la actualizacion de datos EN SEGUNDO PLANO (no se espera) para que
+  // cierre_base.pptx nunca se quede congelado, sin hacer lento este boton.
+  fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) })
+    .catch(function(err){ console.warn('Regeneracion en segundo plano no se pudo disparar:', err); });
   showToast('⏳ Generando reporte...','info',8000);
   try{
     // Descargar el PPTX base (slide 1 y slide 2 con los datos de la ultima sincronizacion)
