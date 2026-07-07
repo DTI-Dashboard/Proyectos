@@ -415,6 +415,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
       <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Exportar Excel</button>
+      <button class="btn-xlsx" onclick="exportCostosExcel('resumen')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
 
@@ -551,6 +552,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
+      <button class="btn-xlsx" onclick="exportCostosExcel('imc')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
   <div class="imc-subtabs" style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
@@ -701,6 +703,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
+      <button class="btn-xlsx" onclick="exportCostosExcel('dev')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
   <div class="kpi-strip">
@@ -773,6 +776,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
+      <button class="btn-xlsx" onclick="exportCostosExcel('inf')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
   <div class="kpi-strip">
@@ -844,6 +848,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div class="export-btns">
       <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
+      <button class="btn-xlsx" onclick="exportCostosExcel('ia')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
   <div class="kpi-strip">
@@ -2510,6 +2515,41 @@ function exportXLSX(tab){
   XLSX.utils.book_append_sheet(wb,wsP,'Proyectos');
 
   XLSX.writeFile(wb,'DTI_'+tab.toUpperCase()+'_'+today.replace(/\//g,'-')+'.xlsx');
+}
+
+function exportCostosExcel(tab){
+  const dirNames={imc:'IMC',dev:'Desarrollo',inf:'Soporte',ia:'IA',resumen:'Resumen'};
+  let projects;
+  if(tab==='resumen'){
+    projects=_getAllProyectos().map(p=>Object.assign({},p,{_dir:p._modulo}));
+  } else {
+    projects=((state[tab]&&state[tab].data)?state[tab].data:[]).map(p=>Object.assign({},p,{_dir:dirNames[tab]}));
+  }
+
+  const header=['Dirección','Proyecto','Responsable','Área','Proveedor','Costo de Implementación / Desarrollos','Costo Recurrente Mensual','Anualidad (Mensual × 12)','Costo por Licencias','Número de Licencias','Mantenimiento (anual)','Adicionales','Término de Contrato','Notas'];
+  const rows=projects.map(function(p){
+    const c=_costosProyectos[p.nombre]||{};
+    const calc=_costosCalcular(c);
+    return [
+      p._dir||'', p.nombre||'', p.responsable||'', p.area||'', c.proveedor||'',
+      c.costo_implementacion?parseFloat(c.costo_implementacion):'',
+      c.mensualidad?parseFloat(c.mensualidad):'',
+      calc.anualidad!==null?calc.anualidad:'',
+      c.costo_licencias?parseFloat(c.costo_licencias):'',
+      c.num_licencias?parseFloat(c.num_licencias):'',
+      c.mantenimiento?parseFloat(c.mantenimiento):'',
+      c.adicionales?parseFloat(c.adicionales):'',
+      c.termino_contrato||'', c.notas||''
+    ];
+  });
+
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+  ws['!cols']=[{wch:14},{wch:45},{wch:20},{wch:16},{wch:22},{wch:22},{wch:20},{wch:20},{wch:16},{wch:16},{wch:16},{wch:14},{wch:16},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'Costos');
+
+  const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(wb,'DTI_Costos_'+dirNames[tab]+'_'+today+'.xlsx');
 }
 
 // ─── DESCARGA DE PLANTILLA CSV (solo columnas editables) ───
