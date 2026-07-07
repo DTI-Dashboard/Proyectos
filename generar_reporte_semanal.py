@@ -166,7 +166,8 @@ try:
                 for run in para.runs:
                     if 'semanal del' in run.text:
                         run.text=f'Cierre semanal del {rango}'
-                        shape.width=I(7.5); shape.left=I(1.7)
+                        shape.width=I(7.5); shape.left=I(2.1)
+                        para.alignment=PP_ALIGN.RIGHT
 
     # SLIDE 2
     s2=prs.slides[1]
