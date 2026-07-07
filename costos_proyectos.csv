@@ -1,2 +1,2 @@
-proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,mantenimiento,adicionales,num_lic_con_costo,num_lic_sin_costo,termino_contrato,notas
-"Talleres || Mecánica Mx (Mejoras)","Mecanica Mx SA de SV","100","50000","150","5","200","100","20","2026-07-22","esto es una prueba"
+proyecto,proveedor,costo_implementacion,mensualidad,costo_licencias,mantenimiento,adicionales,num_licencias,termino_contrato,notas
+"Talleres || Mecánica Mx (Mejoras)","Mecanica Mx SA de SV","100","50000","1507","5","200","346","2026-07-22","esto es una prueba"
