@@ -43,6 +43,9 @@ try:
     from pptx.util import Inches as I, Pt
     from pptx.dml.color import RGBColor
     from pptx.enum.text import PP_ALIGN
+    from pptx.enum.shapes import MSO_SHAPE
+    from pptx.enum.dml import MSO_PATTERN_TYPE
+    from pptx.oxml.ns import qn
     import lxml.etree as etree
 
     # Leer datos IMC del HTML actual
@@ -97,27 +100,52 @@ try:
         r.font.size=Pt(sz); r.font.bold=bold; r.font.name='Calibri'
         if color: r.font.color.rgb=color
 
-    def bar_fill(cell, real, sc_str):
-        tc=cell._tc
-        NS='http://schemas.openxmlformats.org/drawingml/2006/main'
-        tcPr=tc.find(f'{{{NS}}}tcPr')
-        if tcPr is None:
-            tcPr=etree.Element(f'{{{NS}}}tcPr'); tc.insert(0,tcPr)
-        for f in list(tcPr):
-            if 'Fill' in f.tag or 'noFill' in f.tag: tcPr.remove(f)
-        pct=min(float(real or 0),100)
-        h=sem_hex.get(sc_str,'888888')
-        if pct>=100:
-            fill=etree.SubElement(tcPr,f'{{{NS}}}solidFill')
-            etree.SubElement(fill,f'{{{NS}}}srgbClr').set('val',h)
-        else:
-            stop=int(pct*1000); s3=min(stop+500,100000)
-            gf=etree.SubElement(tcPr,f'{{{NS}}}gradFill')
-            gl=etree.SubElement(gf,f'{{{NS}}}gsLst')
-            for pos,col in [(0,h),(stop,h),(s3,'E2E2E2'),(100000,'E2E2E2')]:
-                g=etree.SubElement(gl,f'{{{NS}}}gs'); g.set('pos',str(pos))
-                etree.SubElement(g,f'{{{NS}}}srgbClr').set('val',col)
-            lin=etree.SubElement(gf,f'{{{NS}}}lin'); lin.set('ang','0'); lin.set('scaled','0')
+    def add_outer_shadow(shape, color_hex, blur_pt=6, dist_pt=1.5, alpha_pct=55, direction_deg=90):
+        """Sombra exterior del MISMO color de la barra (no gris)."""
+        spPr = shape._element.spPr
+        for el in spPr.findall(qn('a:effectLst')):
+            spPr.remove(el)
+        effectLst = etree.SubElement(spPr, qn('a:effectLst'))
+        outerShdw = etree.SubElement(effectLst, qn('a:outerShdw'))
+        outerShdw.set('blurRad', str(int(blur_pt * 12700)))
+        outerShdw.set('dist', str(int(dist_pt * 12700)))
+        outerShdw.set('dir', str(int(direction_deg * 60000)))
+        outerShdw.set('rotWithShape', '0')
+        srgbClr = etree.SubElement(outerShdw, qn('a:srgbClr'))
+        srgbClr.set('val', color_hex)
+        alpha = etree.SubElement(srgbClr, qn('a:alpha'))
+        alpha.set('val', str(int(alpha_pct * 1000)))
+
+    def draw_bar(slide, x, y, w, h, pct, color_hex):
+        """Barra tipo píldora: fondo con mini-cuadros claros del mismo color,
+        relleno solido con sombra del mismo color, y % al final."""
+        pct = max(0.0, min(100.0, float(pct or 0)))
+        track = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, I(x), I(y), I(w), I(h))
+        track.adjustments[0] = 0.5
+        track.fill.patterned()
+        track.fill.pattern = MSO_PATTERN_TYPE.SMALL_GRID
+        track.fill.fore_color.rgb = RGBColor.from_string(color_hex)
+        track.fill.back_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        track.line.fill.background()
+        track.shadow.inherit = False
+
+        if pct > 0:
+            fill_w = max(h, w * (pct / 100.0))
+            bar = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, I(x), I(y), I(fill_w), I(h))
+            bar.adjustments[0] = 0.5
+            bar.fill.solid()
+            bar.fill.fore_color.rgb = RGBColor.from_string(color_hex)
+            bar.line.fill.background()
+            bar.shadow.inherit = False
+            add_outer_shadow(bar, color_hex)
+
+        txt = slide.shapes.add_textbox(I(x + w + 0.05), I(y - 0.035), I(0.5), I(h + 0.07))
+        tf = txt.text_frame
+        tf.margin_left = 0; tf.margin_right = 0; tf.margin_top = 0; tf.margin_bottom = 0
+        p = tf.paragraphs[0]; p.alignment = PP_ALIGN.LEFT
+        r = p.add_run(); r.text = f"{int(round(pct))}%"
+        r.font.size = Pt(8); r.font.bold = True; r.font.name = 'Calibri'
+        r.font.color.rgb = RGBColor.from_string(color_hex)
 
     # SLIDE 1
     s1=prs.slides[0]
@@ -163,6 +191,7 @@ try:
     r2=p2.add_run(); r2.text=f'Cierre semanal del {rango}'
     r2.font.size=Pt(8.5); r2.font.name='Calibri'; r2.font.color.rgb=GRAY
     colW=[I(0.83),I(2.70),I(0.73),I(0.73),I(0.58),I(0.65),I(2.42),I(0.92)]
+    colW_in=[0.83,2.70,0.73,0.73,0.58,0.65,2.42,0.92]
     TBL_X=0.08; TBL_Y=1.30; HDR_H=0.22; ROW_H=0.215
     tblW=sum(colW); nrows=len(datos)+1
     tblS=s2.shapes.add_table(nrows,8,I(TBL_X),I(TBL_Y),tblW,I(HDR_H+len(datos)*ROW_H))
@@ -174,17 +203,21 @@ try:
         cell=tbl.cell(0,ci)
         cell_txt(cell,h,sz=7,bold=True,color=NAVY,align=PP_ALIGN.CENTER)
         cell.fill.solid(); cell.fill.fore_color.rgb=GOLD
+    bar_col_x = TBL_X + sum(colW_in[0:6])
+    bar_w = 1.85  # ancho del track, dejando espacio a la derecha para el %
+    bar_h = ROW_H * 0.55
     for ri,p in enumerate(datos):
         tbl.rows[ri+1].height=I(ROW_H)
         s=sc(p); sc_c=sem_col.get(s,RGBColor(0x88,0x88,0x88))
         bg=RGBColor(0xF5,0xF7,0xFA) if ri%2==0 else WHITE
-        vals=[p['tipo'],p['nombre'],p['inicio'],p['fin'],f"{p['real']}%",f"{p['esp']}%",f"{p['real']}%",sem_txt.get(s,s)]
+        vals=[p['tipo'],p['nombre'],p['inicio'],p['fin'],f"{p['real']}%",f"{p['esp']}%",'',sem_txt.get(s,s)]
         aligns=[PP_ALIGN.CENTER,PP_ALIGN.LEFT,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.CENTER,PP_ALIGN.RIGHT,PP_ALIGN.CENTER]
         colors=[NAVY,NAVY,GRAY,GRAY,NAVY,GRAY,sc_c,sc_c]; bolds=[True,False,False,False,True,False,True,True]
         for ci2,(v,al,co,bo) in enumerate(zip(vals,aligns,colors,bolds)):
             cell=tbl.cell(ri+1,ci2); cell_txt(cell,v,sz=7,bold=bo,color=co,align=al)
-            if ci2==6: bar_fill(cell,p['real'],s)
-            else: cell.fill.solid(); cell.fill.fore_color.rgb=bg
+            cell.fill.solid(); cell.fill.fore_color.rgb=bg
+        bar_row_y = TBL_Y + HDR_H + ri*ROW_H + (ROW_H - bar_h)/2
+        draw_bar(s2, bar_col_x + 0.05, bar_row_y, bar_w, bar_h, p['real'], sem_hex.get(s,'888888'))
 
     # Guardar PPTX con slide2 usando slideLayout17 (mismo fondo que slide3)
     buf=io.BytesIO(); prs.save(buf); buf.seek(0)
