@@ -2811,6 +2811,17 @@ const GH_WORKFLOW_REPORTE = 'reporte_semanal.yml';
 
 // Dispara reporte_semanal.yml (regenera cierre_base.pptx con datos IMC frescos) y espera a que termine.
 // Devuelve una Promise<boolean> (true = éxito). Usado por exportCierreSemanal().
+// Calcula el rango "jueves a jueves" del cierre semanal IMC, igual que generar_reporte_semanal.py
+function _rangoCierreSemanalHoy(){
+  var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var hoy=new Date(); hoy.setHours(12,0,0,0);
+  var dow=hoy.getDay(); // 0=domingo...4=jueves...6=sabado
+  var diasAtras=((dow-4)+7)%7;
+  var jP=new Date(hoy); jP.setDate(hoy.getDate()-diasAtras);
+  var jA=new Date(jP); jA.setDate(jP.getDate()+7);
+  return jP.getDate()+' de '+MESES[jP.getMonth()]+' al '+jA.getDate()+' de '+MESES[jA.getMonth()];
+}
+
 function _dispararRegeneracionCierreBase(){
   return new Promise(async (resolve)=>{
     const startedAt = new Date();
@@ -3954,18 +3965,21 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 async function exportCierreSemanal(){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
-  showToast('⏳ Actualizando datos IMC antes de generar el reporte...','info',15000);
-  var ok=await _dispararRegeneracionCierreBase();
-  if(!ok){
-    showToast('⚠️ No se pudo confirmar la actualización — se usará la última versión disponible.','error',5000);
-  }
+  var rangoHoy=_rangoCierreSemanalHoy();
   showToast('⏳ Generando reporte...','info',8000);
   try{
-    // Descargar el PPTX base (slide 1 y slide 2 ya correctos)
+    // Descargar el PPTX base (slide 1 y slide 2 con los datos de la ultima sincronizacion)
     var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/cierre_base.pptx?t='+Date.now(),{cache:'no-store'});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     var bytes=await resp.arrayBuffer();
     var zip=await JSZip.loadAsync(bytes);
+
+    // Actualizar el rango de fecha (slide 1 y 2) al momento real de la descarga
+    for(var slideName of ['ppt/slides/slide1.xml','ppt/slides/slide2.xml']){
+      var slideXml=await zip.file(slideName).async('string');
+      slideXml=slideXml.replace(/Cierre semanal del [^<]*/g, 'Cierre semanal del '+rangoHoy);
+      zip.file(slideName, slideXml);
+    }
 
     // Leer eventualidades del localStorage filtrando solo proyectos IMC
     var D=(state.imc&&state.imc.data)?state.imc.data:[];
