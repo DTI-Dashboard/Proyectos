@@ -4469,15 +4469,30 @@ function importarCostosCSV(event){
   reader.readAsText(file,'UTF-8');
 }
 function descargarPlantillaCostosCSV(){
-  const ejemplo='"Nombre exacto del proyecto","Microsoft","MXN","15000","3000","2500","1200","10","4000","500","2027-01-15","Ejemplo de nota"';
-  const csv=COSTOS_CSV_HEADER+'\n'+ejemplo;
+  const proyectos=_getTodosLosProyectosConDireccion();
+  if(!proyectos.length){
+    showToast('No hay proyectos cargados todavía en ningún módulo','error');
+    return;
+  }
+  const esc=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
+  const header='direccion,proyecto,proveedor,moneda,costo_implementacion,capacitacion,mensualidad,costo_licencias,num_licencias,mantenimiento,adicionales,proxima_renovacion,notas';
+  const rows=proyectos
+    .slice()
+    .sort((a,b)=>a.direccion.localeCompare(b.direccion)||a.nombre.localeCompare(b.nombre))
+    .map(p=>{
+      const c=_costosProyectos[p.nombre]||{}; // si ya tiene datos capturados, se incluyen para no perderlos
+      return [p.direccion,p.nombre,c.proveedor||'',c.moneda||'MXN',c.costo_implementacion||'',c.capacitacion||'',
+        c.mensualidad||'',c.costo_licencias||'',c.num_licencias||'',c.mantenimiento||'',c.adicionales||'',
+        c.proxima_renovacion||'',c.notas||''].map(esc).join(',');
+    });
+  const csv=header+'\n'+rows.join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url; a.download='plantilla_costos_proyectos.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('Plantilla descargada — llénala y usa "Importar CSV"','success');
+  showToast(proyectos.length+' proyecto(s) incluidos en la plantilla — llénala y usa "Importar CSV"','success',5000);
 }
 
 function saveEventualidad(){
