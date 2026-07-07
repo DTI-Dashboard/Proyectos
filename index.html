@@ -2807,6 +2807,41 @@ function resetSyncButton(btn, label){
   label.textContent = 'Actualizar Datos';
 }
 
+const GH_WORKFLOW_REPORTE = 'reporte_semanal.yml';
+
+// Dispara reporte_semanal.yml (regenera cierre_base.pptx con datos IMC frescos) y espera a que termine.
+// Devuelve una Promise<boolean> (true = éxito). Usado por exportCierreSemanal().
+function _dispararRegeneracionCierreBase(){
+  return new Promise(async (resolve)=>{
+    const startedAt = new Date();
+    try{
+      const res = await fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || data.ok === false) throw new Error(data.message || ('HTTP ' + res.status));
+    }catch(err){
+      console.warn('_dispararRegeneracionCierreBase error:', err);
+      resolve(false);
+      return;
+    }
+    const MAX_ATTEMPTS = 20; // ~100s
+    for(let attempt=0; attempt<MAX_ATTEMPTS; attempt++){
+      await new Promise(r=>setTimeout(r, 5000));
+      try{
+        const res2 = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW_REPORTE}/runs?per_page=5`, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const data2 = await res2.json();
+        const run = (data2.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt - 5000);
+        if(run && run.status === 'completed'){
+          resolve(run.conclusion === 'success');
+          return;
+        }
+      }catch(err){ console.warn('poll cierre_base error:', err); }
+    }
+    resolve(false); // timeout
+  });
+}
+
 function openModal(p){
   const semColors={tiempo:'22c55e',terminado:'3b82f6',atrasado:'ef4444',standby:'8b5cf6',riesgo:'f59e0b'};
   const sc=semClass(p.sem), col=semColors[sc]||'8b5cf6';
@@ -3919,7 +3954,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 async function exportCierreSemanal(){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
-  showToast('\u23f3 Generando reporte...','info',8000);
+  showToast('⏳ Actualizando datos IMC antes de generar el reporte...','info',15000);
+  var ok=await _dispararRegeneracionCierreBase();
+  if(!ok){
+    showToast('⚠️ No se pudo confirmar la actualización — se usará la última versión disponible.','error',5000);
+  }
+  showToast('⏳ Generando reporte...','info',8000);
   try{
     // Descargar el PPTX base (slide 1 y slide 2 ya correctos)
     var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/cierre_base.pptx?t='+Date.now(),{cache:'no-store'});
