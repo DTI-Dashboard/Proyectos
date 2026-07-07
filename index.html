@@ -1009,6 +1009,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <button id="ctab-layout" onclick="switchCargaTab('layout')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:700;color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-2px;transition:all .2s">&#128196; Carga de Layout</button>
     <button id="ctab-directorio" onclick="switchCargaTab('directorio')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128231; Directorio de Colaboradores</button>
     <button id="ctab-directorioimc" onclick="switchCargaTab('directorioimc')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128188; Directorio IMC</button>
+    <button id="ctab-costos" onclick="switchCargaTab('costos')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128176; Costos de Proyectos</button>
   </div>
 
   <!-- Sub-tab: Layout -->
@@ -1084,6 +1085,68 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
         <tbody id="dirimc-tbody"></tbody>
       </table>
       <div id="dirimc-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin integrantes. Agrega el primero con el botón de arriba.</div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Costos de Proyectos -->
+  <div id="cpanel-costos" style="display:none">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Captura los costos de cualquier proyecto (de cualquier dirección). Solo llena los campos que apliquen — el cálculo de Anualidad y Costo Total se ajusta automáticamente a lo que captures. Esta información se ve desde el botón "💰 Costos" en el detalle de cada proyecto.</div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+        <div style="flex:1;min-width:260px">
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Proyecto</label>
+          <select id="costos-select-proyecto" onchange="onCostosProyectoChange()" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px">
+            <option value="">-- Selecciona un proyecto --</option>
+          </select>
+        </div>
+        <button onclick="document.getElementById('costos-csv-input').click()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📥 Importar CSV</button>
+        <input type="file" id="costos-csv-input" accept=".csv" style="display:none" onchange="importarCostosCSV(event)">
+      </div>
+      <div id="costos-form-campos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px;opacity:.4;pointer-events:none">
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Mensualidad</label>
+          <input type="number" id="costos-inp-mensualidad" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Costo por licencias</label>
+          <input type="number" id="costos-inp-licencias" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Mantenimiento</label>
+          <input type="number" id="costos-inp-mantenimiento" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Adicionales</label>
+          <input type="number" id="costos-inp-adicionales" oninput="_costosPreview()" placeholder="0.00" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+      <div id="costos-form-notas-wrap" style="margin-bottom:14px;opacity:.4;pointer-events:none">
+        <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Notas</label>
+        <textarea id="costos-inp-notas" oninput="_costosPreview()" rows="2" placeholder="Notas o contexto adicional sobre estos costos..." style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box;resize:vertical"></textarea>
+      </div>
+      <div id="costos-preview" style="display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;color:var(--muted)"><span id="costos-preview-anualidad-lbl" style="display:none">Anualidad (Mensualidad × 12)</span><span id="costos-preview-anualidad-val" style="font-family:'JetBrains Mono',monospace"></span></div>
+        <div style="display:flex;justify-content:space-between;color:var(--gold);font-weight:800;margin-top:4px"><span>Costo Total</span><span id="costos-preview-total-val" style="font-family:'JetBrains Mono',monospace"></span></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="costos-btn-eliminar" onclick="eliminarCostosProyecto()" style="display:none;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer">🗑 Eliminar</button>
+        <button id="costos-btn-guardar" onclick="guardarCostosProyecto()" disabled style="opacity:.5;background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Guardar</button>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Proyecto</th>
+          <th style="text-align:right;padding:10px 14px;width:120px">Mensualidad</th>
+          <th style="text-align:right;padding:10px 14px;width:120px">Anualidad</th>
+          <th style="text-align:right;padding:10px 14px;width:120px">Costo Total</th>
+          <th style="text-align:left;padding:10px 14px;width:80px">Acciones</th>
+        </tr></thead>
+        <tbody id="costos-tbody"></tbody>
+      </table>
+      <div id="costos-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin costos capturados todavía.</div>
     </div>
   </div>
 
@@ -1253,6 +1316,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
           <a id="m-plan-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--gold);font-weight:700;text-decoration:none;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:8px;padding:8px 18px;transition:.2s" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">📋 Consultar plan de trabajo →</a>
           <span id="m-plan-none" style="display:none;font-size:13px;color:rgba(255,255,255,0.4);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px">📋 Sin registro de plan de trabajo</span>
           <button id="m-ev-btn" onclick="openEvModal()" style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(201,168,76,0.1)';this.style.borderColor='rgba(201,168,76,0.4)';this.style.color='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.75)'">⚠ Documentar eventualidad</button>
+          <button id="m-costos-btn" onclick="openCostosModal()" style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(201,168,76,0.1)';this.style.borderColor='rgba(201,168,76,0.4)';this.style.color='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.75)'">💰 Costos</button>
           <span class="modal-hint">Clic fuera para cerrar</span>
         </div>
       </div>
@@ -1272,6 +1336,42 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <button class="ev-btn-delete" id="ev-btn-delete" onclick="deleteEventualidad()" style="display:none">🗑 Eliminar</button>
       <button class="ev-btn-cancel" onclick="closeEvModal()">Cancelar</button>
       <button class="ev-btn-save" onclick="saveEventualidad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle de Costos (dinamico: solo muestra los campos que tengan dato) -->
+<div id="costos-modal-bg" onclick="if(event.target===this)closeCostosModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center;">
+  <div style="background:#1a2340;border-radius:14px;padding:28px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(201,168,76,0.3);">
+    <div class="ev-modal-title">💰 Costos del Proyecto</div>
+    <div class="ev-modal-nombre" id="costos-nombre" style="margin-bottom:16px"></div>
+
+    <div id="costos-vacio" style="display:none;text-align:center;padding:24px 10px;color:rgba(255,255,255,.45);font-size:13px">
+      Sin información de costos registrada para este proyecto.<br>
+      <span style="font-size:12px">Puedes capturarla en <strong style="color:var(--gold)">Carga de Datos → Costos de Proyectos</strong>.</span>
+    </div>
+
+    <div id="costos-contenido" style="display:none">
+      <div id="costos-filas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+      <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div id="costos-fila-anualidad" style="display:none;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.75)">
+          <span>Anualidad <span style="font-size:11px;color:rgba(255,255,255,.4)">(Mensualidad × 12)</span></span>
+          <span id="costos-val-anualidad" style="font-family:'JetBrains Mono',monospace;font-weight:700"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;color:var(--gold);font-weight:800">
+          <span>Costo Total</span>
+          <span id="costos-val-total" style="font-family:'JetBrains Mono',monospace"></span>
+        </div>
+      </div>
+      <div id="costos-fila-notas" style="display:none;margin-top:14px;background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:4px">Notas</div>
+        <div id="costos-val-notas" style="font-size:13px;color:#fff;line-height:1.4"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+      <button onclick="closeCostosModal()" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px 18px;cursor:pointer;font-size:13px">Cerrar</button>
+      <button onclick="irACargaDeCostos()" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 18px;font-weight:700;font-size:13px;cursor:pointer">✎ Editar en Carga de Datos</button>
     </div>
   </div>
 </div>
@@ -1354,6 +1454,9 @@ _loadDirectorio();
 renderDirectorio();
 _loadDirectorioIMC();
 _loadActividadesIMC();
+let _costosProyectos={};
+let _costosProyectoActual='';
+_loadCostosProyectos();
 
 const state={
   imc:{data:[...IMC_DATA],filter:'todos',search:'',resp:'',tipo:''},
@@ -2964,6 +3067,7 @@ function switchCargaTab(tab){
   document.getElementById('cpanel-layout').style.display=tab==='layout'?'block':'none';
   document.getElementById('cpanel-directorio').style.display=tab==='directorio'?'block':'none';
   document.getElementById('cpanel-directorioimc').style.display=tab==='directorioimc'?'block':'none';
+  document.getElementById('cpanel-costos').style.display=tab==='costos'?'block':'none';
   document.getElementById('ctab-layout').style.color=tab==='layout'?'var(--gold)':'var(--muted)';
   document.getElementById('ctab-layout').style.borderBottomColor=tab==='layout'?'var(--gold)':'transparent';
   document.getElementById('ctab-layout').style.fontWeight=tab==='layout'?'700':'600';
@@ -2973,8 +3077,12 @@ function switchCargaTab(tab){
   document.getElementById('ctab-directorioimc').style.color=tab==='directorioimc'?'var(--gold)':'var(--muted)';
   document.getElementById('ctab-directorioimc').style.borderBottomColor=tab==='directorioimc'?'var(--gold)':'transparent';
   document.getElementById('ctab-directorioimc').style.fontWeight=tab==='directorioimc'?'700':'600';
+  document.getElementById('ctab-costos').style.color=tab==='costos'?'var(--gold)':'var(--muted)';
+  document.getElementById('ctab-costos').style.borderBottomColor=tab==='costos'?'var(--gold)':'transparent';
+  document.getElementById('ctab-costos').style.fontWeight=tab==='costos'?'700':'600';
   if(tab==='directorio') renderDirectorio();
   if(tab==='directorioimc') renderDirectorioIMC();
+  if(tab==='costos'){ populateCostosProyectoSelect(); renderCostosTabla(); }
 }
 function _loadDirectorio(){
   try{ _directorio=JSON.parse(localStorage.getItem('dti_directorio')||'[]'); }catch(e){ _directorio=[]; }
@@ -3973,6 +4081,262 @@ function openEvModal(){
 
 function closeEvModal(){
   document.getElementById('ev-modal-bg').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ═══ COSTOS DE PROYECTOS (aplica a proyectos de cualquier dirección) ═══
+// ══════════════════════════════════════════════════════════════════════
+const COSTOS_CAMPOS=['mensualidad','costo_licencias','mantenimiento','adicionales'];
+const COSTOS_ETIQUETAS={mensualidad:'Mensualidad',costo_licencias:'Costo por licencias',mantenimiento:'Mantenimiento',adicionales:'Adicionales'};
+
+function _loadCostosProyectos(){
+  try{ _costosProyectos=JSON.parse(localStorage.getItem('dti_costos_proyectos')||'{}'); }catch(e){ _costosProyectos={}; }
+  _syncCostosProyectosFromGitHub();
+}
+async function _syncCostosProyectosFromGitHub(){
+  try{
+    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/costos_proyectos.csv?t='+Date.now());
+    if(!res.ok) return; // el archivo aun no existe la primera vez
+    const text=await res.text();
+    const rows=_csvGenericParse(text);
+    if(!rows.length) return;
+    const repoMap={};
+    rows.forEach(r=>{
+      if(!r.proyecto) return;
+      repoMap[r.proyecto]={mensualidad:r.mensualidad||'',costo_licencias:r.costo_licencias||'',mantenimiento:r.mantenimiento||'',adicionales:r.adicionales||'',notas:r.notas||''};
+    });
+    Object.keys(_costosProyectos).forEach(k=>{ if(!repoMap[k]) repoMap[k]=_costosProyectos[k]; });
+    _costosProyectos=repoMap;
+    localStorage.setItem('dti_costos_proyectos',JSON.stringify(_costosProyectos));
+    if(typeof renderCostosTabla==='function') renderCostosTabla();
+  }catch(e){ console.warn('Sync costos proyectos desde GitHub falló:',e); }
+}
+let _backupCostosTimer=null;
+function _saveCostosProyectos(){
+  localStorage.setItem('dti_costos_proyectos',JSON.stringify(_costosProyectos));
+  clearTimeout(_backupCostosTimer);
+  _backupCostosTimer=setTimeout(()=>_backupCostosProyectosGitHub(),1500);
+}
+async function _backupCostosProyectosGitHub(){
+  try{
+    const esc=s=>String(s||'').replace(/"/g,'""');
+    const header='proyecto,mensualidad,costo_licencias,mantenimiento,adicionales,notas';
+    const rows=Object.entries(_costosProyectos).map(([nombre,c])=>
+      `"${esc(nombre)}","${esc(c.mensualidad)}","${esc(c.costo_licencias)}","${esc(c.mantenimiento)}","${esc(c.adicionales)}","${esc(c.notas)}"`
+    );
+    const csv=header+'\n'+rows.join('\n');
+    const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'costos_proyectos.csv',content:csv})});
+    const d=await res.json().catch(()=>({}));
+    if(res.ok && d.ok) console.log('✅ Costos de proyectos respaldados en GitHub');
+    else console.error('❌ Backup costos falló:',res.status,JSON.stringify(d));
+  }catch(e){ console.error('❌ Backup costos error:',e); }
+}
+function _fmtMoney(v){
+  const n=parseFloat(v);
+  if(isNaN(n)) return null;
+  return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function _costosCalcular(c){
+  // Devuelve {filas:[{lbl,val}], anualidad:number|null, total:number, tieneAlgo:bool}
+  const filas=[]; let total=0; let tieneAlgo=false;
+  COSTOS_CAMPOS.forEach(k=>{
+    const n=parseFloat(c[k]);
+    if(isNaN(n)) return;
+    tieneAlgo=true;
+    filas.push({lbl:COSTOS_ETIQUETAS[k],val:n});
+    if(k!=='mensualidad') total+=n; // la mensualidad se refleja via la anualidad, no se suma sola
+  });
+  const mensu=parseFloat(c.mensualidad);
+  let anualidad=null;
+  if(!isNaN(mensu) && mensu>0){ anualidad=mensu*12; total+=anualidad; }
+  return {filas,anualidad,total,tieneAlgo};
+}
+
+function openCostosModal(){
+  const nombre=document.getElementById('m-nombre').textContent.trim();
+  _costosProyectoActual=nombre;
+  document.getElementById('costos-nombre').textContent=nombre;
+  const c=_costosProyectos[nombre];
+  const vacio=document.getElementById('costos-vacio');
+  const contenido=document.getElementById('costos-contenido');
+  const calc=c?_costosCalcular(c):{tieneAlgo:false};
+
+  if(!c || !calc.tieneAlgo){
+    vacio.style.display='block';
+    contenido.style.display='none';
+  } else {
+    vacio.style.display='none';
+    contenido.style.display='block';
+    document.getElementById('costos-filas').innerHTML=calc.filas.map(f=>
+      '<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.85)"><span>'+f.lbl+'</span><span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">'+_fmtMoney(f.val)+'</span></div>'
+    ).join('');
+    const filaAnualidad=document.getElementById('costos-fila-anualidad');
+    if(calc.anualidad!==null){
+      filaAnualidad.style.display='flex';
+      document.getElementById('costos-val-anualidad').textContent=_fmtMoney(calc.anualidad);
+    } else { filaAnualidad.style.display='none'; }
+    document.getElementById('costos-val-total').textContent=_fmtMoney(calc.total);
+    const filaNotas=document.getElementById('costos-fila-notas');
+    if(c.notas && c.notas.trim()){
+      filaNotas.style.display='block';
+      document.getElementById('costos-val-notas').textContent=c.notas;
+    } else { filaNotas.style.display='none'; }
+  }
+  document.getElementById('costos-modal-bg').style.display='flex';
+}
+function closeCostosModal(){
+  document.getElementById('costos-modal-bg').style.display='none';
+}
+function irACargaDeCostos(){
+  const nombre=_costosProyectoActual;
+  closeCostosModal();
+  closeModal();
+  const tabEl=document.querySelector('[onclick*="switchTab(\'carga\'"]');
+  if(tabEl) switchTab('carga',tabEl);
+  setTimeout(()=>{
+    switchCargaTab('costos');
+    const sel=document.getElementById('costos-select-proyecto');
+    if(sel){ sel.value=nombre; onCostosProyectoChange(); }
+  },80);
+}
+
+// ── Carga de Datos: submódulo Costos de Proyectos ──
+function _getTodosLosProyectosConDireccion(){
+  const mods=[{key:'imc',label:'IMC'},{key:'dev',label:'Desarrollo'},{key:'inf',label:'Soporte'},{key:'ia',label:'IA'}];
+  const out=[];
+  mods.forEach(m=>{
+    const data=(state[m.key]&&state[m.key].data)?state[m.key].data:[];
+    data.forEach(p=>{ if(p.nombre) out.push({nombre:p.nombre,direccion:m.label}); });
+  });
+  return out;
+}
+function populateCostosProyectoSelect(){
+  const sel=document.getElementById('costos-select-proyecto');
+  if(!sel) return;
+  const cur=sel.value;
+  const proyectos=_getTodosLosProyectosConDireccion();
+  sel.innerHTML='<option value="">-- Selecciona un proyecto --</option>'+proyectos.map(p=>
+    `<option value="${p.nombre.replace(/"/g,'&quot;')}" ${p.nombre===cur?'selected':''}>[${p.direccion}] ${p.nombre}</option>`
+  ).join('');
+}
+function onCostosProyectoChange(){
+  const nombre=document.getElementById('costos-select-proyecto').value;
+  const camposBox=document.getElementById('costos-form-campos');
+  const notasBox=document.getElementById('costos-form-notas-wrap');
+  const btnGuardar=document.getElementById('costos-btn-guardar');
+  const btnEliminar=document.getElementById('costos-btn-eliminar');
+  const activo=!!nombre;
+  camposBox.style.opacity=activo?'1':'.4';
+  camposBox.style.pointerEvents=activo?'auto':'none';
+  notasBox.style.opacity=activo?'1':'.4';
+  notasBox.style.pointerEvents=activo?'auto':'none';
+  btnGuardar.disabled=!activo;
+  btnGuardar.style.opacity=activo?'1':'.5';
+
+  const c=nombre?(_costosProyectos[nombre]||{}):{};
+  document.getElementById('costos-inp-mensualidad').value=c.mensualidad||'';
+  document.getElementById('costos-inp-licencias').value=c.costo_licencias||'';
+  document.getElementById('costos-inp-mantenimiento').value=c.mantenimiento||'';
+  document.getElementById('costos-inp-adicionales').value=c.adicionales||'';
+  document.getElementById('costos-inp-notas').value=c.notas||'';
+  btnEliminar.style.display=(nombre && _costosProyectos[nombre])?'inline-flex':'none';
+  _costosPreview();
+}
+function _costosPreview(){
+  const c={
+    mensualidad:document.getElementById('costos-inp-mensualidad').value,
+    costo_licencias:document.getElementById('costos-inp-licencias').value,
+    mantenimiento:document.getElementById('costos-inp-mantenimiento').value,
+    adicionales:document.getElementById('costos-inp-adicionales').value
+  };
+  const calc=_costosCalcular(c);
+  const preview=document.getElementById('costos-preview');
+  if(!calc.tieneAlgo){ preview.style.display='none'; return; }
+  preview.style.display='block';
+  const lbl=document.getElementById('costos-preview-anualidad-lbl');
+  const val=document.getElementById('costos-preview-anualidad-val');
+  if(calc.anualidad!==null){
+    lbl.style.display='inline';
+    val.textContent=_fmtMoney(calc.anualidad);
+  } else { lbl.style.display='none'; val.textContent=''; }
+  document.getElementById('costos-preview-total-val').textContent=_fmtMoney(calc.total);
+}
+function guardarCostosProyecto(){
+  const nombre=document.getElementById('costos-select-proyecto').value;
+  if(!nombre){ showToast('Selecciona un proyecto primero','error'); return; }
+  _costosProyectos[nombre]={
+    mensualidad:document.getElementById('costos-inp-mensualidad').value.trim(),
+    costo_licencias:document.getElementById('costos-inp-licencias').value.trim(),
+    mantenimiento:document.getElementById('costos-inp-mantenimiento').value.trim(),
+    adicionales:document.getElementById('costos-inp-adicionales').value.trim(),
+    notas:document.getElementById('costos-inp-notas').value.trim()
+  };
+  _saveCostosProyectos();
+  renderCostosTabla();
+  document.getElementById('costos-btn-eliminar').style.display='inline-flex';
+  showToast('Costos guardados','success');
+}
+function eliminarCostosProyecto(){
+  const nombre=document.getElementById('costos-select-proyecto').value;
+  if(!nombre || !_costosProyectos[nombre]) return;
+  showConfirm({
+    icon:'🗑️', title:'¿Eliminar costos de este proyecto?', msg:'Esta acción no se puede deshacer.',
+    btnOk:'Eliminar', danger:true,
+    onOk:function(){
+      delete _costosProyectos[nombre];
+      _saveCostosProyectos();
+      onCostosProyectoChange();
+      renderCostosTabla();
+      showToast('Costos eliminados','success');
+    }
+  });
+}
+function renderCostosTabla(){
+  const tbody=document.getElementById('costos-tbody');
+  const empty=document.getElementById('costos-empty');
+  if(!tbody) return;
+  const entries=Object.entries(_costosProyectos).filter(([,c])=>_costosCalcular(c).tieneAlgo);
+  if(!entries.length){ tbody.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  tbody.innerHTML=entries.sort((a,b)=>a[0].localeCompare(b[0])).map(([nombre,c])=>{
+    const calc=_costosCalcular(c);
+    const mensu=parseFloat(c.mensualidad);
+    return '<tr style="border-top:1px solid var(--border)">'
+      +'<td style="padding:9px 14px;font-weight:600;max-width:320px">'+nombre+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+(isNaN(mensu)?'—':_fmtMoney(mensu))+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace">'+(calc.anualidad!==null?_fmtMoney(calc.anualidad):'—')+'</td>'
+      +'<td style="padding:9px 14px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:var(--gold);font-weight:700">'+_fmtMoney(calc.total)+'</td>'
+      +'<td style="padding:9px 14px;white-space:nowrap"><button onclick="_costosEditarDesdeTabla(\''+nombre.replace(/'/g,"\\'")+'\')" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2);color:#63b3ed;border-radius:5px;padding:4px 9px;cursor:pointer;font-size:12px" title="Editar">&#9998;</button></td>'
+      +'</tr>';
+  }).join('');
+}
+function _costosEditarDesdeTabla(nombre){
+  const sel=document.getElementById('costos-select-proyecto');
+  sel.value=nombre;
+  onCostosProyectoChange();
+  sel.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function importarCostosCSV(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const rows=_csvGenericParse(e.target.result);
+    let n=0;
+    rows.forEach(r=>{
+      if(!r.proyecto) return;
+      _costosProyectos[r.proyecto]={
+        mensualidad:r.mensualidad||'', costo_licencias:r.costo_licencias||'',
+        mantenimiento:r.mantenimiento||'', adicionales:r.adicionales||'', notas:r.notas||''
+      };
+      n++;
+    });
+    _saveCostosProyectos();
+    renderCostosTabla();
+    showToast(n+' proyecto(s) importado(s) desde CSV','success');
+    event.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function saveEventualidad(){
