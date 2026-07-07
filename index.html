@@ -4048,9 +4048,10 @@ async function exportCierreSemanal(){
     var s3=await zip.file('ppt/slides/slide3.xml').async('string');
     var eBORDER='<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL><a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR><a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT><a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>';
     function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function eCell(txt,al,sz,bold){
+    function eCell(txt,al,sz,bold,marL){
       var b=bold?' b="1"':'';
-      return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="6244" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
+      var m=marL||6244;
+      return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="'+m+'" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
     }
     var tblHdrMatch=s3.match(/<a:tbl>([\s\S]*?)<a:tr/);
     var origTblHdr=tblHdrMatch?tblHdrMatch[1]:'<a:tblPr/><a:tblGrid/>';
@@ -4059,7 +4060,7 @@ async function exportCierreSemanal(){
       eRows+='<a:tr h="420000">'+eCell('','ctr',1000,false)+eCell('Sin eventualidades documentadas','ctr',1000,false)+eCell('','ctr',1000,false)+'</a:tr>';
     } else {
       for(var ei=0;ei<evArr.length;ei++){
-        eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false)+'</a:tr>';
+        eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false,70000)+'</a:tr>';
       }
     }
     var newTbl='<a:tbl>'+origTblHdr+eRows+'</a:tbl>';
