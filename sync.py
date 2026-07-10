@@ -111,6 +111,7 @@ try:
                 "real":        real,
                 "esp":         esp,
                 "sem":         sem,
+                "tipo":        "Proyecto",
                 "area":        "",
                 "responsable": "",
                 "solicitante": "",
@@ -130,6 +131,7 @@ try:
                     nombre = row.get("nombre", "").strip()
                     if nombre:
                         info[nombre.lower()] = {
+                            "tipo":        row.get("tipo", ""),
                             "area":        row.get("area", ""),
                             "responsable": row.get("responsable", ""),
                             "solicitante": row.get("solicitante", ""),
@@ -144,7 +146,7 @@ try:
     def merge_info(proyectos, info_extra):
         for p in proyectos:
             extra = info_extra.get(p["nombre"].lower(), {})
-            for key in ("area", "responsable", "solicitante", "descripcion", "url_plan"):
+            for key in ("tipo", "area", "responsable", "solicitante", "descripcion", "url_plan"):
                 if extra.get(key): p[key] = extra[key]
 
     def proyectos_to_js(proyectos, var_name):
@@ -152,8 +154,9 @@ try:
         for p in proyectos:
             def esc(s): return s.replace("\\","\\\\").replace("'","\\'").replace('"','\\"')
             desc = p["descripcion"] if p["descripcion"] else "Sincronizado desde Smartsheet"
+            tipo = p.get("tipo") or "Proyecto"
             js_rows.append(
-                f'  {{tipo:"Proyecto",nombre:"{esc(p["nombre"])}",area:"{esc(p["area"])}",'
+                f'  {{tipo:"{esc(tipo)}",nombre:"{esc(p["nombre"])}",area:"{esc(p["area"])}",'
                 f'inicio:"{p["inicio"]}",fin:"{p["fin"]}",real:{p["real"]},'
                 f'esp:{p["esp"]},sem:"{p["sem"]}",responsable:"{esc(p["responsable"])}",'
                 f'solicitante:"{esc(p["solicitante"])}",descripcion:"{esc(desc)}",'
