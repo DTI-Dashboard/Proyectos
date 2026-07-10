@@ -2707,7 +2707,7 @@ async function _syncInfoCSVsFromGitHub(){
   let huboCambios=false;
   for(const f of files){
     try{
-      const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+f.filename+'?t='+Date.now());
+      const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+f.filename+'?t='+Date.now(),{cache:'no-store'});
       if(!res.ok) continue; // el archivo aun no existe la primera vez
       const text=await res.text();
       const rows=_csvGenericParse(text);
@@ -2957,7 +2957,11 @@ if(localStorage.getItem('dti_theme')==='light'){
   if(_tb) _tb.textContent='☀️';
 }
 (async function(){
-  await Promise.race([_infoCSVsListos, new Promise(r=>setTimeout(r,3000))]); // esperar la sincronizacion real con GitHub antes de pintar nada, con limite de seguridad de 3s
+  const _syncGanador=await Promise.race([
+    _infoCSVsListos.then(()=>'sync'),
+    new Promise(r=>setTimeout(()=>r('timeout'),6000))
+  ]); // esperar la sincronizacion real con GitHub antes de pintar nada, con limite de seguridad de 6s
+  console.log('[DTI] Sincronizacion inicial resuelta por:', _syncGanador);
 
   // Aplicar tambien cualquier respaldo local mas reciente (por si acaso), ANTES de renderizar
   try{
@@ -4268,7 +4272,7 @@ function _loadCostosProyectos(){
 }
 async function _syncCostosProyectosFromGitHub(){
   try{
-    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/costos_proyectos.csv?t='+Date.now());
+    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/costos_proyectos.csv?t='+Date.now(),{cache:'no-store'});
     if(!res.ok) return; // el archivo aun no existe la primera vez
     const text=await res.text();
     const rows=_csvGenericParse(text);
