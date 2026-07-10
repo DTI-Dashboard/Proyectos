@@ -1022,8 +1022,52 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
       <button class="btn-pptx" onclick="descargarPlantilla()" style="background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">&#11015;&#65039; Descargar Plantilla</button>
     </div>
+
+    <!-- Editar un proyecto individual -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Selecciona un proyecto para editar directamente su información — sin necesidad de usar el CSV completo si solo vas a corregir uno. Los cambios se guardan de inmediato en el servidor.</div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Proyecto</label>
+        <select id="layout-select-proyecto" onchange="onLayoutProyectoChange()" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px">
+          <option value="">-- Selecciona un proyecto --</option>
+        </select>
+      </div>
+      <div id="layout-form-campos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;opacity:.4;pointer-events:none">
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Tipo</label>
+          <input type="text" id="layout-inp-tipo" placeholder="Ej. Proyecto, Mejoras, Desarrollo..." style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Área</label>
+          <input type="text" id="layout-inp-area" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Responsable</label>
+          <input type="text" id="layout-inp-responsable" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Usuario Solicitante</label>
+          <input type="text" id="layout-inp-solicitante" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+      <div id="layout-form-desc-wrap" style="margin-bottom:14px;opacity:.4;pointer-events:none">
+        <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Descripción</label>
+        <textarea id="layout-inp-descripcion" rows="3" style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box;resize:vertical"></textarea>
+      </div>
+      <div id="layout-form-url-wrap" style="margin-bottom:14px;opacity:.4;pointer-events:none">
+        <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">URL del Plan de Trabajo</label>
+        <input type="text" id="layout-inp-urlplan" placeholder="https://..." style="width:100%;background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;box-sizing:border-box">
+      </div>
+      <div class="callout-mini" style="font-size:11.5px;color:rgba(255,255,255,.4);margin-bottom:14px">
+        ℹ️ Nombre, fechas y % de avance no se editan aquí — vienen directo de Smartsheet y se actualizan solos cada hora.
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button id="layout-btn-guardar" onclick="guardarLayoutProyecto()" disabled style="opacity:.5;background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Guardar</button>
+      </div>
+    </div>
+
     <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8);">
-      <strong style="color:var(--gold)">&#10067; Como funciona?</strong><br>
+      <strong style="color:var(--gold)">&#10067; Como funciona la carga por CSV?</strong><br>
       1&#65039;&#8419; Descarga la plantilla CSV -- tiene todos los proyectos con sus nombres exactos<br>
       2&#65039;&#8419; Llena las columnas que necesites y guarda como <strong>CSV UTF-8</strong><br>
       3&#65039;&#8419; Sube el archivo -- solo se actualizan los campos que llenaste
@@ -3169,6 +3213,7 @@ function switchCargaTab(tab){
   if(tab==='directorio') renderDirectorio();
   if(tab==='directorioimc') renderDirectorioIMC();
   if(tab==='costos'){ populateCostosProyectoSelect(); renderCostosTabla(); }
+  if(tab==='layout'){ populateLayoutProyectoSelect(); }
 }
 function _loadDirectorio(){
   try{ _directorio=JSON.parse(localStorage.getItem('dti_directorio')||'[]'); }catch(e){ _directorio=[]; }
@@ -4353,10 +4398,68 @@ function _getTodosLosProyectosConDireccion(){
   const out=[];
   mods.forEach(m=>{
     const data=(state[m.key]&&state[m.key].data)?state[m.key].data:[];
-    data.forEach(p=>{ if(p.nombre) out.push({nombre:p.nombre,direccion:m.label}); });
+    data.forEach(p=>{ if(p.nombre) out.push({nombre:p.nombre,direccion:m.label,key:m.key}); });
   });
   return out;
 }
+// ── Carga de Datos: edicion individual de un proyecto (Carga de Layout) ──
+function populateLayoutProyectoSelect(){
+  const sel=document.getElementById('layout-select-proyecto');
+  if(!sel) return;
+  const cur=sel.value;
+  const proyectos=_getTodosLosProyectosConDireccion();
+  sel.innerHTML='<option value="">-- Selecciona un proyecto --</option>'+proyectos
+    .slice().sort((a,b)=>a.direccion.localeCompare(b.direccion)||a.nombre.localeCompare(b.nombre))
+    .map(p=>`<option value="${p.nombre.replace(/"/g,'&quot;')}" data-key="${p.key}" ${p.nombre===cur?'selected':''}>[${p.direccion}] ${p.nombre}</option>`)
+    .join('');
+}
+function _buscarProyectoPorNombre(nombre){
+  const mods=['imc','dev','inf','ia'];
+  for(const k of mods){
+    const data=(state[k]&&state[k].data)?state[k].data:[];
+    const found=data.find(p=>p.nombre===nombre);
+    if(found) return {p:found, key:k};
+  }
+  return null;
+}
+function onLayoutProyectoChange(){
+  const sel=document.getElementById('layout-select-proyecto');
+  const nombre=sel.value;
+  const camposBox=document.getElementById('layout-form-campos');
+  const descBox=document.getElementById('layout-form-desc-wrap');
+  const urlBox=document.getElementById('layout-form-url-wrap');
+  const btnGuardar=document.getElementById('layout-btn-guardar');
+  const activo=!!nombre;
+  [camposBox,descBox,urlBox].forEach(el=>{ el.style.opacity=activo?'1':'.4'; el.style.pointerEvents=activo?'auto':'none'; });
+  btnGuardar.disabled=!activo;
+  btnGuardar.style.opacity=activo?'1':'.5';
+
+  const found=nombre?_buscarProyectoPorNombre(nombre):null;
+  const p=found?found.p:{};
+  document.getElementById('layout-inp-tipo').value=p.tipo||'';
+  document.getElementById('layout-inp-area').value=p.area||'';
+  document.getElementById('layout-inp-responsable').value=p.responsable||'';
+  document.getElementById('layout-inp-solicitante').value=p.solicitante||'';
+  document.getElementById('layout-inp-descripcion').value=(p.descripcion==='Sincronizado desde Smartsheet'?'':p.descripcion)||'';
+  document.getElementById('layout-inp-urlplan').value=p.url_plan||'';
+}
+function guardarLayoutProyecto(){
+  const nombre=document.getElementById('layout-select-proyecto').value;
+  if(!nombre){ showToast('Selecciona un proyecto primero','error'); return; }
+  const found=_buscarProyectoPorNombre(nombre);
+  if(!found){ showToast('No se encontró el proyecto','error'); return; }
+  const p=found.p;
+  p.tipo=document.getElementById('layout-inp-tipo').value.trim();
+  p.area=document.getElementById('layout-inp-area').value.trim();
+  p.responsable=document.getElementById('layout-inp-responsable').value.trim();
+  p.solicitante=document.getElementById('layout-inp-solicitante').value.trim();
+  p.descripcion=document.getElementById('layout-inp-descripcion').value.trim();
+  p.url_plan=document.getElementById('layout-inp-urlplan').value.trim();
+  renderTab(found.key);
+  _backupInfoCSVs();
+  showToast('✅ Proyecto actualizado y guardado en servidor','success');
+}
+
 function populateCostosProyectoSelect(){
   const sel=document.getElementById('costos-select-proyecto');
   if(!sel) return;
