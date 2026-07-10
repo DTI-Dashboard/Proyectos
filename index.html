@@ -394,7 +394,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 <nav class="tabs">
   <div class="tab" onclick="switchTab('resumen',this)">📊 Resumen</div>
   <div class="tab active" onclick="switchTab('imc',this)">🎯 IMC</div>
-  <div class="tab" onclick="switchTab('desarrollo',this)"><span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-weight:800;font-size:9px;border-radius:5px;margin-right:5px;vertical-align:-3px;font-family:'Courier New',monospace">&lt;/&gt;</span>Desarrollo</div>
+  <div class="tab" onclick="switchTab('desarrollo',this)"><span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-weight:800;font-size:9px;border-radius:5px;margin-right:5px;vertical-align:middle;position:relative;top:-1px;font-family:'Courier New',monospace">&lt;/&gt;</span>Desarrollo</div>
   <div class="tab" onclick="switchTab('infraestructura',this)">🖥️ Soporte e Infraestructura</div>
   <div class="tab" onclick="switchTab('ia',this)">🤖 IA</div>
   <div class="tab" onclick="switchTab('actividades',this)">📋 Actividades Semanales</div>
@@ -4477,7 +4477,7 @@ function onLayoutProyectoChange(){
   document.getElementById('layout-inp-descripcion').value=(p.descripcion==='Sincronizado desde Smartsheet'?'':p.descripcion)||'';
   document.getElementById('layout-inp-urlplan').value=p.url_plan||'';
 }
-function guardarLayoutProyecto(){
+async function guardarLayoutProyecto(){
   const nombre=document.getElementById('layout-select-proyecto').value;
   if(!nombre){ showToast('Selecciona un proyecto primero','error'); return; }
   const found=_buscarProyectoPorNombre(nombre);
@@ -4490,8 +4490,13 @@ function guardarLayoutProyecto(){
   p.descripcion=document.getElementById('layout-inp-descripcion').value.trim();
   p.url_plan=document.getElementById('layout-inp-urlplan').value.trim();
   renderTab(found.key);
-  _backupInfoCSVs();
-  showToast('✅ Proyecto actualizado y guardado en servidor','success');
+
+  const btn=document.getElementById('layout-btn-guardar');
+  const textoOriginal=btn.textContent;
+  btn.disabled=true; btn.style.opacity='.6'; btn.textContent='Guardando...';
+  showToast('⏳ Guardando en servidor, no refresques todavía...','info',6000);
+  await _backupInfoCSVs();
+  btn.disabled=false; btn.style.opacity='1'; btn.textContent=textoOriginal;
 }
 
 function populateCostosProyectoSelect(){
