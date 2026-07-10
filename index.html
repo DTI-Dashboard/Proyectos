@@ -4302,9 +4302,10 @@ async function _backupCostosProyectosGitHub(){
     const csv=COSTOS_CSV_HEADER+'\n'+rows.join('\n');
     const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'costos_proyectos.csv',content:csv})});
     const d=await res.json().catch(()=>({}));
-    if(res.ok && d.ok) console.log('✅ Costos de proyectos respaldados en GitHub');
-    else console.error('❌ Backup costos falló:',res.status,JSON.stringify(d));
-  }catch(e){ console.error('❌ Backup costos error:',e); }
+    if(res.ok && d.ok){ console.log('✅ Costos de proyectos respaldados en GitHub'); return true; }
+    console.error('❌ Backup costos falló:',res.status,JSON.stringify(d));
+    return false;
+  }catch(e){ console.error('❌ Backup costos error:',e); return false; }
 }
 function _fmtMoney(v){
   const n=parseFloat(v);
@@ -4568,14 +4569,23 @@ function _costosPreview(){
     val.textContent=_fmtMoney(calc.anualidad);
   } else { lbl.style.display='none'; val.textContent=''; }
 }
-function guardarCostosProyecto(){
+async function guardarCostosProyecto(){
   const nombre=document.getElementById('costos-select-proyecto').value;
   if(!nombre){ showToast('Selecciona un proyecto primero','error'); return; }
   _costosProyectos[nombre]=_costosLeerForm();
-  _saveCostosProyectos();
+  localStorage.setItem('dti_costos_proyectos',JSON.stringify(_costosProyectos));
   renderCostosTabla();
   document.getElementById('costos-btn-eliminar').style.display='inline-flex';
-  showToast('Costos guardados','success');
+
+  clearTimeout(_backupCostosTimer); // cancelar cualquier guardado automatico pendiente, vamos a guardar ya mismo
+  const btn=document.getElementById('costos-btn-guardar');
+  const textoOriginal=btn.textContent;
+  btn.disabled=true; btn.style.opacity='.6'; btn.textContent='Guardando...';
+  showToast('⏳ Guardando en servidor, no refresques todavía...','info',6000);
+  const exito=await _backupCostosProyectosGitHub();
+  btn.disabled=false; btn.style.opacity='1'; btn.textContent=textoOriginal;
+  if(exito) showToast('✅ Costos guardados en servidor','success');
+  else showToast('⚠️ No se pudo guardar en el servidor — intenta de nuevo','error',6000);
 }
 function eliminarCostosProyecto(){
   const nombre=document.getElementById('costos-select-proyecto').value;
@@ -4583,12 +4593,16 @@ function eliminarCostosProyecto(){
   showConfirm({
     icon:'🗑️', title:'¿Eliminar costos de este proyecto?', msg:'Esta acción no se puede deshacer.',
     btnOk:'Eliminar', danger:true,
-    onOk:function(){
+    onOk:async function(){
       delete _costosProyectos[nombre];
-      _saveCostosProyectos();
+      localStorage.setItem('dti_costos_proyectos',JSON.stringify(_costosProyectos));
       onCostosProyectoChange();
       renderCostosTabla();
-      showToast('Costos eliminados','success');
+      clearTimeout(_backupCostosTimer);
+      showToast('⏳ Eliminando en servidor, no refresques todavía...','info',6000);
+      const exito=await _backupCostosProyectosGitHub();
+      if(exito) showToast('✅ Costos eliminados en servidor','success');
+      else showToast('⚠️ No se pudo eliminar en el servidor — intenta de nuevo','error',6000);
     }
   });
 }
@@ -4620,7 +4634,7 @@ function importarCostosCSV(event){
   const file=event.target.files[0];
   if(!file) return;
   const reader=new FileReader();
-  reader.onload=function(e){
+  reader.onload=async function(e){
     const rows=_csvGenericParse(e.target.result);
     let n=0;
     rows.forEach(r=>{
@@ -4631,10 +4645,14 @@ function importarCostosCSV(event){
       _costosProyectos[r.proyecto]=obj;
       n++;
     });
-    _saveCostosProyectos();
+    localStorage.setItem('dti_costos_proyectos',JSON.stringify(_costosProyectos));
     renderCostosTabla();
-    showToast(n+' proyecto(s) importado(s) desde CSV','success');
     event.target.value='';
+    clearTimeout(_backupCostosTimer);
+    showToast('⏳ Guardando '+n+' proyecto(s) en servidor, no refresques todavía...','info',6000);
+    const exito=await _backupCostosProyectosGitHub();
+    if(exito) showToast('✅ '+n+' proyecto(s) importado(s) y guardados en servidor','success');
+    else showToast('⚠️ Se importaron localmente pero no se pudo guardar en el servidor — intenta de nuevo','error',6000);
   };
   reader.readAsText(file,'UTF-8');
 }
