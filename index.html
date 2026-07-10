@@ -2335,7 +2335,7 @@ function switchTab(id,el){
     }
   }
   if(id==='actividades'){ try{ renderActividades(); }catch(e){ console.error('renderActividades error:',e); } }
-  if(id==='carga'){ try{ renderDirectorio(); }catch(e){} }
+  if(id==='carga'){ try{ renderDirectorio(); populateLayoutProyectoSelect(); }catch(e){ console.error('init carga error:',e); } }
 }
 
 // ─── EXPORT PPTX (PptxGenJS v4) ───
