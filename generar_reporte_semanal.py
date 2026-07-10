@@ -71,10 +71,12 @@ try:
         tpl_bytes = _r.read()
 
     hoy_d = date.today()
-    dow = hoy_d.weekday()
-    dias_atras = (dow - 3) % 7
-    jP = hoy_d - timedelta(days=dias_atras)
-    jA = jP + timedelta(days=7)
+    dow = hoy_d.weekday()  # Lunes=0 ... Jueves=3 ... Domingo=6
+    diff = dow - 3
+    if diff > 3: diff -= 7
+    if diff < -3: diff += 7
+    jA = hoy_d - timedelta(days=diff)   # Jueves mas cercano a hoy (puede ser pasado o futuro)
+    jP = jA - timedelta(days=7)
     MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
     rango = f"{jP.day} de {MESES[jP.month-1]} al {jA.day} de {MESES[jA.month-1]}"
 
