@@ -2697,6 +2697,16 @@ function confirmarCarga(){
   }
 }
 
+// Decodifica el contenido base64 que devuelve la API de GitHub, preservando acentos/UTF-8 correctamente
+function _b64ToUtf8(b64){
+  const binary=atob(b64.replace(/\n/g,''));
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+// IMPORTANTE: usamos la API de contenidos (api.github.com) y NO raw.githubusercontent.com,
+// porque el CDN de raw.githubusercontent.com cachea hasta 5 minutos e IGNORA el query
+// param de cache-busting (?t=...) por completo — servia siempre la misma copia vieja.
 async function _syncInfoCSVsFromGitHub(){
   const files=[
     {filename:'info_proyectos.csv', key:'imc'},
@@ -2707,9 +2717,13 @@ async function _syncInfoCSVsFromGitHub(){
   let huboCambios=false;
   for(const f of files){
     try{
-      const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+f.filename+'?t='+Date.now(),{cache:'no-store'});
+      const res=await fetch('https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/'+f.filename,{
+        cache:'no-store',
+        headers:{'Accept':'application/vnd.github.v3+json'}
+      });
       if(!res.ok) continue; // el archivo aun no existe la primera vez
-      const text=await res.text();
+      const json=await res.json();
+      const text=_b64ToUtf8(json.content);
       const rows=_csvGenericParse(text);
       if(!rows.length) continue;
       const data=(state[f.key]&&state[f.key].data)?state[f.key].data:[];
@@ -4273,9 +4287,13 @@ function _loadCostosProyectos(){
 }
 async function _syncCostosProyectosFromGitHub(){
   try{
-    const res=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/costos_proyectos.csv?t='+Date.now(),{cache:'no-store'});
+    const res=await fetch('https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/costos_proyectos.csv',{
+      cache:'no-store',
+      headers:{'Accept':'application/vnd.github.v3+json'}
+    });
     if(!res.ok) return; // el archivo aun no existe la primera vez
-    const text=await res.text();
+    const json=await res.json();
+    const text=_b64ToUtf8(json.content);
     const rows=_csvGenericParse(text);
     if(!rows.length) return;
     const repoMap={};
