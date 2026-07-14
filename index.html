@@ -700,12 +700,18 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="mod-title">Módulo <span>Desarrollo</span></div>
       
     </div>
-    <div class="export-btns">
+    <div class="export-btns" id="dev-proyectos-btns">
       <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('dev')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
+  <div class="dev-subtabs" style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
+    <button class="dev-subtab active" id="dev-subtab-proyectos" onclick="switchModSubtab('dev','proyectos')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--gold);opacity:1">📁 Proyectos</button>
+    <button class="dev-subtab" id="dev-subtab-actividades" onclick="switchModSubtab('dev','actividades')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;opacity:.6">📋 Actividades Semanales Dev</button>
+  </div>
+  <div id="dev-sub-proyectos">
+
   <div class="kpi-strip">
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="dv-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('dev','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="dv-term">0</div><div class="kpi-sub">Entregados</div></div>
@@ -764,6 +770,80 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div style="padding:16px;overflow-x:auto"><canvas id="dev-gantt"></canvas></div>
   </div>
+  </div>
+  <div id="dev-sub-actividades" style="display:none">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <div class="mod-title">Submódulo <span>Actividades Semanales Desarrollo</span></div>
+      </div>
+      <div class="export-btns">
+        <button class="btn-act-add" onclick="openActModalMod('dev',null)">➕ Nueva Actividad</button>
+        <button class="btn-pptx" id="actdev-bulk-btn" onclick="enviarSeleccionadasMod('dev')" disabled style="opacity:.5">📧 Enviar por correo (0)</button>
+        <button class="btn-xlsx" onclick="exportActXLSXMod('dev')">📗 Descargar Excel</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi b" style="cursor:pointer" onclick="kpiActFilterMod('dev','todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="actdev-k-total">0</div><div class="kpi-sub">Actividades Desarrollo</div></div>
+      <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilterMod('dev','En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="actdev-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+      <div class="kpi g" style="cursor:pointer" onclick="kpiActFilterMod('dev','Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="actdev-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+      <div class="kpi r" style="cursor:pointer" onclick="kpiActFilterMod('dev','Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="actdev-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+      <div class="kpi gold"><div class="kpi-lbl">Equipo Desarrollo</div><div class="kpi-val gold" id="actdev-k-personas">0</div><div class="kpi-sub">Colaboradores con actividad</div></div>
+    </div>
+    <div class="act-week-nav">
+      <div class="act-filters-row">
+        <select id="actdev-f-estatus" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">🔵 Todos los estatus</option>
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+        <select id="actdev-f-colab" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">👤 Todos los colaboradores</option>
+        </select>
+        <select id="actdev-f-proyecto" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📁 Todos los proyectos</option>
+        </select>
+        <select id="actdev-f-prioridad" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">⚡ Todas las prioridades</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media">🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+        <select id="actdev-f-semana" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📅 Todas las fechas</option>
+        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actdev-mes-btn" onclick="toggleActMesPanelMod('dev')">🗓️ Todos los meses ▾</button>
+          <div class="act-multi-panel" id="actdev-mes-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actdev-mes-todos" checked onchange="actMesSelTodosMod('dev',this)" style="accent-color:var(--gold)"> ✓ Todos los meses
+            </label>
+            <div id="actdev-mes-checks"></div>
+          </div>
+        </div>
+        <input id="actdev-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;flex:1 1 160px;min-width:160px">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Actividades Desarrollo — Vista detallada</div>
+        <span class="badge b" id="actdev-count">0 actividades</span>
+      </div>
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th style="width:34px"><input type="checkbox" id="actdev-chk-all" onchange="actToggleAllMod('dev',this)" style="accent-color:var(--gold)"></th>
+          <th class="act-sort-th" style="width:170px;min-width:170px">Nombre</th>
+          <th class="act-sort-th" style="width:190px;min-width:190px">Proyecto</th>
+          <th>Actividad</th>
+          <th class="act-sort-th" style="width:120px;min-width:120px">Prioridad</th>
+          <th class="act-sort-th" style="width:80px;min-width:80px">Fecha Fin</th>
+          <th class="act-sort-th" style="width:130px">Estatus</th>
+          <th style="width:90px">Acciones</th>
+        </tr></thead>
+        <tbody id="actdev-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
 </section>
 
 <!-- ═══ SOPORTE E INFRAESTRUCTURA ═══ -->
@@ -773,12 +853,18 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="mod-title">Módulo <span>Soporte e Infraestructura</span></div>
       
     </div>
-    <div class="export-btns">
+    <div class="export-btns" id="inf-proyectos-btns">
       <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('inf')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
+  <div class="inf-subtabs" style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
+    <button class="inf-subtab active" id="inf-subtab-proyectos" onclick="switchModSubtab('inf','proyectos')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--gold);opacity:1">📁 Proyectos</button>
+    <button class="inf-subtab" id="inf-subtab-actividades" onclick="switchModSubtab('inf','actividades')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;opacity:.6">📋 Actividades Semanales Soporte</button>
+  </div>
+  <div id="inf-sub-proyectos">
+
   <div class="kpi-strip">
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="inf-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('inf','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="inf-term">0</div><div class="kpi-sub">Entregados</div></div>
@@ -837,6 +923,80 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div style="padding:16px;overflow-x:auto"><canvas id="inf-gantt"></canvas></div>
   </div>
+  </div>
+  <div id="inf-sub-actividades" style="display:none">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <div class="mod-title">Submódulo <span>Actividades Semanales Soporte</span></div>
+      </div>
+      <div class="export-btns">
+        <button class="btn-act-add" onclick="openActModalMod('inf',null)">➕ Nueva Actividad</button>
+        <button class="btn-pptx" id="actinf-bulk-btn" onclick="enviarSeleccionadasMod('inf')" disabled style="opacity:.5">📧 Enviar por correo (0)</button>
+        <button class="btn-xlsx" onclick="exportActXLSXMod('inf')">📗 Descargar Excel</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi b" style="cursor:pointer" onclick="kpiActFilterMod('inf','todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="actinf-k-total">0</div><div class="kpi-sub">Actividades Soporte</div></div>
+      <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilterMod('inf','En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="actinf-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+      <div class="kpi g" style="cursor:pointer" onclick="kpiActFilterMod('inf','Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="actinf-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+      <div class="kpi r" style="cursor:pointer" onclick="kpiActFilterMod('inf','Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="actinf-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+      <div class="kpi gold"><div class="kpi-lbl">Equipo Soporte</div><div class="kpi-val gold" id="actinf-k-personas">0</div><div class="kpi-sub">Colaboradores con actividad</div></div>
+    </div>
+    <div class="act-week-nav">
+      <div class="act-filters-row">
+        <select id="actinf-f-estatus" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">🔵 Todos los estatus</option>
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+        <select id="actinf-f-colab" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">👤 Todos los colaboradores</option>
+        </select>
+        <select id="actinf-f-proyecto" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📁 Todos los proyectos</option>
+        </select>
+        <select id="actinf-f-prioridad" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">⚡ Todas las prioridades</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media">🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+        <select id="actinf-f-semana" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📅 Todas las fechas</option>
+        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actinf-mes-btn" onclick="toggleActMesPanelMod('inf')">🗓️ Todos los meses ▾</button>
+          <div class="act-multi-panel" id="actinf-mes-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actinf-mes-todos" checked onchange="actMesSelTodosMod('inf',this)" style="accent-color:var(--gold)"> ✓ Todos los meses
+            </label>
+            <div id="actinf-mes-checks"></div>
+          </div>
+        </div>
+        <input id="actinf-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;flex:1 1 160px;min-width:160px">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Actividades Soporte — Vista detallada</div>
+        <span class="badge b" id="actinf-count">0 actividades</span>
+      </div>
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th style="width:34px"><input type="checkbox" id="actinf-chk-all" onchange="actToggleAllMod('inf',this)" style="accent-color:var(--gold)"></th>
+          <th class="act-sort-th" style="width:170px;min-width:170px">Nombre</th>
+          <th class="act-sort-th" style="width:190px;min-width:190px">Proyecto</th>
+          <th>Actividad</th>
+          <th class="act-sort-th" style="width:120px;min-width:120px">Prioridad</th>
+          <th class="act-sort-th" style="width:80px;min-width:80px">Fecha Fin</th>
+          <th class="act-sort-th" style="width:130px">Estatus</th>
+          <th style="width:90px">Acciones</th>
+        </tr></thead>
+        <tbody id="actinf-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
 </section>
 
 <!-- ═══ IA ═══ -->
@@ -845,12 +1005,18 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <div class="mod-header-left">
       <div class="mod-title">Módulo <span>Inteligencia Artificial</span></div>
     </div>
-    <div class="export-btns">
+    <div class="export-btns" id="ia-proyectos-btns">
       <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('ia')">💰 Descargar Excel de Costos</button>
     </div>
   </div>
+  <div class="ia-subtabs" style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
+    <button class="ia-subtab active" id="ia-subtab-proyectos" onclick="switchModSubtab('ia','proyectos')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--gold);opacity:1">📁 Proyectos</button>
+    <button class="ia-subtab" id="ia-subtab-actividades" onclick="switchModSubtab('ia','actividades')" style="background:none;border:none;color:#fff;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;opacity:.6">📋 Actividades Semanales IA</button>
+  </div>
+  <div id="ia-sub-proyectos">
+
   <div class="kpi-strip">
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','todos')" title="Ver todos"><div class="kpi-lbl">Total Proyectos</div><div class="kpi-val b" id="ia-total">0</div><div class="kpi-sub">Portafolio activo</div></div>
     <div class="kpi b" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onclick="kpiFilter('ia','Terminado')" title="Filtrar terminados"><div class="kpi-lbl">Terminados</div><div class="kpi-val b" id="ia-term">0</div><div class="kpi-sub">Entregados</div></div>
@@ -906,6 +1072,80 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       </div>
     </div>
     <div style="padding:16px;overflow-x:auto"><canvas id="ia-gantt"></canvas></div>
+  </div>
+  </div>
+  <div id="ia-sub-actividades" style="display:none">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <div class="mod-title">Submódulo <span>Actividades Semanales IA</span></div>
+      </div>
+      <div class="export-btns">
+        <button class="btn-act-add" onclick="openActModalMod('ia',null)">➕ Nueva Actividad</button>
+        <button class="btn-pptx" id="actia-bulk-btn" onclick="enviarSeleccionadasMod('ia')" disabled style="opacity:.5">📧 Enviar por correo (0)</button>
+        <button class="btn-xlsx" onclick="exportActXLSXMod('ia')">📗 Descargar Excel</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi b" style="cursor:pointer" onclick="kpiActFilterMod('ia','todos')" title="Ver todas"><div class="kpi-lbl">Total</div><div class="kpi-val b" id="actia-k-total">0</div><div class="kpi-sub">Actividades IA</div></div>
+      <div class="kpi" style="border-top-color:#6366f1;cursor:pointer" onclick="kpiActFilterMod('ia','En proceso')" title="Filtrar En proceso"><div class="kpi-lbl">En Proceso</div><div class="kpi-val" id="actia-k-proc" style="color:#6366f1">0</div><div class="kpi-sub">En desarrollo</div></div>
+      <div class="kpi g" style="cursor:pointer" onclick="kpiActFilterMod('ia','Concluido')" title="Filtrar Concluidas"><div class="kpi-lbl">Concluidas</div><div class="kpi-val g" id="actia-k-conc">0</div><div class="kpi-sub">Completadas</div></div>
+      <div class="kpi r" style="cursor:pointer" onclick="kpiActFilterMod('ia','Atrasado')" title="Filtrar Atrasadas"><div class="kpi-lbl">Atrasadas</div><div class="kpi-val r" id="actia-k-atr">0</div><div class="kpi-sub">Requieren atención</div></div>
+      <div class="kpi gold"><div class="kpi-lbl">Equipo IA</div><div class="kpi-val gold" id="actia-k-personas">0</div><div class="kpi-sub">Colaboradores con actividad</div></div>
+    </div>
+    <div class="act-week-nav">
+      <div class="act-filters-row">
+        <select id="actia-f-estatus" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">🔵 Todos los estatus</option>
+          <option value="En proceso">🔵 En proceso</option>
+          <option value="Concluido">🟢 Concluido</option>
+          <option value="Atrasado">🔴 Atrasado</option>
+        </select>
+        <select id="actia-f-colab" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">👤 Todos los colaboradores</option>
+        </select>
+        <select id="actia-f-proyecto" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📁 Todos los proyectos</option>
+        </select>
+        <select id="actia-f-prioridad" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">⚡ Todas las prioridades</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media">🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+        <select id="actia-f-semana" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
+          <option value="">📅 Todas las fechas</option>
+        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actia-mes-btn" onclick="toggleActMesPanelMod('ia')">🗓️ Todos los meses ▾</button>
+          <div class="act-multi-panel" id="actia-mes-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actia-mes-todos" checked onchange="actMesSelTodosMod('ia',this)" style="accent-color:var(--gold)"> ✓ Todos los meses
+            </label>
+            <div id="actia-mes-checks"></div>
+          </div>
+        </div>
+        <input id="actia-search" placeholder="🔍 Buscar actividad o persona..." oninput="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;flex:1 1 160px;min-width:160px">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Actividades IA — Vista detallada</div>
+        <span class="badge b" id="actia-count">0 actividades</span>
+      </div>
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th style="width:34px"><input type="checkbox" id="actia-chk-all" onchange="actToggleAllMod('ia',this)" style="accent-color:var(--gold)"></th>
+          <th class="act-sort-th" style="width:170px;min-width:170px">Nombre</th>
+          <th class="act-sort-th" style="width:190px;min-width:190px">Proyecto</th>
+          <th>Actividad</th>
+          <th class="act-sort-th" style="width:120px;min-width:120px">Prioridad</th>
+          <th class="act-sort-th" style="width:80px;min-width:80px">Fecha Fin</th>
+          <th class="act-sort-th" style="width:130px">Estatus</th>
+          <th style="width:90px">Acciones</th>
+        </tr></thead>
+        <tbody id="actia-tbody"></tbody>
+      </table></div>
+    </div>
   </div>
 </section>
 
@@ -1015,6 +1255,9 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     <button id="ctab-costos" onclick="switchCargaTab('costos')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128176; Costos de Proyectos</button>
     <button id="ctab-directorio" onclick="switchCargaTab('directorio')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128231; Directorio de Líderes</button>
     <button id="ctab-directorioimc" onclick="switchCargaTab('directorioimc')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128188; Directorio IMC</button>
+    <button id="ctab-directoriodev" onclick="switchCargaTab('directoriodev')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128188; Directorio Desarrollo</button>
+    <button id="ctab-directorioinf" onclick="switchCargaTab('directorioinf')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128188; Directorio Soporte</button>
+    <button id="ctab-directorioia" onclick="switchCargaTab('directorioia')" style="background:none;border:none;padding:10px 22px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s">&#128188; Directorio IA</button>
   </div>
 
   <!-- Sub-tab: Layout -->
@@ -1137,6 +1380,60 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
   </div>
 
+  <div id="cpanel-directoriodev" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted)">Administra al equipo Desarrollo a quien puedes asignar actividades semanales (submódulo "Actividades Semanales Desarrollo")</div>
+      <button onclick="openDirModalMod('dev')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar al equipo Desarrollo</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Nombre</th>
+          <th style="text-align:left;padding:10px 14px">Correo</th>
+          <th style="text-align:left;padding:10px 14px;width:100px">Acciones</th>
+        </tr></thead>
+        <tbody id="dirdev-tbody"></tbody>
+      </table>
+      <div id="dirdev-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin integrantes. Agrega el primero con el botón de arriba.</div>
+    </div>
+  </div>
+
+  <div id="cpanel-directorioinf" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted)">Administra al equipo Soporte a quien puedes asignar actividades semanales (submódulo "Actividades Semanales Soporte")</div>
+      <button onclick="openDirModalMod('inf')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar al equipo Soporte</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Nombre</th>
+          <th style="text-align:left;padding:10px 14px">Correo</th>
+          <th style="text-align:left;padding:10px 14px;width:100px">Acciones</th>
+        </tr></thead>
+        <tbody id="dirinf-tbody"></tbody>
+      </table>
+      <div id="dirinf-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin integrantes. Agrega el primero con el botón de arriba.</div>
+    </div>
+  </div>
+
+  <div id="cpanel-directorioia" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted)">Administra al equipo IA a quien puedes asignar actividades semanales (submódulo "Actividades Semanales IA")</div>
+      <button onclick="openDirModalMod('ia')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar al equipo IA</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:rgba(201,168,76,.08);color:var(--muted);font-size:11px;text-transform:uppercase">
+          <th style="text-align:left;padding:10px 14px">Nombre</th>
+          <th style="text-align:left;padding:10px 14px">Correo</th>
+          <th style="text-align:left;padding:10px 14px;width:100px">Acciones</th>
+        </tr></thead>
+        <tbody id="diria-tbody"></tbody>
+      </table>
+      <div id="diria-empty" style="text-align:center;color:var(--muted);font-size:13px;padding:30px">Sin integrantes. Agrega el primero con el botón de arriba.</div>
+    </div>
+  </div>
+
   <!-- Sub-tab: Costos de Proyectos -->
   <div id="cpanel-costos" style="display:none">
     <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Captura los costos de cualquier proyecto (de cualquier dirección). Solo llena los campos que apliquen — los totales se ajustan automáticamente a lo que captures. Esta información se ve desde el botón "💰 Costos" en el detalle de cada proyecto.</div>
@@ -1246,6 +1543,168 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 </div>
 
 <!-- Modal Directorio IMC -->
+<div id="dirdev-modal-bg" onclick="if(event.target===this)closeDirModalMod('dev')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">💼 Agregar al equipo Desarrollo</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="dirdev-inp-nombre" class="act-inp" placeholder="Ej: Nombre Apellido" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="dirdev-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="dirdev-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModalMod('dev')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntryMod('dev')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="actdev-modal-bg" onclick="if(event.target===this)closeActModalMod('dev')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModalMod('dev')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:18px" id="actdev-modal-title">Nueva actividad</div>
+    <input type="hidden" id="actdev-inp-id">
+    <label class="act-inp-lbl">COLABORADOR (equipo Desarrollo)</label>
+    <select id="actdev-inp-nombre-sel" class="act-inp" onchange="onColabSelectMod('dev')" style="margin-bottom:10px">
+      <option value="">-- Selecciona un integrante del equipo --</option>
+    </select>
+    <input type="hidden" id="actdev-inp-nombre">
+    <input type="hidden" id="actdev-inp-email">
+    <label class="act-inp-lbl">PROYECTO RELACIONADO (opcional)</label>
+    <select id="actdev-inp-proyecto" class="act-inp" style="margin-bottom:10px">
+      <option value="">-- Selecciona un colaborador primero --</option>
+    </select>
+    <label class="act-inp-lbl">ACTIVIDAD</label>
+    <textarea id="actdev-inp-actividad" class="act-inp" rows="3" placeholder="Describe la actividad a realizar..." style="margin-bottom:10px;resize:vertical"></textarea>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <div style="flex:1">
+        <label class="act-inp-lbl">FECHA LÍMITE</label>
+        <input id="actdev-inp-fecha" type="date" class="act-inp">
+      </div>
+      <div style="flex:1">
+        <label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="actdev-inp-prioridad" class="act-inp">
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+        </select>
+      </div>
+    </div>
+    <input type="hidden" id="actdev-inp-estatus" value="En proceso">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button onclick="closeActModalMod('dev')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 18px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveActividadMod('dev')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="dirinf-modal-bg" onclick="if(event.target===this)closeDirModalMod('inf')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">💼 Agregar al equipo Soporte</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="dirinf-inp-nombre" class="act-inp" placeholder="Ej: Nombre Apellido" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="dirinf-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="dirinf-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModalMod('inf')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntryMod('inf')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="actinf-modal-bg" onclick="if(event.target===this)closeActModalMod('inf')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModalMod('inf')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:18px" id="actinf-modal-title">Nueva actividad</div>
+    <input type="hidden" id="actinf-inp-id">
+    <label class="act-inp-lbl">COLABORADOR (equipo Soporte)</label>
+    <select id="actinf-inp-nombre-sel" class="act-inp" onchange="onColabSelectMod('inf')" style="margin-bottom:10px">
+      <option value="">-- Selecciona un integrante del equipo --</option>
+    </select>
+    <input type="hidden" id="actinf-inp-nombre">
+    <input type="hidden" id="actinf-inp-email">
+    <label class="act-inp-lbl">PROYECTO RELACIONADO (opcional)</label>
+    <select id="actinf-inp-proyecto" class="act-inp" style="margin-bottom:10px">
+      <option value="">-- Selecciona un colaborador primero --</option>
+    </select>
+    <label class="act-inp-lbl">ACTIVIDAD</label>
+    <textarea id="actinf-inp-actividad" class="act-inp" rows="3" placeholder="Describe la actividad a realizar..." style="margin-bottom:10px;resize:vertical"></textarea>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <div style="flex:1">
+        <label class="act-inp-lbl">FECHA LÍMITE</label>
+        <input id="actinf-inp-fecha" type="date" class="act-inp">
+      </div>
+      <div style="flex:1">
+        <label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="actinf-inp-prioridad" class="act-inp">
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+        </select>
+      </div>
+    </div>
+    <input type="hidden" id="actinf-inp-estatus" value="En proceso">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button onclick="closeActModalMod('inf')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 18px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveActividadMod('inf')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="diria-modal-bg" onclick="if(event.target===this)closeDirModalMod('ia')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">💼 Agregar al equipo IA</div>
+    <label class="act-inp-lbl">NOMBRE</label>
+    <input id="diria-inp-nombre" class="act-inp" placeholder="Ej: Nombre Apellido" style="margin-bottom:10px">
+    <label class="act-inp-lbl">CORREO</label>
+    <input id="diria-inp-email" class="act-inp" type="email" placeholder="correo@empresa.com" style="margin-bottom:16px">
+    <input type="hidden" id="diria-inp-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeDirModalMod('ia')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveDirEntryMod('ia')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="actia-modal-bg" onclick="if(event.target===this)closeActModalMod('ia')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#1c2535;border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <button onclick="closeActModalMod('ia')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1">×</button>
+    <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:18px" id="actia-modal-title">Nueva actividad</div>
+    <input type="hidden" id="actia-inp-id">
+    <label class="act-inp-lbl">COLABORADOR (equipo IA)</label>
+    <select id="actia-inp-nombre-sel" class="act-inp" onchange="onColabSelectMod('ia')" style="margin-bottom:10px">
+      <option value="">-- Selecciona un integrante del equipo --</option>
+    </select>
+    <input type="hidden" id="actia-inp-nombre">
+    <input type="hidden" id="actia-inp-email">
+    <label class="act-inp-lbl">PROYECTO RELACIONADO (opcional)</label>
+    <select id="actia-inp-proyecto" class="act-inp" style="margin-bottom:10px">
+      <option value="">-- Selecciona un colaborador primero --</option>
+    </select>
+    <label class="act-inp-lbl">ACTIVIDAD</label>
+    <textarea id="actia-inp-actividad" class="act-inp" rows="3" placeholder="Describe la actividad a realizar..." style="margin-bottom:10px;resize:vertical"></textarea>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <div style="flex:1">
+        <label class="act-inp-lbl">FECHA LÍMITE</label>
+        <input id="actia-inp-fecha" type="date" class="act-inp">
+      </div>
+      <div style="flex:1">
+        <label class="act-inp-lbl">PRIORIDAD</label>
+        <select id="actia-inp-prioridad" class="act-inp">
+          <option value="Alta" style="background:#1c2535;color:#ef4444">🔴 Alta</option>
+          <option value="Media" selected style="background:#1c2535;color:#f59e0b">🟡 Media</option>
+          <option value="Baja" style="background:#1c2535;color:#22c55e">🟢 Baja</option>
+        </select>
+      </div>
+    </div>
+    <input type="hidden" id="actia-inp-estatus" value="En proceso">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button onclick="closeActModalMod('ia')" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 18px;cursor:pointer;font-size:13px">Cancelar</button>
+      <button onclick="saveActividadMod('ia')" style="background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div id="dirimc-modal-bg" onclick="if(event.target===this)closeDirModalIMC()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;align-items:center;justify-content:center">
   <div style="background:#1c2535;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:24px;width:400px;max-width:95vw">
     <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">💼 Agregar al equipo IMC</div>
@@ -1546,8 +2005,29 @@ let _actIMCMesesSel=[]; // filtro de meses IMC: [] = todos, ['__ninguno__'] = ni
 _loadEventualidades();
 _loadDirectorio();
 renderDirectorio();
+const MOD_INFO = {
+  dev: {label:'Desarrollo'},
+  inf: {label:'Soporte e Infraestructura'},
+  ia:  {label:'IA'}
+};
+let _directorioPorMod = {dev:[], inf:[], ia:[]};
+let _actividadesPorMod = {dev:[], inf:[], ia:[]};
+let _actFiltroPorMod = {dev:'', inf:'', ia:''};
+let _actSeleccionadasPorMod = {dev:new Set(), inf:new Set(), ia:new Set()};
+let _actListaActualPorMod = {dev:[], inf:[], ia:[]};
+let _actMesesSelPorMod = {dev:[], inf:[], ia:[]};
+let _actDetailIdPorMod = {dev:null, inf:null, ia:null};
+let _backupDirTimerPorMod = {dev:null, inf:null, ia:null};
+let _backupActTimerPorMod = {dev:null, inf:null, ia:null};
+let _actColaEnvioPorMod = {dev:[], inf:[], ia:[]};
+let _actColaIdxPorMod = {dev:0, inf:0, ia:0};
+let _actColaOvPorMod = {dev:null, inf:null, ia:null};
 _loadDirectorioIMC();
 _loadActividadesIMC();
+['dev','inf','ia'].forEach(function(mod){
+  _loadDirectorioMod(mod);
+  _loadActividadesMod(mod);
+});
 let _costosProyectos={};
 let _costosProyectoActual='';
 _loadCostosProyectos();
@@ -3249,24 +3729,22 @@ function _saveEventualidades(){
 
 // ── Directorio de colaboradores ────────────────────────────────────────────
 function switchCargaTab(tab){
-  document.getElementById('cpanel-layout').style.display=tab==='layout'?'block':'none';
-  document.getElementById('cpanel-directorio').style.display=tab==='directorio'?'block':'none';
-  document.getElementById('cpanel-directorioimc').style.display=tab==='directorioimc'?'block':'none';
-  document.getElementById('cpanel-costos').style.display=tab==='costos'?'block':'none';
-  document.getElementById('ctab-layout').style.color=tab==='layout'?'var(--gold)':'var(--muted)';
-  document.getElementById('ctab-layout').style.borderBottomColor=tab==='layout'?'var(--gold)':'transparent';
-  document.getElementById('ctab-layout').style.fontWeight=tab==='layout'?'700':'600';
-  document.getElementById('ctab-directorio').style.color=tab==='directorio'?'var(--gold)':'var(--muted)';
-  document.getElementById('ctab-directorio').style.borderBottomColor=tab==='directorio'?'var(--gold)':'transparent';
-  document.getElementById('ctab-directorio').style.fontWeight=tab==='directorio'?'700':'600';
-  document.getElementById('ctab-directorioimc').style.color=tab==='directorioimc'?'var(--gold)':'var(--muted)';
-  document.getElementById('ctab-directorioimc').style.borderBottomColor=tab==='directorioimc'?'var(--gold)':'transparent';
-  document.getElementById('ctab-directorioimc').style.fontWeight=tab==='directorioimc'?'700':'600';
-  document.getElementById('ctab-costos').style.color=tab==='costos'?'var(--gold)':'var(--muted)';
-  document.getElementById('ctab-costos').style.borderBottomColor=tab==='costos'?'var(--gold)':'transparent';
-  document.getElementById('ctab-costos').style.fontWeight=tab==='costos'?'700':'600';
+  var todos=['layout','directorio','directorioimc','directoriodev','directorioinf','directorioia','costos'];
+  todos.forEach(function(t){
+    var panel=document.getElementById('cpanel-'+t);
+    if(panel) panel.style.display = (tab===t) ? 'block' : 'none';
+    var btn=document.getElementById('ctab-'+t);
+    if(btn){
+      btn.style.color = (tab===t) ? 'var(--gold)' : 'var(--muted)';
+      btn.style.borderBottomColor = (tab===t) ? 'var(--gold)' : 'transparent';
+      btn.style.fontWeight = (tab===t) ? '700' : '600';
+    }
+  });
   if(tab==='directorio') renderDirectorio();
   if(tab==='directorioimc') renderDirectorioIMC();
+  if(tab==='directoriodev') renderDirectorioMod('dev');
+  if(tab==='directorioinf') renderDirectorioMod('inf');
+  if(tab==='directorioia') renderDirectorioMod('ia');
   if(tab==='costos'){ populateCostosProyectoSelect(); renderCostosTabla(); }
   if(tab==='layout'){ populateLayoutProyectoSelect(); }
 }
@@ -4109,6 +4587,693 @@ function exportActXLSXIMC(){
   XLSX.utils.book_append_sheet(wb,ws,'Actividades IMC');
   XLSX.writeFile(wb,'Actividades_Semanales_IMC_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.xlsx');
 }
+
+// ════════════════════════════════════════════════════════════════════════
+// ═══ ACTIVIDADES SEMANALES Y DIRECTORIO GENERICO (Desarrollo/Soporte/IA) ═══
+// ════════════════════════════════════════════════════════════════════════
+
+function _dirToCSVGeneric(dirs){
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const header='id,nombre,email';
+  const rows=dirs.map(d=>`"${esc(d.id)}","${esc(d.nombre)}","${esc(d.email)}"`);
+  return header+'\n'+rows.join('\n');
+}
+function _actToCSVGeneric(acts){
+  const esc=s=>(s||'').replace(/"/g,'""');
+  const header='id,nombre,email,proyecto,actividad,fechaFin,prioridad,estatus,createdAt,updatedAt';
+  const rows=acts.map(a=>`"${esc(a.id)}","${esc(a.nombre)}","${esc(a.email)}","${esc(a.proyecto||'')}","${esc(a.actividad)}","${esc(a.fechaFin||'')}","${esc(a.prioridad||'')}","${esc(a.estatus||'')}","${esc(a.createdAt||'')}","${esc(a.updatedAt||'')}"`);
+  return header+'\n'+rows.join('\n');
+}
+function _actEstatusRealGeneric(a){
+  if(a.estatus==='Concluido') return 'Concluido';
+  if(a.fechaFin){
+    var hoy=new Date(); hoy.setHours(0,0,0,0);
+    var f=new Date(a.fechaFin+'T00:00:00');
+    if(!isNaN(f.getTime()) && f<hoy) return 'Atrasado';
+  }
+  return 'En proceso';
+}
+
+// ── Directorio ──
+function _loadDirectorioMod(mod){
+  try{ _directorioPorMod[mod]=JSON.parse(localStorage.getItem('dti_directorio_'+mod)||'[]'); }catch(e){ _directorioPorMod[mod]=[]; }
+  _syncDirectorioModFromGitHub(mod);
+}
+async function _syncDirectorioModFromGitHub(mod){
+  try{
+    const res=await fetch('https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/directorio_'+mod+'.csv',{cache:'no-store',headers:{'Accept':'application/vnd.github.v3+json'}});
+    if(!res.ok) return;
+    const json=await res.json();
+    const text=_b64ToUtf8(json.content);
+    const repoRows=_csvGenericParse(text);
+    if(!repoRows.length) return;
+    const repoMap={};
+    repoRows.forEach(d=>{ if(d.id) repoMap[d.id]={id:d.id,nombre:d.nombre||'',email:d.email||''}; });
+    _directorioPorMod[mod].forEach(ld=>{ if(!repoMap[ld.id]) repoMap[ld.id]=ld; });
+    _directorioPorMod[mod]=Object.values(repoMap);
+    localStorage.setItem('dti_directorio_'+mod, JSON.stringify(_directorioPorMod[mod]));
+    renderDirectorioMod(mod);
+  }catch(e){ console.warn('Sync directorio '+mod+' desde GitHub falló:', e); }
+}
+function _saveDirectorioMod(mod){
+  localStorage.setItem('dti_directorio_'+mod,JSON.stringify(_directorioPorMod[mod]));
+  renderDirectorioMod(mod);
+  clearTimeout(_backupDirTimerPorMod[mod]);
+  _backupDirTimerPorMod[mod]=setTimeout(()=>_backupDirectorioModGitHub(mod), 1500);
+}
+async function _backupDirectorioModGitHub(mod){
+  try{
+    const csv=_dirToCSVGeneric(_directorioPorMod[mod]);
+    const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'directorio_'+mod+'.csv',content:csv})});
+    const d=await res.json().catch(()=>({}));
+    if(res.ok && d.ok) console.log('✅ Directorio '+mod+' respaldado en GitHub');
+    else console.error('❌ Backup directorio '+mod+' falló:', res.status, JSON.stringify(d));
+  }catch(e){ console.error('❌ Backup directorio '+mod+' error:', e); }
+}
+function renderDirectorioMod(mod){
+  var tbody=document.getElementById('dir'+mod+'-tbody');
+  var empty=document.getElementById('dir'+mod+'-empty');
+  if(!tbody) return;
+  if(!tbody._dirListener){
+    tbody._dirListener=true;
+    tbody.addEventListener('click',function(ev){
+      var btn=ev.target.closest('button');
+      if(!btn) return;
+      var did=btn.dataset.dirid;
+      if(!did) return;
+      if(btn.classList.contains('dir'+mod+'-btn-edit')) openDirModalMod(mod, did);
+      else if(btn.classList.contains('dir'+mod+'-btn-del')) deleteDirEntryMod(mod, did);
+    });
+  }
+  var lista=_directorioPorMod[mod];
+  if(!lista.length){ tbody.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  tbody.innerHTML=lista.map(function(d){
+    return '<tr style="border-top:1px solid var(--border)">'
+      +'<td style="padding:7px 8px;font-weight:600">'+d.nombre+'</td>'
+      +'<td style="padding:7px 8px;color:var(--muted)">'+d.email+'</td>'
+      +'<td style="padding:7px 8px;white-space:nowrap">'
+      +'<button data-dirid="'+d.id+'" class="dir'+mod+'-btn-edit" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px;margin-right:3px">&#9998;</button>'
+      +'<button data-dirid="'+d.id+'" class="dir'+mod+'-btn-del" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px">&#128465;</button>'
+      +'</td></tr>';
+  }).join('');
+  populateDestSelectMod(mod);
+}
+function openDirModalMod(mod, id){
+  document.getElementById('dir'+mod+'-inp-nombre').value='';
+  document.getElementById('dir'+mod+'-inp-email').value='';
+  document.getElementById('dir'+mod+'-inp-id').value='';
+  if(id){
+    var d=_directorioPorMod[mod].find(function(x){return x.id===id;});
+    if(d){ document.getElementById('dir'+mod+'-inp-nombre').value=d.nombre; document.getElementById('dir'+mod+'-inp-email').value=d.email; document.getElementById('dir'+mod+'-inp-id').value=d.id; }
+  }
+  document.getElementById('dir'+mod+'-modal-bg').style.display='flex';
+  document.getElementById('dir'+mod+'-inp-nombre').focus();
+}
+function closeDirModalMod(mod){ document.getElementById('dir'+mod+'-modal-bg').style.display='none'; }
+function saveDirEntryMod(mod){
+  var nombre=document.getElementById('dir'+mod+'-inp-nombre').value.trim();
+  var email=document.getElementById('dir'+mod+'-inp-email').value.trim();
+  var id=document.getElementById('dir'+mod+'-inp-id').value;
+  if(!nombre||!email){ showToast('Completa nombre y correo','error'); return; }
+  if(id){
+    var d=_directorioPorMod[mod].find(function(x){return x.id===id;});
+    if(d){ d.nombre=nombre; d.email=email; }
+  } else {
+    _directorioPorMod[mod].push({id:'d'+mod+Date.now(),nombre:nombre,email:email});
+  }
+  _saveDirectorioMod(mod);
+  closeDirModalMod(mod);
+  showToast('Integrante guardado','success');
+}
+function deleteDirEntryMod(mod, id){
+  _directorioPorMod[mod]=_directorioPorMod[mod].filter(function(d){return d.id!==id;});
+  _saveDirectorioMod(mod);
+  showToast('Integrante eliminado','success');
+}
+
+// ── Actividades ──
+function _loadActividadesMod(mod){
+  try{ _actividadesPorMod[mod]=JSON.parse(localStorage.getItem('dti_actividades_'+mod)||'[]'); }catch(e){ _actividadesPorMod[mod]=[]; }
+  _syncActividadesModFromGitHub(mod);
+}
+async function _syncActividadesModFromGitHub(mod){
+  try{
+    const res=await fetch('https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/actividades_'+mod+'.csv',{cache:'no-store',headers:{'Accept':'application/vnd.github.v3+json'}});
+    if(!res.ok) return;
+    const json=await res.json();
+    const text=_b64ToUtf8(json.content);
+    const repoRows=_csvGenericParse(text).map(r=>({
+      id:r.id, nombre:r.nombre||'', email:r.email||'', proyecto:r.proyecto||'',
+      actividad:r.actividad||'', fechaFin:r.fechaFin||'', prioridad:r.prioridad||'',
+      estatus:r.estatus||'', createdAt:r.createdAt||'', updatedAt:r.updatedAt||''
+    })).filter(r=>r.id);
+    if(!repoRows.length) return;
+    const repoMap={};
+    repoRows.forEach(a=>{ repoMap[a.id]=a; });
+    _actividadesPorMod[mod].forEach(la=>{
+      if(!repoMap[la.id] || new Date(la.updatedAt||la.createdAt||0) > new Date((repoMap[la.id]||{}).updatedAt||(repoMap[la.id]||{}).createdAt||0)){
+        repoMap[la.id]=la;
+      }
+    });
+    _actividadesPorMod[mod]=Object.values(repoMap);
+    localStorage.setItem('dti_actividades_'+mod, JSON.stringify(_actividadesPorMod[mod]));
+    var sub=document.getElementById(mod+'-sub-actividades');
+    if(sub && sub.style.display!=='none') renderActividadesMod(mod);
+  }catch(e){ console.warn('Sync actividades '+mod+' desde GitHub falló:', e); }
+}
+function _saveActividadesMod(mod){
+  localStorage.setItem('dti_actividades_'+mod,JSON.stringify(_actividadesPorMod[mod]));
+  clearTimeout(_backupActTimerPorMod[mod]);
+  _backupActTimerPorMod[mod]=setTimeout(()=>_backupActividadesModGitHub(mod), 1500);
+}
+async function _backupActividadesModGitHub(mod){
+  try{
+    const csv=_actToCSVGeneric(_actividadesPorMod[mod]);
+    const res=await fetch(SYNC_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_file',filename:'actividades_'+mod+'.csv',content:csv})});
+    const d=await res.json().catch(()=>({}));
+    if(res.ok && d.ok) console.log('✅ Actividades '+mod+' respaldadas en GitHub');
+    else console.error('❌ Backup actividades '+mod+' falló:', res.status, JSON.stringify(d));
+  }catch(e){ console.error('❌ Backup actividades '+mod+' error:', e); }
+}
+
+function toggleActMesPanelMod(mod){
+  var p=document.getElementById('act'+mod+'-mes-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+function actMesSelTodosMod(mod, chk){
+  _actMesesSelPorMod[mod] = chk.checked ? [] : ['__ninguno__'];
+  renderActividadesMod(mod);
+}
+function actMesCheckMod(mod){
+  var checks=[].slice.call(document.querySelectorAll('#act'+mod+'-mes-checks input[type=checkbox]'));
+  var total=checks.length;
+  var checked=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  if(checked.length===total) _actMesesSelPorMod[mod]=[];
+  else if(checked.length===0) _actMesesSelPorMod[mod]=['__ninguno__'];
+  else _actMesesSelPorMod[mod]=checked;
+  renderActividadesMod(mod);
+}
+document.addEventListener('click', function(e){
+  ['dev','inf','ia'].forEach(function(mod){
+    var wrap=document.getElementById('act'+mod+'-mes-panel');
+    var btn=document.getElementById('act'+mod+'-mes-btn');
+    if(!wrap || !btn) return;
+    if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
+      wrap.style.display='none';
+    }
+  });
+});
+
+function switchModSubtab(mod, tab){
+  document.getElementById(mod+'-sub-proyectos').style.display = tab==='proyectos' ? '' : 'none';
+  document.getElementById(mod+'-sub-actividades').style.display = tab==='actividades' ? '' : 'none';
+  var btnsProy=document.getElementById(mod+'-proyectos-btns');
+  if(btnsProy) btnsProy.style.display = tab==='proyectos' ? '' : 'none';
+  var bp=document.getElementById(mod+'-subtab-proyectos'), ba=document.getElementById(mod+'-subtab-actividades');
+  bp.style.borderBottomColor = tab==='proyectos' ? 'var(--gold)' : 'transparent';
+  bp.style.opacity = tab==='proyectos' ? '1' : '.6';
+  ba.style.borderBottomColor = tab==='actividades' ? 'var(--gold)' : 'transparent';
+  ba.style.opacity = tab==='actividades' ? '1' : '.6';
+  if(tab==='actividades') renderActividadesMod(mod);
+}
+
+function kpiActFilterMod(mod, val){
+  _actFiltroPorMod[mod] = (val==='todos') ? '' : val;
+  renderActividadesMod(mod);
+}
+
+function renderActividadesMod(mod){
+  var estEl=document.getElementById('act'+mod+'-f-estatus'), priEl=document.getElementById('act'+mod+'-f-prioridad'), colEl=document.getElementById('act'+mod+'-f-colab'), proyEl=document.getElementById('act'+mod+'-f-proyecto'), semEl=document.getElementById('act'+mod+'-f-semana'), qEl=document.getElementById('act'+mod+'-search');
+  var estF = estEl?estEl.value:'';
+  var priF = priEl?priEl.value:'';
+  var colF = colEl?colEl.value:'';
+  var proyF = proyEl?proyEl.value:'';
+  var semF = semEl?semEl.value:'';
+  var q = qEl?(qEl.value||'').toLowerCase():'';
+
+  var base = _actividadesPorMod[mod].map(function(a){
+    var c=Object.assign({},a); c._estReal=_actEstatusRealGeneric(a); return c;
+  });
+
+  var setTxt=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+
+  if(colEl){
+    var nombresSet={};
+    _directorioPorMod[mod].forEach(function(d){ if(d.nombre) nombresSet[d.nombre]=true; });
+    base.forEach(function(a){ if(a.nombre) nombresSet[a.nombre]=true; });
+    var nombresUnicos=Object.keys(nombresSet).sort();
+    var curColab=colEl.value;
+    colEl.innerHTML='<option value="">👤 Todos los colaboradores</option>'+nombresUnicos.map(function(n){
+      return '<option value="'+n+'"'+(n===curColab?' selected':'')+'>'+n+'</option>';
+    }).join('');
+  }
+
+  if(proyEl){
+    var proyectosSet={};
+    var hayIndependientes=false;
+    base.forEach(function(a){ if(a.proyecto) proyectosSet[a.proyecto]=true; else hayIndependientes=true; });
+    var proyectosUnicos=Object.keys(proyectosSet).sort();
+    var curProy=proyEl.value;
+    var optsProy='<option value="">📁 Todos los proyectos</option>';
+    if(hayIndependientes) optsProy+='<option value="__independiente__"'+(curProy==='__independiente__'?' selected':'')+'>Actividades Independientes</option>';
+    optsProy+=proyectosUnicos.map(function(p){
+      return '<option value="'+p.replace(/"/g,'&quot;')+'"'+(p===curProy?' selected':'')+'>'+p+'</option>';
+    }).join('');
+    proyEl.innerHTML=optsProy;
+  }
+
+  if(semEl){
+    var semanasSet={};
+    base.forEach(function(a){ if(a.fechaFin){ semanasSet[_isoWeek(new Date(a.fechaFin+'T12:00:00'))]=true; } });
+    var semanasUnicas=Object.keys(semanasSet).sort();
+    var curSem=semEl.value;
+    semEl.innerHTML='<option value="">📅 Todas las fechas</option>'+semanasUnicas.map(function(iso){
+      return '<option value="'+iso+'"'+(iso===curSem?' selected':'')+'>'+_weekLabel(iso)+'</option>';
+    }).join('');
+  }
+
+  var mesPanel=document.getElementById('act'+mod+'-mes-checks');
+  if(mesPanel){
+    var mesesSet={};
+    base.forEach(function(a){
+      if(a.fechaFin){
+        var mk=a.fechaFin.slice(0,7);
+        mesesSet[mk]=true;
+      }
+    });
+    var mesesUnicos=Object.keys(mesesSet).sort();
+    var MESES_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    var mesesSel=_actMesesSelPorMod[mod];
+    var ninguno=mesesSel.length===1 && mesesSel[0]==='__ninguno__';
+    var todosSel=mesesSel.length===0 && !ninguno;
+    mesPanel.innerHTML=mesesUnicos.map(function(mk){
+      var parts=mk.split('-'); var lbl=MESES_ES[parseInt(parts[1],10)-1]+' '+parts[0];
+      lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+      var checked = todosSel || (!ninguno && mesesSel.indexOf(mk)!==-1);
+      return '<label class="act-multi-lbl"><input type="checkbox" value="'+mk+'" '+(checked?'checked':'')+' onchange="actMesCheckMod(\''+mod+'\')" style="accent-color:var(--gold)"> '+lbl+'</label>';
+    }).join('');
+    var todosChk=document.getElementById('act'+mod+'-mes-todos');
+    if(todosChk) todosChk.checked=todosSel;
+    var mesBtn=document.getElementById('act'+mod+'-mes-btn');
+    if(mesBtn){
+      if(ninguno) mesBtn.textContent='🗓️ Ningún mes ▾';
+      else if(todosSel) mesBtn.textContent='🗓️ Todos los meses ▾';
+      else mesBtn.textContent='🗓️ '+mesesSel.length+' mes(es) ▾';
+    }
+  }
+
+  var kpiBase=base;
+  if(priF) kpiBase=kpiBase.filter(function(a){return a.prioridad===priF;});
+  if(colF) kpiBase=kpiBase.filter(function(a){return a.nombre===colF;});
+  if(proyF==='__independiente__') kpiBase=kpiBase.filter(function(a){return !a.proyecto;});
+  else if(proyF) kpiBase=kpiBase.filter(function(a){return a.proyecto===proyF;});
+  if(semF) kpiBase=kpiBase.filter(function(a){return a.fechaFin && _isoWeek(new Date(a.fechaFin+'T12:00:00'))===semF;});
+  var mesesSel2=_actMesesSelPorMod[mod];
+  if(mesesSel2.length===1 && mesesSel2[0]==='__ninguno__'){
+    kpiBase=[];
+  } else if(mesesSel2.length){
+    kpiBase=kpiBase.filter(function(a){return a.fechaFin && mesesSel2.indexOf(a.fechaFin.slice(0,7))!==-1;});
+  }
+  if(q) kpiBase=kpiBase.filter(function(a){return (a.nombre||'').toLowerCase().includes(q)||(a.actividad||'').toLowerCase().includes(q)||(a.proyecto||'').toLowerCase().includes(q);});
+
+  var total=kpiBase.length;
+  var proc=kpiBase.filter(function(a){return a._estReal==='En proceso';}).length;
+  var conc=kpiBase.filter(function(a){return a._estReal==='Concluido';}).length;
+  var atr =kpiBase.filter(function(a){return a._estReal==='Atrasado';}).length;
+  var personas=new Set(kpiBase.map(function(a){return a.nombre;}).filter(Boolean)).size;
+  setTxt('act'+mod+'-k-total',total); setTxt('act'+mod+'-k-proc',proc); setTxt('act'+mod+'-k-conc',conc);
+  setTxt('act'+mod+'-k-atr',atr); setTxt('act'+mod+'-k-personas',personas);
+
+  var list=base;
+  var actFiltro=_actFiltroPorMod[mod];
+  if(actFiltro) list=list.filter(function(a){return a._estReal===actFiltro;});
+  if(estF) list=list.filter(function(a){return a._estReal===estF;});
+  if(priF) list=list.filter(function(a){return a.prioridad===priF;});
+  if(colF) list=list.filter(function(a){return a.nombre===colF;});
+  if(proyF==='__independiente__') list=list.filter(function(a){return !a.proyecto;});
+  else if(proyF) list=list.filter(function(a){return a.proyecto===proyF;});
+  if(semF) list=list.filter(function(a){return a.fechaFin && _isoWeek(new Date(a.fechaFin+'T12:00:00'))===semF;});
+  if(mesesSel2.length===1 && mesesSel2[0]==='__ninguno__'){
+    list=[];
+  } else if(mesesSel2.length){
+    list=list.filter(function(a){return a.fechaFin && mesesSel2.indexOf(a.fechaFin.slice(0,7))!==-1;});
+  }
+  if(q) list=list.filter(function(a){return (a.nombre||'').toLowerCase().includes(q)||(a.actividad||'').toLowerCase().includes(q)||(a.proyecto||'').toLowerCase().includes(q);});
+
+  _actListaActualPorMod[mod]=list;
+  var idsVivos=new Set(_actividadesPorMod[mod].map(function(a){return a.id;}));
+  _actSeleccionadasPorMod[mod].forEach(function(id){ if(!idsVivos.has(id)) _actSeleccionadasPorMod[mod].delete(id); });
+
+  var countEl=document.getElementById('act'+mod+'-count');
+  if(countEl) countEl.textContent=list.length+' actividad'+(list.length===1?'':'es');
+
+  var estColor={'En proceso':'#6366f1','Concluido':'#22c55e','Atrasado':'#ef4444'};
+  var priColor={'Alta':'#ef4444','Media':'#f59e0b','Baja':'#22c55e'};
+
+  var tbody=document.getElementById('act'+mod+'-tbody');
+  if(!tbody) return;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">Sin actividades. Crea la primera con "➕ Nueva Actividad".</td></tr>';
+    _actUpdateBulkBtnMod(mod);
+    var chkAll=document.getElementById('act'+mod+'-chk-all'); if(chkAll) chkAll.checked=false;
+    return;
+  }
+  var seleccionadas=_actSeleccionadasPorMod[mod];
+  tbody.innerHTML=list.map(function(a){
+    var checked=seleccionadas.has(a.id)?'checked':'';
+    var ec=estColor[a._estReal]||'#888', pc=priColor[a.prioridad]||'#888';
+    var emoji=a._estReal==='En proceso'?'🔵':(a._estReal==='Concluido'?'🟢':'🔴');
+    var fd=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
+    var fechaDia=fd?fd.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—';
+    var fechaAnio=fd?String(fd.getFullYear()):'';
+    var listoBtn=a._estReal==='Concluido'?'':(
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<button onclick="actMarcarConcluidoMod(\''+mod+'\',\''+a.id+'\')" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px" title="Marcar como Concluido">&#10003;</button>'
+      +'<span style="font-size:9px;color:rgba(255,255,255,.35);font-weight:600">LISTO</span>'
+      +'</div>'
+    );
+    return '<tr>'
+      +'<td><input type="checkbox" '+checked+' onchange="actToggleOneMod(\''+mod+'\',\''+a.id+'\',this)" style="accent-color:var(--gold)"></td>'
+      +'<td style="font-weight:600;min-width:170px;max-width:170px;word-break:break-word;white-space:normal"><div style="max-width:170px;overflow-wrap:break-word">'+(a.nombre||'—')+'</div></td>'
+      +'<td style="font-size:12px;color:var(--muted);min-width:190px;max-width:190px;word-break:break-word;white-space:normal">'+(a.proyecto||'<span style="font-style:italic;color:#fff">Actividad Independiente</span>')+'</td>'
+      +'<td><span title="'+(a.actividad||'')+'" class="act'+mod+'-act-link" data-actid="'+a.id+'" style="cursor:pointer;color:#fff;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;text-decoration-color:rgba(255,255,255,.7)">'+(a.actividad||'—')+'</span></td>'
+      +'<td><span style="color:'+pc+';font-weight:700;font-size:11px">'+(a.prioridad||'Media')+'</span></td>'
+      +'<td style="font-size:13px;font-weight:500"><div style="line-height:1.2">'+fechaDia+'</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:1px">'+fechaAnio+'</div></td>'
+      +'<td><span style="display:inline-flex;align-items:center;gap:5px;color:'+ec+';background:'+ec+'18;border:1px solid '+ec+'55;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700">'+emoji+' '+a._estReal+'</span></td>'
+      +'<td style="white-space:nowrap;padding:6px 8px"><div style="display:flex;gap:6px;align-items:flex-end">'
+        +listoBtn
+      +'</div></td></tr>';
+  }).join('');
+
+  if(!tbody._modDelegated){
+    tbody._modDelegated=true;
+    tbody.addEventListener('click',function(ev){
+      var link=ev.target.closest('.act'+mod+'-act-link');
+      if(link) openActDetailMod(mod, link.dataset.actid);
+    });
+  }
+
+  var chkAll=document.getElementById('act'+mod+'-chk-all');
+  if(chkAll) chkAll.checked = list.length>0 && list.every(function(a){return seleccionadas.has(a.id);});
+  _actUpdateBulkBtnMod(mod);
+}
+
+function actToggleAllMod(mod, chk){
+  if(chk.checked){ _actListaActualPorMod[mod].forEach(function(a){ _actSeleccionadasPorMod[mod].add(a.id); }); }
+  else { _actListaActualPorMod[mod].forEach(function(a){ _actSeleccionadasPorMod[mod].delete(a.id); }); }
+  renderActividadesMod(mod);
+}
+function actToggleOneMod(mod, id, chk){
+  if(chk.checked) _actSeleccionadasPorMod[mod].add(id); else _actSeleccionadasPorMod[mod].delete(id);
+  _actUpdateBulkBtnMod(mod);
+  var chkAll=document.getElementById('act'+mod+'-chk-all');
+  if(chkAll) chkAll.checked = _actListaActualPorMod[mod].length>0 && _actListaActualPorMod[mod].every(function(a){return _actSeleccionadasPorMod[mod].has(a.id);});
+}
+function _actUpdateBulkBtnMod(mod){
+  var btn=document.getElementById('act'+mod+'-bulk-btn');
+  if(!btn) return;
+  var n=_actSeleccionadasPorMod[mod].size;
+  btn.textContent='📧 Enviar por correo ('+n+')';
+  btn.disabled = n===0;
+  btn.style.opacity = n===0 ? '.5' : '1';
+}
+
+function actMarcarConcluidoMod(mod, id){
+  var a=_actividadesPorMod[mod].find(function(x){return x.id===id;});
+  if(!a) return;
+  showConfirm({
+    icon:'✅', title:'Marcar como Concluido',
+    msg:'¿Confirmas que esta actividad fue completada? El estatus cambiará a <strong style="color:#22c55e">Concluido</strong>.',
+    btnOk:'Sí, concluir',
+    onOk:function(){
+      a.estatus='Concluido';
+      a.updatedAt=new Date().toISOString();
+      _saveActividadesMod(mod);
+      renderActividadesMod(mod);
+      showToast('Actividad marcada como concluida','success');
+    }
+  });
+}
+function deleteActividadMod(mod, id){
+  showConfirm({
+    icon:'🗑️', title:'¿Eliminar actividad?', msg:'Esta acción no se puede deshacer.',
+    btnOk:'Eliminar', danger:true,
+    onOk:function(){
+      _actividadesPorMod[mod]=_actividadesPorMod[mod].filter(function(x){return x.id!==id;});
+      _actSeleccionadasPorMod[mod].delete(id);
+      _saveActividadesMod(mod);
+      renderActividadesMod(mod);
+      showToast('Actividad eliminada','success');
+    }
+  });
+}
+
+function openActDetailMod(mod, id){
+  var a=_actividadesPorMod[mod].find(function(x){return x.id===id;});
+  if(!a) return;
+  _actDetailIdPorMod[mod]=id;
+  var estReal=_actEstatusRealGeneric(a);
+  var estColor={'En proceso':'#6366f1','Concluido':'#22c55e','Atrasado':'#ef4444'}[estReal]||'#888';
+  var emoji=estReal==='En proceso'?'🔵':(estReal==='Concluido'?'🟢':'🔴');
+  document.getElementById('a'+mod+'det-actividad').textContent=a.actividad||'—';
+  document.getElementById('a'+mod+'det-nombre').textContent=a.nombre||'—';
+  document.getElementById('a'+mod+'det-proyecto').textContent=a.proyecto||'Actividad Independiente';
+  document.getElementById('a'+mod+'det-prioridad').textContent=a.prioridad||'Media';
+  var fd=a.fechaFin?new Date(a.fechaFin+'T12:00:00'):null;
+  document.getElementById('a'+mod+'det-fecha').textContent=fd?fd.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  document.getElementById('a'+mod+'det-estatus').innerHTML='<span style="color:'+estColor+';font-weight:700">'+emoji+' '+estReal+'</span>';
+  document.getElementById('act'+mod+'-detail-bg').style.display='flex';
+}
+function closeActDetailMod(mod){ document.getElementById('act'+mod+'-detail-bg').style.display='none'; _actDetailIdPorMod[mod]=null; }
+function editActFromDetailMod(mod){
+  var id=_actDetailIdPorMod[mod];
+  closeActDetailMod(mod);
+  openActModalMod(mod, id);
+}
+function deleteActFromDetailMod(mod){
+  var id=_actDetailIdPorMod[mod];
+  closeActDetailMod(mod);
+  deleteActividadMod(mod, id);
+}
+
+function populateDestSelectMod(mod){
+  var sel=document.getElementById('act'+mod+'-inp-nombre-sel');
+  if(!sel) return;
+  var cur=document.getElementById('act'+mod+'-inp-nombre')?document.getElementById('act'+mod+'-inp-nombre').value:'';
+  sel.innerHTML='<option value="" style="background:#1c2535;color:#fff">-- Selecciona un integrante del equipo --</option>';
+  _directorioPorMod[mod].forEach(function(d){
+    var opt=document.createElement('option');
+    opt.value=d.nombre; opt.dataset.nombre=d.nombre; opt.dataset.email=d.email; opt.textContent=d.nombre;
+    opt.style.background='#1c2535'; opt.style.color='#fff';
+    if(d.nombre===cur) opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+function _populateProyectoSelectMod(mod, nombre, current){
+  var sel=document.getElementById('act'+mod+'-inp-proyecto');
+  if(!sel) return;
+  if(!nombre){
+    sel.innerHTML='<option value="" style="background:#1c2535;color:#fff">-- Selecciona un colaborador primero --</option>';
+    return;
+  }
+  var proyectos=(state[mod]&&state[mod].data?state[mod].data:[]).filter(function(p){
+    return (p.responsable||'').trim().toLowerCase()===nombre.trim().toLowerCase();
+  });
+  var opts='<option value="" style="background:#1c2535;color:#fff">Actividad Independiente</option>';
+  if(!proyectos.length){
+    opts='<option value="" style="background:#1c2535;color:#fff">Actividad Independiente (sin proyectos asignados)</option>';
+  } else {
+    proyectos.forEach(function(p){
+      opts+='<option value="'+p.nombre.replace(/"/g,'&quot;')+'" style="background:#1c2535;color:#fff"'+(p.nombre===current?' selected':'')+'>'+p.nombre+'</option>';
+    });
+  }
+  sel.innerHTML=opts;
+}
+function onColabSelectMod(mod){
+  var sel=document.getElementById('act'+mod+'-inp-nombre-sel');
+  var opt=sel.options[sel.selectedIndex];
+  var nombre=opt?(opt.dataset.nombre||''):'';
+  document.getElementById('act'+mod+'-inp-nombre').value = nombre;
+  document.getElementById('act'+mod+'-inp-email').value = opt?(opt.dataset.email||''):'';
+  _populateProyectoSelectMod(mod, nombre, '');
+}
+function openActModalMod(mod, id){
+  document.getElementById('act'+mod+'-modal-title').textContent = id ? 'Editar actividad' : 'Nueva actividad';
+  document.getElementById('act'+mod+'-inp-id').value = id||'';
+  var a = id ? _actividadesPorMod[mod].find(function(x){return x.id===id;}) : null;
+  document.getElementById('act'+mod+'-inp-actividad').value = a?a.actividad:'';
+  document.getElementById('act'+mod+'-inp-fecha').value = a?a.fechaFin:'';
+  document.getElementById('act'+mod+'-inp-prioridad').value = a?(a.prioridad||'Media'):'Media';
+  document.getElementById('act'+mod+'-inp-estatus').value = a?(a.estatus||'En proceso'):'En proceso';
+  document.getElementById('act'+mod+'-inp-email').value = a?(a.email||''):'';
+  document.getElementById('act'+mod+'-inp-nombre').value = a?(a.nombre||''):'';
+  populateDestSelectMod(mod);
+  _populateProyectoSelectMod(mod, a?a.nombre:'', a?(a.proyecto||''):'');
+  document.getElementById('act'+mod+'-modal-bg').style.display='flex';
+}
+function closeActModalMod(mod){ document.getElementById('act'+mod+'-modal-bg').style.display='none'; }
+function saveActividadMod(mod){
+  var id=document.getElementById('act'+mod+'-inp-id').value;
+  var nombre=document.getElementById('act'+mod+'-inp-nombre').value.trim();
+  var email=document.getElementById('act'+mod+'-inp-email').value.trim();
+  var proyecto=document.getElementById('act'+mod+'-inp-proyecto').value;
+  var actividad=document.getElementById('act'+mod+'-inp-actividad').value.trim();
+  var fechaFin=document.getElementById('act'+mod+'-inp-fecha').value;
+  var prioridad=document.getElementById('act'+mod+'-inp-prioridad').value;
+  var estatus=document.getElementById('act'+mod+'-inp-estatus').value;
+  if(!nombre||!actividad||!fechaFin){ showToast('Completa colaborador, actividad y fecha límite','error'); return; }
+  var obj={nombre:nombre,email:email,proyecto:proyecto,actividad:actividad,fechaFin:fechaFin,prioridad:prioridad,estatus:estatus,updatedAt:new Date().toISOString()};
+  if(id){
+    var idx=_actividadesPorMod[mod].findIndex(function(x){return x.id===id;});
+    if(idx>=0) _actividadesPorMod[mod][idx]=Object.assign({},_actividadesPorMod[mod][idx],obj);
+  } else {
+    obj.id='a'+mod+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    obj.createdAt=new Date().toISOString();
+    _actividadesPorMod[mod].push(obj);
+  }
+  _saveActividadesMod(mod);
+  closeActModalMod(mod);
+  renderActividadesMod(mod);
+  showToast('Actividad guardada','success');
+}
+
+function enviarSeleccionadasMod(mod){
+  var seleccionadas=_actividadesPorMod[mod].filter(function(a){return _actSeleccionadasPorMod[mod].has(a.id);});
+  if(!seleccionadas.length){ showToast('Selecciona al menos una actividad','error'); return; }
+  var sinCorreo=seleccionadas.filter(function(a){return !a.email;});
+  if(sinCorreo.length){
+    showToast('⚠️ '+sinCorreo.length+' actividad(es) sin correo asignado — no se incluirán','error',5000);
+  }
+  var porPersona={};
+  seleccionadas.forEach(function(a){
+    if(!a.email) return;
+    var key=a.email;
+    if(!porPersona[key]) porPersona[key]={nombre:a.nombre,email:a.email,actividades:[]};
+    porPersona[key].actividades.push(a);
+  });
+  var personas=Object.values(porPersona);
+  if(!personas.length){ showToast('Ninguna de las seleccionadas tiene correo asignado','error'); return; }
+  _actIniciarColaEnvioMod(mod, personas);
+}
+
+function _actBuildCorreoTextoMod(p, asunto){
+  var prioEmoji={'Alta':'🔴','Media':'🟡','Baja':'🟢'};
+  var estEmoji={'En proceso':'🔵','Concluido':'🟢','Atrasado':'🔴'};
+  var cuerpo='';
+  p.actividades.forEach(function(a,idx){
+    var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+    var proyLinea=a.proyecto?('\n   📁 Proyecto: '+a.proyecto):'';
+    var estReal=_actEstatusRealGeneric(a);
+    cuerpo+=(idx+1)+'. '+a.actividad+proyLinea+'\n   📅 Fecha límite: '+f+'   ⚡ Prioridad: '+(prioEmoji[a.prioridad]||'')+' '+a.prioridad+'   '+(estEmoji[estReal]||'')+' '+estReal+'\n\n';
+  });
+  return cuerpo;
+}
+
+function _actBuildCorreoHTMLMod(p){
+  var prioBg={'Alta':'#f8d7da','Media':'#fde8c8','Baja':'#d4edda'};
+  var estBg={'En proceso':'#d6e4ff','Concluido':'#d4edda','Atrasado':'#f8d7da'};
+  var esc=function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var FONT='font-family:Arial,Helvetica,sans-serif;font-size:12px';
+  var filas=p.actividades.map(function(a,idx){
+    var f=a.fechaFin?new Date(a.fechaFin+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    var pbg=prioBg[a.prioridad]||'#eee';
+    var estReal=_actEstatusRealGeneric(a);
+    var ebg=estBg[estReal]||'#eee';
+    var rowBg=idx%2===0?'#ffffff':'#f7f8fc';
+    return '<tr style="background:'+rowBg+'" bgcolor="'+rowBg+'">'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444;background:'+rowBg+'" bgcolor="'+rowBg+'">'+esc(a.proyecto||'Actividad Independiente')+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#1a2340;font-weight:bold;background:'+rowBg+'" bgcolor="'+rowBg+'">'+esc(a.actividad)+'</td>'
+      +'<td align="center" bgcolor="'+pbg+'" style="padding:8px 14px;border-bottom:1px solid #eef0f5;'+FONT+';font-weight:bold;white-space:nowrap;background:'+pbg+'">'+esc(a.prioridad||'Media')+'</td>'
+      +'<td style="padding:11px 14px;border-bottom:1px solid #eef0f5;'+FONT+';color:#444;white-space:nowrap;background:'+rowBg+'" bgcolor="'+rowBg+'">'+f+'</td>'
+      +'<td align="center" bgcolor="'+ebg+'" style="padding:8px 14px;border-bottom:1px solid #eef0f5;'+FONT+';font-weight:bold;white-space:nowrap;background:'+ebg+'">'+esc(estReal)+'</td>'
+      +'</tr>';
+  }).join('');
+  return ''
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border:1px solid #e2e6ee;border-radius:8px">'
+      +'<tr><td style="padding:6px">'
+        +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'
+          +'<tr style="background:#1a2340" bgcolor="#1a2340">'
+            +'<th align="left" bgcolor="#1a2340" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold;background:#1a2340">Proyecto</th>'
+            +'<th align="left" bgcolor="#1a2340" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold;background:#1a2340">Actividad</th>'
+            +'<th align="left" bgcolor="#1a2340" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold;background:#1a2340">Prioridad</th>'
+            +'<th align="left" bgcolor="#1a2340" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold;background:#1a2340">Fecha límite</th>'
+            +'<th align="left" bgcolor="#1a2340" style="padding:11px 14px;color:#fff;'+FONT+';font-weight:bold;background:#1a2340">Estatus</th>'
+          +'</tr>'
+          +filas
+        +'</table>'
+      +'</td></tr>'
+    +'</table>';
+}
+
+function _actIniciarColaEnvioMod(mod, personas){
+  _actColaEnvioPorMod[mod]=personas; _actColaIdxPorMod[mod]=0;
+  _actProcesarSiguienteEnvioMod(mod);
+}
+
+function _actProcesarSiguienteEnvioMod(mod){
+  var cola=_actColaEnvioPorMod[mod];
+  if(_actColaIdxPorMod[mod]>=cola.length){
+    if(_actColaOvPorMod[mod]){ _actColaOvPorMod[mod].remove(); _actColaOvPorMod[mod]=null; }
+    showToast('✅ Listo, se procesaron '+cola.length+' correo(s)','success',5000);
+    return;
+  }
+  var p=cola[_actColaIdxPorMod[mod]];
+  var asunto=MOD_INFO[mod].label+' || Actividades Semanales || '+_semanaActualLabel();
+  var html=_actBuildCorreoHTMLMod(p);
+  var texto=_actBuildCorreoTextoMod(p, asunto);
+  var primerNombre=(p.nombre||'').trim().split(' ')[0];
+
+  var copiado=true;
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([texto], {type:'text/plain'})
+      })]);
+    } else if(navigator.clipboard){
+      navigator.clipboard.writeText(texto);
+      copiado=false;
+    }
+  }catch(e){ copiado=false; console.warn('Clipboard error:', e); }
+
+  var cuerpo='Hola '+primerNombre+'\n\n📌 Se te han asignado las siguientes actividades para esta semana:\n\n\n\n\nPor favor revisa con anticipación. Cualquier duda, quedo al pendiente.';
+  var mailto='mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo);
+  window.open(mailto,'_blank');
+
+  var idx=_actColaIdxPorMod[mod], total=cola.length;
+  var esUltimo=idx===total-1;
+  var msg = copiado
+    ? 'Se abrió el correo para mandarle las actividades a <strong>'+p.nombre+'</strong>'
+    : 'Se abrió el correo para <strong>'+p.nombre+'</strong>, pero el navegador no permitió copiar la tabla con formato — copia manualmente el detalle desde la actividad.';
+
+  if(_actColaOvPorMod[mod]) _actColaOvPorMod[mod].remove();
+  var ov=document.createElement('div');
+  ov.className='dti-modal-overlay';
+  ov.innerHTML='<div class="dti-modal-box" style="max-width:420px">'
+    +'<div class="dti-modal-icon">📧</div>'
+    +'<div class="dti-modal-msg">'+msg+'</div>'
+    +'<div class="dti-modal-btns">'
+      +'<button class="dti-modal-btn ok-success" id="a'+mod+'cola-siguiente">'+(esUltimo?'De acuerdo':'Ya pegué, siguiente ▶')+'</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  _actColaOvPorMod[mod]=ov;
+  ov.querySelector('#a'+mod+'cola-siguiente').onclick=function(){ _actColaIdxPorMod[mod]++; _actProcesarSiguienteEnvioMod(mod); };
+}
+
+function exportActXLSXMod(mod){
+  if(!_actividadesPorMod[mod].length){ showToast('Sin actividades para exportar','error'); return; }
+  var wb=XLSX.utils.book_new();
+  var data=[['Nombre','Proyecto','Actividad','Prioridad','Fecha Fin','Estatus']];
+  _actividadesPorMod[mod].slice().sort(function(a,b){return (a.fechaFin||'').localeCompare(b.fechaFin||'');})
+    .forEach(function(a){ data.push([a.nombre,a.proyecto||'Actividad Independiente',a.actividad,a.prioridad||'',a.fechaFin,_actEstatusRealGeneric(a)]); });
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:22},{wch:30},{wch:55},{wch:12},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,'Actividades '+MOD_INFO[mod].label);
+  XLSX.writeFile(wb,'Actividades_Semanales_'+MOD_INFO[mod].label.replace(/\s/g,'_')+'_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.xlsx');
+}
+
 
 // ── Envío de correo por actividad ─────────────────────────────────────────
 function enviarActividadCorreo(id){
@@ -5618,6 +6783,126 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeActModal(); 
 </div>
 
 <!-- Modal Detalle Actividad IMC -->
+<div id="actdev-detail-bg" onclick="if(event.target===this)closeActDetailMod('dev')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;margin-bottom:4px">ACTIVIDAD DESARROLLO</div>
+        <div class="modal-nombre" id="adevdet-actividad"></div>
+      </div>
+      <button class="modal-close" onclick="closeActDetailMod('dev')">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="adevdet-nombre">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Proyecto</div>
+          <div class="modal-field-value" id="adevdet-proyecto">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="adevdet-prioridad">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha l&#237;mite</div>
+          <div class="modal-field-value" id="adevdet-fecha">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="adevdet-estatus">&#8212;</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+        <button onclick="deleteActFromDetailMod('dev')" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <button onclick="editActFromDetailMod('dev')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="actinf-detail-bg" onclick="if(event.target===this)closeActDetailMod('inf')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;margin-bottom:4px">ACTIVIDAD SOPORTE</div>
+        <div class="modal-nombre" id="ainfdet-actividad"></div>
+      </div>
+      <button class="modal-close" onclick="closeActDetailMod('inf')">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="ainfdet-nombre">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Proyecto</div>
+          <div class="modal-field-value" id="ainfdet-proyecto">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="ainfdet-prioridad">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha l&#237;mite</div>
+          <div class="modal-field-value" id="ainfdet-fecha">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="ainfdet-estatus">&#8212;</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+        <button onclick="deleteActFromDetailMod('inf')" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <button onclick="editActFromDetailMod('inf')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="actia-detail-bg" onclick="if(event.target===this)closeActDetailMod('ia')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;margin-bottom:4px">ACTIVIDAD IA</div>
+        <div class="modal-nombre" id="aiadet-actividad"></div>
+      </div>
+      <button class="modal-close" onclick="closeActDetailMod('ia')">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-field">
+          <div class="modal-field-label">Colaborador</div>
+          <div class="modal-field-value" id="aiadet-nombre">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Proyecto</div>
+          <div class="modal-field-value" id="aiadet-proyecto">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Prioridad</div>
+          <div class="modal-field-value" id="aiadet-prioridad">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Fecha l&#237;mite</div>
+          <div class="modal-field-value" id="aiadet-fecha">&#8212;</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-field-label">Estatus</div>
+          <div class="modal-field-value" id="aiadet-estatus">&#8212;</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+        <button onclick="deleteActFromDetailMod('ia')" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600">&#128465; Eliminar</button>
+        <button onclick="editActFromDetailMod('ia')" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:13px;font-weight:700">&#9998; Editar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="actimc-detail-bg" onclick="if(event.target===this)closeActDetailIMC()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;align-items:center;justify-content:center">
   <div class="modal-box">
     <div class="modal-header">
