@@ -187,6 +187,14 @@ try:
         r.font.size = Pt(8); r.font.bold = True; r.font.name = 'Calibri'
         r.font.color.rgb = RGBColor.from_string(color_hex)
 
+    MOD_SUBTITULO = {
+        'imc': 'Dirección de Implementación y Mejora Continua',
+        'dev': 'Dirección de Desarrollo',
+        'inf': 'Dirección de Soporte e Infraestructura',
+        'ia':  'Dirección de Inteligencia Artificial',
+    }
+    subtitulo = MOD_SUBTITULO[modulo]
+
     # SLIDE 1
     s1=prs.slides[0]
     for shape in s1.shapes:
@@ -200,6 +208,8 @@ try:
                         run.font.name='Arial Nova Light'
                         run.font.size=Pt(13.9)
                         run.font.bold=True
+                    elif 'Implementación y Mejora Continua' in run.text:
+                        run.text = subtitulo
 
     # SLIDE 2
     s2=prs.slides[1]
