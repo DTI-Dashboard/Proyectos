@@ -1,9 +1,9 @@
-ERROR: HTTPError: HTTP Error 401: Unauthorized
+ERROR: HTTPError: HTTP Error 409: Conflict
 
 Traceback (most recent call last):
-  File "/home/runner/work/Proyectos/Proyectos/generar_reporte_semanal.py", line 37, in <module>
-    with _ur.urlopen(req_html) as r:
-         ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Proyectos/Proyectos/generar_reporte_semanal.py", line 315, in <module>
+    with _ur.urlopen(req_put) as rp: json.loads(rp.read())
+         ^^^^^^^^^^^^^^^^^^^^
   File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/urllib/request.py", line 216, in urlopen
     return opener.open(url, data, timeout)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,4 +21,4 @@ Traceback (most recent call last):
              ^^^^^^^^^^^
   File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/urllib/request.py", line 643, in http_error_default
     raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 401: Unauthorized
+urllib.error.HTTPError: HTTP Error 409: Conflict
