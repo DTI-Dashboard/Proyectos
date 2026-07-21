@@ -638,12 +638,17 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="act-week-nav">
       <div class="act-filters-row">
-        <select id="actimc-f-estatus" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
-          <option value="">🔵 Todos los estatus</option>
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
-        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actimc-estatus-btn" onclick="toggleActEstatusPanelIMC()">🔵 Todos los estatus ▾</button>
+          <div class="act-multi-panel" id="actimc-estatus-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actimc-estatus-todos" checked onchange="actEstatusSelTodosIMC(this)" style="accent-color:var(--gold)"> ✓ Todos los estatus
+            </label>
+            <label class="act-multi-lbl"><input type="checkbox" value="En proceso" checked onchange="actEstatusCheckIMC()" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Concluido" checked onchange="actEstatusCheckIMC()" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" checked onchange="actEstatusCheckIMC()" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+          </div>
+        </div>
         <select id="actimc-f-colab" onchange="renderActividadesIMC()" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">👤 Todos los colaboradores</option>
         </select>
@@ -791,12 +796,17 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="act-week-nav">
       <div class="act-filters-row">
-        <select id="actdev-f-estatus" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
-          <option value="">🔵 Todos los estatus</option>
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
-        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actdev-estatus-btn" onclick="toggleActEstatusPanelMod('dev')">🔵 Todos los estatus ▾</button>
+          <div class="act-multi-panel" id="actdev-estatus-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actdev-estatus-todos" checked onchange="actEstatusSelTodosMod('dev',this)" style="accent-color:var(--gold)"> ✓ Todos los estatus
+            </label>
+            <label class="act-multi-lbl"><input type="checkbox" value="En proceso" checked onchange="actEstatusCheckMod('dev')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Concluido" checked onchange="actEstatusCheckMod('dev')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" checked onchange="actEstatusCheckMod('dev')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+          </div>
+        </div>
         <select id="actdev-f-colab" onchange="renderActividadesMod('dev')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">👤 Todos los colaboradores</option>
         </select>
@@ -944,12 +954,17 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="act-week-nav">
       <div class="act-filters-row">
-        <select id="actinf-f-estatus" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
-          <option value="">🔵 Todos los estatus</option>
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
-        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actinf-estatus-btn" onclick="toggleActEstatusPanelMod('inf')">🔵 Todos los estatus ▾</button>
+          <div class="act-multi-panel" id="actinf-estatus-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actinf-estatus-todos" checked onchange="actEstatusSelTodosMod('inf',this)" style="accent-color:var(--gold)"> ✓ Todos los estatus
+            </label>
+            <label class="act-multi-lbl"><input type="checkbox" value="En proceso" checked onchange="actEstatusCheckMod('inf')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Concluido" checked onchange="actEstatusCheckMod('inf')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" checked onchange="actEstatusCheckMod('inf')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+          </div>
+        </div>
         <select id="actinf-f-colab" onchange="renderActividadesMod('inf')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">👤 Todos los colaboradores</option>
         </select>
@@ -1094,12 +1109,17 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
     </div>
     <div class="act-week-nav">
       <div class="act-filters-row">
-        <select id="actia-f-estatus" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
-          <option value="">🔵 Todos los estatus</option>
-          <option value="En proceso">🔵 En proceso</option>
-          <option value="Concluido">🟢 Concluido</option>
-          <option value="Atrasado">🔴 Atrasado</option>
-        </select>
+        <div class="act-multi-wrap">
+          <button class="act-multi-btn" id="actia-estatus-btn" onclick="toggleActEstatusPanelMod('ia')">🔵 Todos los estatus ▾</button>
+          <div class="act-multi-panel" id="actia-estatus-panel">
+            <label class="act-multi-lbl" style="border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:6px;color:var(--gold);font-weight:700">
+              <input type="checkbox" id="actia-estatus-todos" checked onchange="actEstatusSelTodosMod('ia',this)" style="accent-color:var(--gold)"> ✓ Todos los estatus
+            </label>
+            <label class="act-multi-lbl"><input type="checkbox" value="En proceso" checked onchange="actEstatusCheckMod('ia')" style="accent-color:var(--gold)"> 🔵 En proceso</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Concluido" checked onchange="actEstatusCheckMod('ia')" style="accent-color:var(--gold)"> 🟢 Concluido</label>
+            <label class="act-multi-lbl"><input type="checkbox" value="Atrasado" checked onchange="actEstatusCheckMod('ia')" style="accent-color:var(--gold)"> 🔴 Atrasado</label>
+          </div>
+        </div>
         <select id="actia-f-colab" onchange="renderActividadesMod('ia')" style="background:var(--navy-light);color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">
           <option value="">👤 Todos los colaboradores</option>
         </select>
@@ -2002,6 +2022,7 @@ let _actIMCFiltro='';   // filtro activo por KPI ('', 'En proceso', 'Concluido',
 let _actIMCSeleccionadas=new Set();
 let _actIMCListaActual=[]; // lista actualmente visible (post-filtro), para "seleccionar todo"
 let _actIMCMesesSel=[]; // filtro de meses IMC: [] = todos, ['__ninguno__'] = ninguno, o array de 'YYYY-MM'
+let _actIMCEstatusSel=[]; // filtro de estatus IMC: [] = todos, ['__ninguno__'] = ninguno, o array de estatus
 _loadEventualidades();
 _loadDirectorio();
 renderDirectorio();
@@ -2016,6 +2037,7 @@ let _actFiltroPorMod = {dev:'', inf:'', ia:''};
 let _actSeleccionadasPorMod = {dev:new Set(), inf:new Set(), ia:new Set()};
 let _actListaActualPorMod = {dev:[], inf:[], ia:[]};
 let _actMesesSelPorMod = {dev:[], inf:[], ia:[]};
+let _actEstatusSelPorMod = {dev:[], inf:[], ia:[]};
 let _actDetailIdPorMod = {dev:null, inf:null, ia:null};
 let _backupDirTimerPorMod = {dev:null, inf:null, ia:null};
 let _backupActTimerPorMod = {dev:null, inf:null, ia:null};
@@ -4057,10 +4079,44 @@ function actMesCheckIMC(){
   else _actIMCMesesSel=checked;
   renderActividadesIMC();
 }
+function toggleActEstatusPanelIMC(){
+  var p=document.getElementById('actimc-estatus-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+function actEstatusSelTodosIMC(chk){
+  _actIMCEstatusSel = chk.checked ? [] : ['__ninguno__'];
+  if(chk.checked){
+    [].slice.call(document.querySelectorAll('#actimc-estatus-panel input[type=checkbox]:not(#actimc-estatus-todos)')).forEach(function(c){c.checked=true;});
+  } else {
+    [].slice.call(document.querySelectorAll('#actimc-estatus-panel input[type=checkbox]:not(#actimc-estatus-todos)')).forEach(function(c){c.checked=false;});
+  }
+  renderActividadesIMC();
+}
+function actEstatusCheckIMC(){
+  var checks=[].slice.call(document.querySelectorAll('#actimc-estatus-panel input[type=checkbox]:not(#actimc-estatus-todos)'));
+  var total=checks.length;
+  var checked=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  if(checked.length===total) _actIMCEstatusSel=[];
+  else if(checked.length===0) _actIMCEstatusSel=['__ninguno__'];
+  else _actIMCEstatusSel=checked;
+  var todosChk=document.getElementById('actimc-estatus-todos');
+  if(todosChk) todosChk.checked = (checked.length===total);
+  renderActividadesIMC();
+}
 // Cerrar el panel de meses al hacer clic afuera
 document.addEventListener('click', function(e){
   var wrap=document.getElementById('actimc-mes-panel');
   var btn=document.getElementById('actimc-mes-btn');
+  if(!wrap || !btn) return;
+  if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
+    wrap.style.display='none';
+  }
+});
+// Cerrar el panel de estatus al hacer clic afuera
+document.addEventListener('click', function(e){
+  var wrap=document.getElementById('actimc-estatus-panel');
+  var btn=document.getElementById('actimc-estatus-btn');
   if(!wrap || !btn) return;
   if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
     wrap.style.display='none';
@@ -4097,13 +4153,21 @@ function kpiActFilterIMC(val){
 }
 
 function renderActividadesIMC(){
-  var estEl=document.getElementById('actimc-f-estatus'), priEl=document.getElementById('actimc-f-prioridad'), colEl=document.getElementById('actimc-f-colab'), proyEl=document.getElementById('actimc-f-proyecto'), semEl=document.getElementById('actimc-f-semana'), qEl=document.getElementById('actimc-search');
-  var estF = estEl?estEl.value:'';
+  var priEl=document.getElementById('actimc-f-prioridad'), colEl=document.getElementById('actimc-f-colab'), proyEl=document.getElementById('actimc-f-proyecto'), semEl=document.getElementById('actimc-f-semana'), qEl=document.getElementById('actimc-search');
   var priF = priEl?priEl.value:'';
   var colF = colEl?colEl.value:'';
   var proyF = proyEl?proyEl.value:'';
   var semF = semEl?semEl.value:'';
   var q = qEl?(qEl.value||'').toLowerCase():'';
+
+  var estatusBtn=document.getElementById('actimc-estatus-btn');
+  if(estatusBtn){
+    var estNinguno=_actIMCEstatusSel.length===1 && _actIMCEstatusSel[0]==='__ninguno__';
+    var estTodos=_actIMCEstatusSel.length===0 && !estNinguno;
+    if(estNinguno) estatusBtn.textContent='🔵 Ningún estatus ▾';
+    else if(estTodos) estatusBtn.textContent='🔵 Todos los estatus ▾';
+    else estatusBtn.textContent='🔵 '+_actIMCEstatusSel.length+' estatus ▾';
+  }
 
   var base = _actividadesIMC.map(function(a){
     var c=Object.assign({},a); c._estReal=_actIMCEstatusReal(a); return c;
@@ -4209,7 +4273,11 @@ function renderActividadesIMC(){
 
   var list=base;
   if(_actIMCFiltro) list=list.filter(function(a){return a._estReal===_actIMCFiltro;});
-  if(estF) list=list.filter(function(a){return a._estReal===estF;});
+  if(_actIMCEstatusSel.length===1 && _actIMCEstatusSel[0]==='__ninguno__'){
+    list=[];
+  } else if(_actIMCEstatusSel.length){
+    list=list.filter(function(a){return _actIMCEstatusSel.indexOf(a._estReal)!==-1;});
+  }
   if(priF) list=list.filter(function(a){return a.prioridad===priF;});
   if(colF) list=list.filter(function(a){return a.nombre===colF;});
   if(proyF==='__independiente__') list=list.filter(function(a){return !a.proyecto;});
@@ -4789,6 +4857,40 @@ document.addEventListener('click', function(e){
   });
 });
 
+function toggleActEstatusPanelMod(mod){
+  var p=document.getElementById('act'+mod+'-estatus-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+function actEstatusSelTodosMod(mod, chk){
+  _actEstatusSelPorMod[mod] = chk.checked ? [] : ['__ninguno__'];
+  var sel='#act'+mod+'-estatus-panel input[type=checkbox]:not(#act'+mod+'-estatus-todos)';
+  [].slice.call(document.querySelectorAll(sel)).forEach(function(c){ c.checked = chk.checked; });
+  renderActividadesMod(mod);
+}
+function actEstatusCheckMod(mod){
+  var sel='#act'+mod+'-estatus-panel input[type=checkbox]:not(#act'+mod+'-estatus-todos)';
+  var checks=[].slice.call(document.querySelectorAll(sel));
+  var total=checks.length;
+  var checked=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  if(checked.length===total) _actEstatusSelPorMod[mod]=[];
+  else if(checked.length===0) _actEstatusSelPorMod[mod]=['__ninguno__'];
+  else _actEstatusSelPorMod[mod]=checked;
+  var todosChk=document.getElementById('act'+mod+'-estatus-todos');
+  if(todosChk) todosChk.checked=(checked.length===total);
+  renderActividadesMod(mod);
+}
+document.addEventListener('click', function(e){
+  ['dev','inf','ia'].forEach(function(mod){
+    var wrap=document.getElementById('act'+mod+'-estatus-panel');
+    var btn=document.getElementById('act'+mod+'-estatus-btn');
+    if(!wrap || !btn) return;
+    if(wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==btn){
+      wrap.style.display='none';
+    }
+  });
+});
+
 function switchModSubtab(mod, tab){
   document.getElementById(mod+'-sub-proyectos').style.display = tab==='proyectos' ? '' : 'none';
   document.getElementById(mod+'-sub-actividades').style.display = tab==='actividades' ? '' : 'none';
@@ -4808,13 +4910,22 @@ function kpiActFilterMod(mod, val){
 }
 
 function renderActividadesMod(mod){
-  var estEl=document.getElementById('act'+mod+'-f-estatus'), priEl=document.getElementById('act'+mod+'-f-prioridad'), colEl=document.getElementById('act'+mod+'-f-colab'), proyEl=document.getElementById('act'+mod+'-f-proyecto'), semEl=document.getElementById('act'+mod+'-f-semana'), qEl=document.getElementById('act'+mod+'-search');
-  var estF = estEl?estEl.value:'';
+  var priEl=document.getElementById('act'+mod+'-f-prioridad'), colEl=document.getElementById('act'+mod+'-f-colab'), proyEl=document.getElementById('act'+mod+'-f-proyecto'), semEl=document.getElementById('act'+mod+'-f-semana'), qEl=document.getElementById('act'+mod+'-search');
   var priF = priEl?priEl.value:'';
   var colF = colEl?colEl.value:'';
   var proyF = proyEl?proyEl.value:'';
   var semF = semEl?semEl.value:'';
   var q = qEl?(qEl.value||'').toLowerCase():'';
+
+  var estatusBtn=document.getElementById('act'+mod+'-estatus-btn');
+  if(estatusBtn){
+    var estSel=_actEstatusSelPorMod[mod];
+    var estNinguno=estSel.length===1 && estSel[0]==='__ninguno__';
+    var estTodos=estSel.length===0 && !estNinguno;
+    if(estNinguno) estatusBtn.textContent='🔵 Ningún estatus ▾';
+    else if(estTodos) estatusBtn.textContent='🔵 Todos los estatus ▾';
+    else estatusBtn.textContent='🔵 '+estSel.length+' estatus ▾';
+  }
 
   var base = _actividadesPorMod[mod].map(function(a){
     var c=Object.assign({},a); c._estReal=_actEstatusRealGeneric(a); return c;
@@ -4912,7 +5023,12 @@ function renderActividadesMod(mod){
   var list=base;
   var actFiltro=_actFiltroPorMod[mod];
   if(actFiltro) list=list.filter(function(a){return a._estReal===actFiltro;});
-  if(estF) list=list.filter(function(a){return a._estReal===estF;});
+  var estSelFiltro=_actEstatusSelPorMod[mod];
+  if(estSelFiltro.length===1 && estSelFiltro[0]==='__ninguno__'){
+    list=[];
+  } else if(estSelFiltro.length){
+    list=list.filter(function(a){return estSelFiltro.indexOf(a._estReal)!==-1;});
+  }
   if(priF) list=list.filter(function(a){return a.prioridad===priF;});
   if(colF) list=list.filter(function(a){return a.nombre===colF;});
   if(proyF==='__independiente__') list=list.filter(function(a){return !a.proyecto;});
