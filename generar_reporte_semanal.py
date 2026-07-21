@@ -29,7 +29,30 @@ try:
     if not GH_TOKEN:
         raise Exception("Falta el secret GH_TOKEN (o PAT_TOKEN) en el workflow")
 
-    # ── Descargar el index.html actual del repo (ya trae IMC_DATA fresco del último sync) ──
+    # ── Determinar para que modulo se genera el reporte (por defecto IMC) ──
+    MOD_DATA_VAR = {'imc':'IMC_DATA','dev':'DEV_DATA','inf':'INF_DATA','ia':'IA_DATA'}
+    MOD_TITULO   = {'imc':'ÁREA DE IMPLEMENTACIÓN','dev':'DESARROLLO','inf':'SOPORTE E INFRAESTRUCTURA','ia':'INTELIGENCIA ARTIFICIAL'}
+    MOD_ARCHIVO  = {'imc':'cierre_base.pptx','dev':'cierre_base_dev.pptx','inf':'cierre_base_inf.pptx','ia':'cierre_base_ia.pptx'}
+
+    modulo = 'imc'
+    try:
+        req_mod = _ur.Request(
+            "https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/reporte_semanal_modulo.txt",
+            headers={"Authorization": f"token {GH_TOKEN}"}
+        )
+        with _ur.urlopen(req_mod) as r:
+            info_mod = json.loads(r.read())
+        modulo_leido = base64.b64decode(info_mod["content"]).decode("utf-8").strip().lower()
+        if modulo_leido in MOD_DATA_VAR:
+            modulo = modulo_leido
+    except Exception:
+        pass  # si el archivo no existe todavia, se queda en 'imc' (comportamiento original)
+
+    data_var = MOD_DATA_VAR[modulo]
+    titulo_slide = MOD_TITULO[modulo]
+    archivo_salida = MOD_ARCHIVO[modulo]
+
+    # ── Descargar el index.html actual del repo (ya trae los datos frescos del último sync) ──
     req_html = _ur.Request(
         "https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/index.html",
         headers={"Authorization": f"token {GH_TOKEN}"}
@@ -48,10 +71,14 @@ try:
     from pptx.oxml.ns import qn
     import lxml.etree as etree
 
-    # Leer datos IMC del HTML actual
-    idx_imc = html.find('const IMC_DATA = [')
+    # Leer datos del modulo correspondiente del HTML actual
+    idx_imc = html.find(f'const {data_var} = [')
+    if idx_imc == -1:
+        idx_imc = html.find(f'const {data_var}=[')  # por si no tiene espacios (INF_DATA se guarda asi)
+        i_pos = idx_imc + len(f'const {data_var}=')
+    else:
+        i_pos = idx_imc + len(f'const {data_var} = ')
     depth = 0
-    i_pos = idx_imc + len('const IMC_DATA = ')
     for j in range(i_pos, i_pos+500000):
         if html[j] == '[': depth += 1
         elif html[j] == ']':
@@ -201,7 +228,7 @@ try:
         lr=lp.add_run(); lr.text=lbl; lr.font.size=Pt(6.5); lr.font.name='Calibri'; lr.font.color.rgb=GRAY
     tx=s2.shapes.add_textbox(I(1.75),I(0.04),I(6.5),I(0.34))
     p_tx=tx.text_frame.paragraphs[0]; p_tx.alignment=PP_ALIGN.CENTER
-    r_tx=p_tx.add_run(); r_tx.text='ÁREA DE IMPLEMENTACIÓN'
+    r_tx=p_tx.add_run(); r_tx.text=titulo_slide
     r_tx.font.size=Pt(15); r_tx.font.bold=True; r_tx.font.name='Calibri'; r_tx.font.color.rgb=NAVY
     tx2=s2.shapes.add_textbox(I(0),I(0.38),I(10),I(0.18))
     p2=tx2.text_frame.paragraphs[0]; p2.alignment=PP_ALIGN.CENTER
@@ -266,17 +293,17 @@ try:
     pptx_bytes=buf_s2.getvalue()
 
     # Subir al repo via API
-    api_url='https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/cierre_base.pptx'
+    api_url=f'https://api.github.com/repos/DTI-Dashboard/Proyectos/contents/{archivo_salida}'
     headers_gh={'Authorization':f'token {GH_TOKEN}','Content-Type':'application/json'}
     try:
         req_get=_ur.Request(api_url,headers={'Authorization':f'token {GH_TOKEN}'})
         with _ur.urlopen(req_get) as rg: existing_sha=json.loads(rg.read())['sha']
     except: existing_sha=None
-    payload={'message':'reporte: actualizar cierre_base.pptx (bajo demanda)','content':base64.b64encode(pptx_bytes).decode()}
+    payload={'message':f'reporte: actualizar {archivo_salida} (bajo demanda, modulo {modulo})','content':base64.b64encode(pptx_bytes).decode()}
     if existing_sha: payload['sha']=existing_sha
     req_put=_ur.Request(api_url,data=json.dumps(payload).encode(),method='PUT',headers=headers_gh)
     with _ur.urlopen(req_put) as rp: json.loads(rp.read())
-    print(f"✅ cierre_base.pptx generado bajo demanda: {len(datos)} proyectos, rango: {rango}")
+    print(f"✅ {archivo_salida} generado bajo demanda ({modulo}): {len(datos)} proyectos, rango: {rango}")
 
     with open(_error_file, "w") as _f:
         _f.write("OK")
