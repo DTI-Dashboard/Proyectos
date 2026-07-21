@@ -1,9 +1,9 @@
 id,nombre,actividad,area,prioridad,fechaFin,semana,estatus,notas,createdAt,updatedAt
-"ex1","Eduardo Sanchez","Revisión de avance del proyecto Talleres || Mecánica Mx","Talleres","Alta","2026-06-23","2026-W26","Atrasado","Pendiente revisión con el cliente.","2026-06-23T09:00:00","2026-07-14T16:20:18.396Z"
+"ex1","Eduardo Sanchez","Revisión de avance del proyecto Talleres || Mecánica Mx","Talleres","Alta","2026-06-23","2026-W26","Atrasado","Pendiente revisión con el cliente.","2026-06-23T09:00:00","2026-07-21T15:45:45.138Z"
 "ex2","Miguel Benítez","Documentar integración Smartsheet con dashboard DTI","Capital Humano","Media","2026-06-23","2026-W26","Concluido","","2026-06-23T10:00:00","2026-06-23T10:00:00"
 "ex3","Ricardo Ángeles","Pruebas de conectividad API Mecánica MX Fase 2","Integraciones","Alta","2026-06-25","2026-W26","Atrasado","Bloqueado por accesos al servidor de producción.","2026-06-23T08:00:00","2026-06-23T11:00:00"
 "ex4","Josue Montoya","Actualizar dashboard DTI con módulo Actividades Semanales","DTI","Alta","2026-06-23","2026-W26","Concluido","","2026-06-23T07:00:00","2026-06-23T07:00:00"
-"ex5","Eduardo Sanchez","Reunión de seguimiento proyectos IMC con dirección","Talleres","Media","2026-06-24","2026-W26","Atrasado","","2026-06-23T09:30:00","2026-07-14T16:20:18.396Z"
-"ex6","Miguel Benítez","Configuración de campos BUK Personalizado Fase 2","Capital Humano","Baja","2026-06-26","2026-W26","Atrasado","","2026-06-23T10:30:00","2026-07-14T16:20:18.396Z"
+"ex5","Eduardo Sanchez","Reunión de seguimiento proyectos IMC con dirección","Talleres","Media","2026-06-24","2026-W26","Atrasado","","2026-06-23T09:30:00","2026-07-21T15:45:45.138Z"
+"ex6","Miguel Benítez","Configuración de campos BUK Personalizado Fase 2","Capital Humano","Baja","2026-06-26","2026-W26","Atrasado","","2026-06-23T10:30:00","2026-07-21T15:45:45.138Z"
 "ex7","Ricardo Ángeles","Entrega de análisis de requerimientos — AI HUB FLEX","Automatización","Alta","2026-06-20","2026-W25","Concluido","","2026-06-16T09:00:00","2026-06-20T16:00:00"
 "ex8","Josue Montoya","Revisión de arquitectura del reporte Informe General","DTI","Media","2026-06-18","2026-W25","Concluido","","2026-06-16T08:00:00","2026-06-18T12:00:00"
