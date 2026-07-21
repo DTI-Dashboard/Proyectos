@@ -371,7 +371,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
-<meta name="last-sync" content="2026-07-21T15:46:10Z">
+<meta name="last-sync" content="2026-07-21T14:36:02Z">
 </head>
 <header class="topbar">
   <div class="brand">
@@ -1978,12 +1978,12 @@ const INF_DATA=[
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
 
 const ACT_DATA = [
-  {id:"ex1",nombre:"Eduardo Sanchez",actividad:"Revisión de avance del proyecto Talleres || Mecánica Mx",area:"Talleres",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Atrasado",notas:"Pendiente revisión con el cliente.",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-07-21T15:45:45.138Z"},
+  {id:"ex1",nombre:"Eduardo Sanchez",actividad:"Revisión de avance del proyecto Talleres || Mecánica Mx",area:"Talleres",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Atrasado",notas:"Pendiente revisión con el cliente.",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-07-14T16:20:18.396Z"},
   {id:"ex2",nombre:"Miguel Benítez",actividad:"Documentar integración Smartsheet con dashboard DTI",area:"Capital Humano",prioridad:"Media",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T10:00:00",updatedAt:"2026-06-23T10:00:00"},
   {id:"ex3",nombre:"Ricardo Ángeles",actividad:"Pruebas de conectividad API Mecánica MX Fase 2",area:"Integraciones",prioridad:"Alta",fechaFin:"2026-06-25",semana:"2026-W26",estatus:"Atrasado",notas:"Bloqueado por accesos al servidor de producción.",createdAt:"2026-06-23T08:00:00",updatedAt:"2026-06-23T11:00:00"},
   {id:"ex4",nombre:"Josue Montoya",actividad:"Actualizar dashboard DTI con módulo Actividades Semanales",area:"DTI",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T07:00:00",updatedAt:"2026-06-23T07:00:00"},
-  {id:"ex5",nombre:"Eduardo Sanchez",actividad:"Reunión de seguimiento proyectos IMC con dirección",area:"Talleres",prioridad:"Media",fechaFin:"2026-06-24",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T09:30:00",updatedAt:"2026-07-21T15:45:45.138Z"},
-  {id:"ex6",nombre:"Miguel Benítez",actividad:"Configuración de campos BUK Personalizado Fase 2",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-07-21T15:45:45.138Z"},
+  {id:"ex5",nombre:"Eduardo Sanchez",actividad:"Reunión de seguimiento proyectos IMC con dirección",area:"Talleres",prioridad:"Media",fechaFin:"2026-06-24",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T09:30:00",updatedAt:"2026-07-14T16:20:18.396Z"},
+  {id:"ex6",nombre:"Miguel Benítez",actividad:"Configuración de campos BUK Personalizado Fase 2",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-07-14T16:20:18.396Z"},
   {id:"ex7",nombre:"Ricardo Ángeles",actividad:"Entrega de análisis de requerimientos — AI HUB FLEX",area:"Automatización",prioridad:"Alta",fechaFin:"2026-06-20",semana:"2026-W25",estatus:"Concluido",notas:"",createdAt:"2026-06-16T09:00:00",updatedAt:"2026-06-20T16:00:00"},
   {id:"ex8",nombre:"Josue Montoya",actividad:"Revisión de arquitectura del reporte Informe General",area:"DTI",prioridad:"Media",fechaFin:"2026-06-18",semana:"2026-W25",estatus:"Concluido",notas:"",createdAt:"2026-06-16T08:00:00",updatedAt:"2026-06-18T12:00:00"}
 ]; // INYECTADO POR SYNC.PY
@@ -5918,19 +5918,23 @@ async function exportCierreSemanal(mod){
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
   var rangoHoy=_rangoCierreSemanalHoy();
-  // Disparar la actualizacion de datos EN SEGUNDO PLANO (no se espera) para que
-  // el pptx base nunca se quede congelado, sin hacer lento este boton.
-  // Primero escribimos el modulo objetivo, luego disparamos el workflow.
-  fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'save_file', filename:'reporte_semanal_modulo.txt', content: mod }) })
-    .then(function(){
-      return fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
-    })
-    .catch(function(err){ console.warn('Regeneracion en segundo plano no se pudo disparar:', err); });
+  var urlBase='https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+archivoBase;
+  // Disparar la regeneracion (escribe el modulo objetivo y dispara el workflow). No se espera
+  // todavia — solo si el archivo base resulta no existir (primera vez para este modulo) se espera.
+  var regenPromise = _dispararRegeneracionCierreBase(mod);
   showToast('⏳ Generando reporte...','info',8000);
   try{
     // Descargar el PPTX base (slide 1 y slide 2 con los datos de la ultima sincronizacion)
-    var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+archivoBase+'?t='+Date.now(),{cache:'no-store'});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    var resp=await fetch(urlBase+'?t='+Date.now(),{cache:'no-store'});
+    if(!resp.ok){
+      // Primera vez que se genera el reporte para este modulo — el archivo base aun no existe.
+      // Esperamos a que la regeneracion (ya disparada arriba) termine, y reintentamos.
+      showToast('⏳ Es la primera vez que generas el reporte de '+labelArchivo+', esto puede tardar un poco más...','info',20000);
+      var ok=await regenPromise;
+      if(!ok) throw new Error('No se pudo generar el reporte. Intenta de nuevo en unos segundos.');
+      resp=await fetch(urlBase+'?t='+Date.now(),{cache:'no-store'});
+      if(!resp.ok) throw new Error('HTTP '+resp.status+' (el reporte se generó pero no se pudo descargar todavía, intenta de nuevo)');
+    }
     var bytes=await resp.arrayBuffer();
     var zip=await JSZip.loadAsync(bytes);
 
