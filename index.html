@@ -549,7 +549,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       
     </div>
     <div class="export-btns" id="imc-proyectos-btns">
-      <button class="btn-pptx" onclick="exportCierreSemanal()">📋 Reporte Semanal (pptx)</button>
+      <button class="btn-pptx" onclick="exportCierreSemanal('imc')">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('imc')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('imc')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('imc')">💰 Descargar Excel de Costos</button>
@@ -701,6 +701,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       
     </div>
     <div class="export-btns" id="dev-proyectos-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal('dev')">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('dev')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('dev')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('dev')">💰 Descargar Excel de Costos</button>
@@ -853,6 +854,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       
     </div>
     <div class="export-btns" id="inf-proyectos-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal('inf')">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('inf')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('inf')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('inf')">💰 Descargar Excel de Costos</button>
@@ -1004,6 +1006,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="mod-title">Módulo <span>Inteligencia Artificial</span></div>
     </div>
     <div class="export-btns" id="ia-proyectos-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal('ia')">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportPPTX('ia')">📊 Descargar Dashboard (pptx)</button>
       <button class="btn-xlsx" onclick="exportXLSX('ia')">📗 Descargar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('ia')">💰 Descargar Excel de Costos</button>
@@ -3637,10 +3640,13 @@ function _rangoCierreSemanalHoy(){
   return jP.getDate()+' de '+MESES[jP.getMonth()]+' al '+jA.getDate()+' de '+MESES[jA.getMonth()];
 }
 
-function _dispararRegeneracionCierreBase(){
+function _dispararRegeneracionCierreBase(mod){
   return new Promise(async (resolve)=>{
     const startedAt = new Date();
     try{
+      // 1) Escribir el modulo objetivo ANTES de disparar, para que generar_reporte_semanal.py sepa para cual generar
+      await fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'save_file', filename:'reporte_semanal_modulo.txt', content: mod }) });
+      // 2) Disparar el workflow
       const res = await fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
       const data = await res.json().catch(()=>({}));
       if(!res.ok || data.ok === false) throw new Error(data.message || ('HTTP ' + res.status));
@@ -5903,18 +5909,27 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 
 
 // ─── EXPORT CIERRE SEMANAL IMC ─────────────────────────────────────────────
-async function exportCierreSemanal(){
+const MOD_ARCHIVO_PPTX = {imc:'cierre_base.pptx', dev:'cierre_base_dev.pptx', inf:'cierre_base_inf.pptx', ia:'cierre_base_ia.pptx'};
+const MOD_LABEL_ARCHIVO = {imc:'IMC', dev:'Desarrollo', inf:'Soporte', ia:'IA'};
+async function exportCierreSemanal(mod){
+  mod = mod || 'imc';
+  var archivoBase = MOD_ARCHIVO_PPTX[mod] || MOD_ARCHIVO_PPTX.imc;
+  var labelArchivo = MOD_LABEL_ARCHIVO[mod] || 'IMC';
   var hoy=new Date();
   var hoyF=String(hoy.getDate()).padStart(2,'0')+'_'+String(hoy.getMonth()+1).padStart(2,'0')+'_'+hoy.getFullYear();
   var rangoHoy=_rangoCierreSemanalHoy();
   // Disparar la actualizacion de datos EN SEGUNDO PLANO (no se espera) para que
-  // cierre_base.pptx nunca se quede congelado, sin hacer lento este boton.
-  fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) })
+  // el pptx base nunca se quede congelado, sin hacer lento este boton.
+  // Primero escribimos el modulo objetivo, luego disparamos el workflow.
+  fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'save_file', filename:'reporte_semanal_modulo.txt', content: mod }) })
+    .then(function(){
+      return fetch(SYNC_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ workflow: GH_WORKFLOW_REPORTE }) });
+    })
     .catch(function(err){ console.warn('Regeneracion en segundo plano no se pudo disparar:', err); });
   showToast('⏳ Generando reporte...','info',8000);
   try{
     // Descargar el PPTX base (slide 1 y slide 2 con los datos de la ultima sincronizacion)
-    var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/cierre_base.pptx?t='+Date.now(),{cache:'no-store'});
+    var resp=await fetch('https://raw.githubusercontent.com/DTI-Dashboard/Proyectos/main/'+archivoBase+'?t='+Date.now(),{cache:'no-store'});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     var bytes=await resp.arrayBuffer();
     var zip=await JSZip.loadAsync(bytes);
@@ -5926,13 +5941,13 @@ async function exportCierreSemanal(){
       zip.file(slideName, slideXml);
     }
 
-    // Leer eventualidades del localStorage filtrando solo proyectos IMC
-    var D=(state.imc&&state.imc.data)?state.imc.data:[];
-    var imcNombres=new Set(D.map(function(p){return (p.nombre||'').trim();}));
+    // Leer eventualidades del localStorage filtrando solo proyectos de este modulo
+    var D=(state[mod]&&state[mod].data)?state[mod].data:[];
+    var modNombres=new Set(D.map(function(p){return (p.nombre||'').trim();}));
     var evArr=[];
     Object.keys(_eventualidades).forEach(function(k){
       var txt=(_eventualidades[k]||'').trim();
-      if(txt && imcNombres.has(k.trim())) evArr.push({n:k.trim(),t:txt});
+      if(txt && modNombres.has(k.trim())) evArr.push({n:k.trim(),t:txt});
     });
 
     // Construir slide 3 con estructura compatible WPS Office
@@ -5960,7 +5975,7 @@ async function exportCierreSemanal(){
 
     var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
     var url=URL.createObjectURL(blob);
-    var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_IMC_'+hoyF+'.pptx'; a.click();
+    var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_'+labelArchivo+'_'+hoyF+'.pptx'; a.click();
     URL.revokeObjectURL(url);
     showToast('\u2705 Reporte descargado ('+evArr.length+' eventualidades)','success');
   }catch(e){showToast('\u274c Error: '+e.message,'error');}
