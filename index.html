@@ -199,7 +199,7 @@ body{font-family:'Inter',sans-serif;background:var(--surface);color:#fff;min-hei
 .act-week-ctrl{display:flex;align-items:center;gap:8px;}
 .act-week-btn{background:var(--navy-light);color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;transition:.2s;}
 .act-week-btn:hover{background:rgba(201,168,76,.12);}
-.act-filters-row{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;flex:1;min-width:0;}
+.act-filters-row{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;overflow-x:auto;overflow-y:visible;padding-bottom:2px;flex:1;min-width:0;}
 .act-filters-row::-webkit-scrollbar{height:5px;}
 .act-filters-row::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px;}
 .btn-act-add{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:9px 18px;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
@@ -371,7 +371,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
 </style>
 <!-- LAST_SYNC -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231A2340'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='20'>📊</text></svg>">
-<meta name="last-sync" content="2026-07-21T16:56:26Z">
+<meta name="last-sync" content="2026-07-21T14:36:02Z">
 </head>
 <header class="topbar">
   <div class="brand">
@@ -1998,12 +1998,12 @@ const INF_DATA=[
 const MODNAMES={imc:'IMC — Portafolio',dev:'Desarrollo',inf:'Soporte e Infraestructura',ia:'Inteligencia Artificial'};
 
 const ACT_DATA = [
-  {id:"ex1",nombre:"Eduardo Sanchez",actividad:"Revisión de avance del proyecto Talleres || Mecánica Mx",area:"Talleres",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Atrasado",notas:"Pendiente revisión con el cliente.",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-07-21T15:45:45.138Z"},
+  {id:"ex1",nombre:"Eduardo Sanchez",actividad:"Revisión de avance del proyecto Talleres || Mecánica Mx",area:"Talleres",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Atrasado",notas:"Pendiente revisión con el cliente.",createdAt:"2026-06-23T09:00:00",updatedAt:"2026-07-14T16:20:18.396Z"},
   {id:"ex2",nombre:"Miguel Benítez",actividad:"Documentar integración Smartsheet con dashboard DTI",area:"Capital Humano",prioridad:"Media",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T10:00:00",updatedAt:"2026-06-23T10:00:00"},
   {id:"ex3",nombre:"Ricardo Ángeles",actividad:"Pruebas de conectividad API Mecánica MX Fase 2",area:"Integraciones",prioridad:"Alta",fechaFin:"2026-06-25",semana:"2026-W26",estatus:"Atrasado",notas:"Bloqueado por accesos al servidor de producción.",createdAt:"2026-06-23T08:00:00",updatedAt:"2026-06-23T11:00:00"},
   {id:"ex4",nombre:"Josue Montoya",actividad:"Actualizar dashboard DTI con módulo Actividades Semanales",area:"DTI",prioridad:"Alta",fechaFin:"2026-06-23",semana:"2026-W26",estatus:"Concluido",notas:"",createdAt:"2026-06-23T07:00:00",updatedAt:"2026-06-23T07:00:00"},
-  {id:"ex5",nombre:"Eduardo Sanchez",actividad:"Reunión de seguimiento proyectos IMC con dirección",area:"Talleres",prioridad:"Media",fechaFin:"2026-06-24",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T09:30:00",updatedAt:"2026-07-21T15:45:45.138Z"},
-  {id:"ex6",nombre:"Miguel Benítez",actividad:"Configuración de campos BUK Personalizado Fase 2",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-07-21T15:45:45.138Z"},
+  {id:"ex5",nombre:"Eduardo Sanchez",actividad:"Reunión de seguimiento proyectos IMC con dirección",area:"Talleres",prioridad:"Media",fechaFin:"2026-06-24",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T09:30:00",updatedAt:"2026-07-14T16:20:18.396Z"},
+  {id:"ex6",nombre:"Miguel Benítez",actividad:"Configuración de campos BUK Personalizado Fase 2",area:"Capital Humano",prioridad:"Baja",fechaFin:"2026-06-26",semana:"2026-W26",estatus:"Atrasado",notas:"",createdAt:"2026-06-23T10:30:00",updatedAt:"2026-07-14T16:20:18.396Z"},
   {id:"ex7",nombre:"Ricardo Ángeles",actividad:"Entrega de análisis de requerimientos — AI HUB FLEX",area:"Automatización",prioridad:"Alta",fechaFin:"2026-06-20",semana:"2026-W25",estatus:"Concluido",notas:"",createdAt:"2026-06-16T09:00:00",updatedAt:"2026-06-20T16:00:00"},
   {id:"ex8",nombre:"Josue Montoya",actividad:"Revisión de arquitectura del reporte Informe General",area:"DTI",prioridad:"Media",fechaFin:"2026-06-18",semana:"2026-W25",estatus:"Concluido",notas:"",createdAt:"2026-06-16T08:00:00",updatedAt:"2026-06-18T12:00:00"}
 ]; // INYECTADO POR SYNC.PY
@@ -4061,10 +4061,30 @@ function _actIMCToCSV(acts){
   return header+'\n'+rows.join('\n');
 }
 
+// Abre un menu desplegable de filtros (checkboxes) escapando de cualquier
+// contenedor con overflow que pudiera recortarlo visualmente (ej. la fila
+// de filtros con scroll horizontal). Lo mueve a document.body y lo posiciona
+// con position:fixed calculado a partir del boton que lo abre.
+function _abrirMenuFiltro(panelId, btnId){
+  var panel=document.getElementById(panelId);
+  var btn=document.getElementById(btnId);
+  if(!panel||!btn) return;
+  if(panel.style.display==='block'){
+    panel.style.display='none';
+    return;
+  }
+  if(panel.parentElement!==document.body){
+    document.body.appendChild(panel);
+  }
+  var rect=btn.getBoundingClientRect();
+  panel.style.position='fixed';
+  panel.style.top=(rect.bottom+4)+'px';
+  panel.style.left=rect.left+'px';
+  panel.style.zIndex='9999';
+  panel.style.display='block';
+}
 function toggleActMesPanelIMC(){
-  var p=document.getElementById('actimc-mes-panel');
-  if(!p) return;
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
+  _abrirMenuFiltro('actimc-mes-panel','actimc-mes-btn');
 }
 function actMesSelTodosIMC(chk){
   _actIMCMesesSel = chk.checked ? [] : ['__ninguno__'];
@@ -4080,9 +4100,7 @@ function actMesCheckIMC(){
   renderActividadesIMC();
 }
 function toggleActEstatusPanelIMC(){
-  var p=document.getElementById('actimc-estatus-panel');
-  if(!p) return;
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
+  _abrirMenuFiltro('actimc-estatus-panel','actimc-estatus-btn');
 }
 function actEstatusSelTodosIMC(chk){
   _actIMCEstatusSel = chk.checked ? [] : ['__ninguno__'];
@@ -4829,9 +4847,7 @@ async function _backupActividadesModGitHub(mod){
 }
 
 function toggleActMesPanelMod(mod){
-  var p=document.getElementById('act'+mod+'-mes-panel');
-  if(!p) return;
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
+  _abrirMenuFiltro('act'+mod+'-mes-panel','act'+mod+'-mes-btn');
 }
 function actMesSelTodosMod(mod, chk){
   _actMesesSelPorMod[mod] = chk.checked ? [] : ['__ninguno__'];
@@ -4858,9 +4874,7 @@ document.addEventListener('click', function(e){
 });
 
 function toggleActEstatusPanelMod(mod){
-  var p=document.getElementById('act'+mod+'-estatus-panel');
-  if(!p) return;
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
+  _abrirMenuFiltro('act'+mod+'-estatus-panel','act'+mod+'-estatus-btn');
 }
 function actEstatusSelTodosMod(mod, chk){
   _actEstatusSelPorMod[mod] = chk.checked ? [] : ['__ninguno__'];
