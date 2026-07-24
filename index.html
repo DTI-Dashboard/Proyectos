@@ -413,6 +413,7 @@ body.light-mode .btn-sync{color:var(--gold) !important;}
       <div class="mod-sub" id="res-subtitle">Consolidado estratégico de todos los módulos DTI — Dirección General</div>
     </div>
     <div class="export-btns">
+      <button class="btn-pptx" onclick="exportCierreSemanal('resumen')">📋 Reporte Semanal (pptx)</button>
       <button class="btn-pptx" onclick="exportResumenPPTX()">&#128203; Descargar Dashboard (pptx)</button>
       <button class="btn-pptx" onclick="exportResumenExcel()" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#22c55e">&#128196; Exportar Excel</button>
       <button class="btn-xlsx" onclick="exportCostosExcel('resumen')">💰 Descargar Excel de Costos</button>
@@ -6038,8 +6039,47 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeEvModal(); c
 
 
 // ─── EXPORT CIERRE SEMANAL IMC ─────────────────────────────────────────────
-const MOD_ARCHIVO_PPTX = {imc:'cierre_base.pptx', dev:'cierre_base_dev.pptx', inf:'cierre_base_inf.pptx', ia:'cierre_base_ia.pptx'};
-const MOD_LABEL_ARCHIVO = {imc:'IMC', dev:'Desarrollo', inf:'Soporte', ia:'IA'};
+const MOD_ARCHIVO_PPTX = {imc:'cierre_base.pptx', dev:'cierre_base_dev.pptx', inf:'cierre_base_inf.pptx', ia:'cierre_base_ia.pptx', resumen:'cierre_base_resumen.pptx'};
+const MOD_LABEL_ARCHIVO = {imc:'IMC', dev:'Desarrollo', inf:'Soporte', ia:'IA', resumen:'Resumen'};
+// Mapeo de los archivos fisicos reales dentro del pptx combinado de Resumen.
+// IMPORTANTE: estos nombres NO seguirian el orden visual porque el pptx se arma
+// duplicando slides de la plantilla -- fueron verificados directamente contra
+// el archivo real generado (ver commit de generar_reporte_semanal.py).
+const RESUMEN_ORDEN=['imc','dev','inf','ia'];
+const RESUMEN_KPI_SLIDES=['ppt/slides/slide5.xml','ppt/slides/slide7.xml','ppt/slides/slide9.xml','ppt/slides/slide11.xml'];
+const RESUMEN_EVENT_SLIDES={imc:'ppt/slides/slide6.xml',dev:'ppt/slides/slide8.xml',inf:'ppt/slides/slide10.xml',ia:'ppt/slides/slide12.xml'};
+
+function _xmlEscape(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function _construirTablaEventualidadesXML(evArr, origTblHdr){
+  var eBORDER='<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL><a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR><a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT><a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>';
+  function eCell(txt,al,sz,bold,marL){
+    var b=bold?' b="1"':'';
+    var m=marL||6244;
+    return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+_xmlEscape(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="'+m+'" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
+  }
+  var eRows='<a:tr h="520138">'+eCell('No','ctr',1100,true)+eCell('Proyecto','ctr',1100,true)+eCell('Eventualidades','ctr',1100,true)+'</a:tr>';
+  if(evArr.length===0){
+    eRows+='<a:tr h="420000">'+eCell('','ctr',1000,false)+eCell('Sin eventualidades documentadas','ctr',1000,false)+eCell('','ctr',1000,false)+'</a:tr>';
+  } else {
+    for(var ei=0;ei<evArr.length;ei++){
+      eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false,70000)+'</a:tr>';
+    }
+  }
+  return '<a:tbl>'+origTblHdr+eRows+'</a:tbl>';
+}
+
+function _eventualidadesDeModulo(mod){
+  var D=(state[mod]&&state[mod].data)?state[mod].data:[];
+  var modNombres=new Set(D.map(function(p){return (p.nombre||'').trim();}));
+  var evArr=[];
+  Object.keys(_eventualidades).forEach(function(k){
+    var txt=(_eventualidades[k]||'').trim();
+    if(txt && modNombres.has(k.trim())) evArr.push({n:k.trim(),t:txt});
+  });
+  return evArr;
+}
+
 async function exportCierreSemanal(mod){
   mod = mod || 'imc';
   var archivoBase = MOD_ARCHIVO_PPTX[mod] || MOD_ARCHIVO_PPTX.imc;
@@ -6053,7 +6093,7 @@ async function exportCierreSemanal(mod){
   var regenPromise = _dispararRegeneracionCierreBase(mod);
   showToast('⏳ Generando reporte...','info',8000);
   try{
-    // Descargar el PPTX base (slide 1 y slide 2 con los datos de la ultima sincronizacion)
+    // Descargar el PPTX base
     var resp=await fetch(urlBase+'?t='+Date.now(),{cache:'no-store'});
     if(!resp.ok){
       // Primera vez que se genera el reporte para este modulo — el archivo base aun no existe.
@@ -6066,51 +6106,49 @@ async function exportCierreSemanal(mod){
     }
     var bytes=await resp.arrayBuffer();
     var zip=await JSZip.loadAsync(bytes);
+    var totalEventualidades=0;
 
-    // Actualizar el rango de fecha (slide 1 y 2) al momento real de la descarga
-    for(var slideName of ['ppt/slides/slide1.xml','ppt/slides/slide2.xml']){
-      var slideXml=await zip.file(slideName).async('string');
-      slideXml=slideXml.replace(/Cierre semanal del [^<]*/g, 'Cierre semanal del '+rangoHoy);
-      zip.file(slideName, slideXml);
-    }
-
-    // Leer eventualidades del localStorage filtrando solo proyectos de este modulo
-    var D=(state[mod]&&state[mod].data)?state[mod].data:[];
-    var modNombres=new Set(D.map(function(p){return (p.nombre||'').trim();}));
-    var evArr=[];
-    Object.keys(_eventualidades).forEach(function(k){
-      var txt=(_eventualidades[k]||'').trim();
-      if(txt && modNombres.has(k.trim())) evArr.push({n:k.trim(),t:txt});
-    });
-
-    // Construir slide 3 con estructura compatible WPS Office
-    var s3=await zip.file('ppt/slides/slide3.xml').async('string');
-    var eBORDER='<a:lnL w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnL><a:lnR w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnR><a:lnT w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnT><a:lnB w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:prstDash val="solid"/></a:lnB>';
-    function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function eCell(txt,al,sz,bold,marL){
-      var b=bold?' b="1"':'';
-      var m=marL||6244;
-      return '<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr marL="0" algn="'+al+'" defTabSz="457200" rtl="0" eaLnBrk="1" fontAlgn="b" latinLnBrk="0" hangingPunct="1"><a:buNone/></a:pPr><a:r><a:rPr lang="es-MX" sz="'+sz+'"'+b+' u="none" strike="noStrike" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:effectLst/><a:latin typeface="Aptos (cuerpo)"/></a:rPr><a:t>'+xe(txt)+'</a:t></a:r></a:p></a:txBody><a:tcPr marL="'+m+'" marR="6244" marT="6244" marB="0" anchor="ctr">'+eBORDER+'<a:noFill/></a:tcPr></a:tc>';
-    }
-    var tblHdrMatch=s3.match(/<a:tbl>([\s\S]*?)<a:tr/);
-    var origTblHdr=tblHdrMatch?tblHdrMatch[1]:'<a:tblPr/><a:tblGrid/>';
-    var eRows='<a:tr h="520138">'+eCell('No','ctr',1100,true)+eCell('Proyecto','ctr',1100,true)+eCell('Eventualidades','ctr',1100,true)+'</a:tr>';
-    if(evArr.length===0){
-      eRows+='<a:tr h="420000">'+eCell('','ctr',1000,false)+eCell('Sin eventualidades documentadas','ctr',1000,false)+eCell('','ctr',1000,false)+'</a:tr>';
+    if(mod!=='resumen'){
+      // ── Caso normal: un solo modulo (portada = slide1, KPI = slide2, eventualidades = slide3) ──
+      for(var slideName of ['ppt/slides/slide1.xml','ppt/slides/slide2.xml']){
+        var slideXml=await zip.file(slideName).async('string');
+        slideXml=slideXml.replace(/Cierre semanal del [^<]*/g, 'Cierre semanal del '+rangoHoy);
+        zip.file(slideName, slideXml);
+      }
+      var evArr=_eventualidadesDeModulo(mod);
+      totalEventualidades=evArr.length;
+      var s3=await zip.file('ppt/slides/slide3.xml').async('string');
+      var tblHdrMatch=s3.match(/<a:tbl>([\s\S]*?)<a:tr/);
+      var origTblHdr=tblHdrMatch?tblHdrMatch[1]:'<a:tblPr/><a:tblGrid/>';
+      var newTbl=_construirTablaEventualidadesXML(evArr, origTblHdr);
+      s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
+      zip.file('ppt/slides/slide3.xml',s3);
     } else {
-      for(var ei=0;ei<evArr.length;ei++){
-        eRows+='<a:tr h="420000">'+eCell(String(ei+1),'ctr',1000,false)+eCell(evArr[ei].n,'l',1000,false)+eCell(evArr[ei].t,'l',1000,false,70000)+'</a:tr>';
+      // ── Caso 'resumen': portada + 4 KPI-slides + 4 eventualidades-slides (una por direccion) ──
+      var slidesConFecha=['ppt/slides/slide1.xml'].concat(RESUMEN_KPI_SLIDES);
+      for(var sn of slidesConFecha){
+        var sx=await zip.file(sn).async('string');
+        sx=sx.replace(/Cierre semanal del [^<]*/g, 'Cierre semanal del '+rangoHoy);
+        zip.file(sn, sx);
+      }
+      for(var mk of RESUMEN_ORDEN){
+        var evArrMk=_eventualidadesDeModulo(mk);
+        totalEventualidades+=evArrMk.length;
+        var slideFile=RESUMEN_EVENT_SLIDES[mk];
+        var sxe=await zip.file(slideFile).async('string');
+        var hdrMatch=sxe.match(/<a:tbl>([\s\S]*?)<a:tr/);
+        var hdrOrig=hdrMatch?hdrMatch[1]:'<a:tblPr/><a:tblGrid/>';
+        var tblNueva=_construirTablaEventualidadesXML(evArrMk, hdrOrig);
+        sxe=sxe.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,tblNueva);
+        zip.file(slideFile,sxe);
       }
     }
-    var newTbl='<a:tbl>'+origTblHdr+eRows+'</a:tbl>';
-    s3=s3.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/,newTbl);
-    zip.file('ppt/slides/slide3.xml',s3);
 
     var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a'); a.href=url; a.download='Cierre_Semanal_'+labelArchivo+'_'+hoyF+'.pptx'; a.click();
     URL.revokeObjectURL(url);
-    showToast('\u2705 Reporte descargado ('+evArr.length+' eventualidades)','success');
+    showToast('\u2705 Reporte descargado ('+totalEventualidades+' eventualidades)','success');
   }catch(e){showToast('\u274c Error: '+e.message,'error');}
 }
 
